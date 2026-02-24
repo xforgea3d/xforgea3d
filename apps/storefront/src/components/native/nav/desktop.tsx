@@ -13,13 +13,28 @@ import config from '@/config/site'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { forwardRef } from 'react'
+import { PackageOpenIcon } from 'lucide-react'
 
-const components: { title: string; href: string; description: string }[] = [
+const brands: { title: string; href: string; description: string }[] = [
    {
-      title: 'Alert Dialog',
-      href: '/docs/primitives/alert-dialog',
-      description:
-         'A modal dialog that interrupts the user with important content and expects a response.',
+      title: 'Apple',
+      href: '/products?brand=apple',
+      description: 'Find the latest Apple products including iPhones, iPads, and MacBooks.',
+   },
+   {
+      title: 'Samsung',
+      href: '/products?brand=samsung',
+      description: 'Explore Samsung Galaxy phones, tablets, and smart home devices.',
+   },
+   {
+      title: 'Sony',
+      href: '/products?brand=sony',
+      description: 'Discover Sony electronics, from PlayStation consoles to premium headphones.',
+   },
+   {
+      title: 'Nike',
+      href: '/products?brand=nike',
+      description: 'Shop the latest Nike athletic shoes, apparel, and accessories.',
    },
 ]
 
@@ -61,30 +76,29 @@ export function NavMenu() {
                         <NavigationMenuLink asChild>
                            <Link
                               className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                              href="/"
+                              href="/products"
                            >
+                              <PackageOpenIcon className="h-6 w-6 mb-2" />
                               <div className="mb-2 mt-4 text-lg font-medium">
-                                 shadcn/ui
+                                 All Categories
                               </div>
                               <p className="text-sm leading-tight text-muted-foreground">
-                                 Beautifully designed components built with
-                                 Radix UI and Tailwind CSS.
+                                 Browse our entire catalog of products sorted by category.
                               </p>
                            </Link>
                         </NavigationMenuLink>
                      </li>
-                     <ListItem href="/docs" title="Introduction">
-                        Re-usable components built using Radix UI and Tailwind
-                        CSS.
+                     <ListItem href="/products?category=electronics" title="Electronics">
+                        Computers, smartphones, and gadgets.
                      </ListItem>
-                     <ListItem href="/docs/installation" title="Installation">
-                        How to install dependencies and structure your app.
+                     <ListItem href="/products?category=clothing" title="Clothing">
+                        Men's and women's fashion and apparel.
                      </ListItem>
                      <ListItem
-                        href="/docs/primitives/typography"
-                        title="Typography"
+                        href="/products?category=home"
+                        title="Home & Garden"
                      >
-                        Styles for headings, paragraphs, lists...etc
+                        Furniture, decor, and outdoor living.
                      </ListItem>
                   </ul>
                </NavigationMenuContent>
@@ -95,13 +109,13 @@ export function NavMenu() {
                </NavigationMenuTrigger>
                <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-2 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                     {components.map((component) => (
+                     {brands.map((brand) => (
                         <ListItem
-                           key={component.title}
-                           title={component.title}
-                           href={component.href}
+                           key={brand.title}
+                           title={brand.title}
+                           href={brand.href}
                         >
-                           {component.description}
+                           {brand.description}
                         </ListItem>
                      ))}
                   </ul>

@@ -65,7 +65,7 @@ export function Receipt() {
          <Separator />
          <CardFooter>
             <Link
-               href={authenticated ? '/checkout' : '/login'}
+               href={authenticated ? '/checkout' : '/login?redirect=/checkout'}
                className="w-full"
             >
                <Button

@@ -3,13 +3,14 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { cn, isVariableValid } from '@/lib/utils'
-import { isEmailValid, isIranianPhoneNumberValid } from '@persepolis/regex'
-import { Loader, MailIcon, SmartphoneIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { isEmailValid } from '@persepolis/regex'
+import { Loader, MailIcon } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
+import { createClient } from '@/lib/supabase/client'
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
    const [isLoading, setIsLoading] = React.useState<boolean>(false)
@@ -39,50 +40,11 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                </span>
             </div>
          </div>
-         <ChangeMethodButton isLoading={isLoading} />
-      </div>
-   )
-}
-
-function ChangeMethodButton({ isLoading }) {
-   const router = useRouter()
-   const pathname = usePathname()
-   const searchParams = useSearchParams()
-   const method = searchParams.get('method')
-
-   function changeMethod() {
-      const params = new URLSearchParams(Array.from(searchParams.entries()))
-
-      params.set('method', method == 'phone' ? 'email' : 'phone')
-      const search = params.toString()
-      const query = search ? `?${search}` : ''
-
-      router.replace(`${pathname}${query}`, {
-         scroll: false,
-      })
-   }
-
-   if (method === 'phone')
-      return (
-         <Button onClick={changeMethod} disabled={isLoading} type="button">
-            {isLoading ? (
-               <Loader className="mr-2 h-4 animate-spin" />
-            ) : (
-               <MailIcon className="mr-2 h-4" />
-            )}
-            Email
+         <Button disabled={true} type="button">
+            <MailIcon className="mr-2 h-4" />
+            Email Only (Supabase)
          </Button>
-      )
-
-   return (
-      <Button onClick={changeMethod} disabled={isLoading} type="button">
-         {isLoading ? (
-            <Loader className="mr-2 h-4 animate-spin" />
-         ) : (
-            <SmartphoneIcon className="mr-2 h-4" />
-         )}
-         Phone Number
-      </Button>
+      </div>
    )
 }
 
@@ -90,9 +52,8 @@ function TryComponents({ isLoading, setIsLoading, setFetchedOTP }) {
    const router = useRouter()
    const pathname = usePathname()
    const searchParams = useSearchParams()
-   const method = searchParams.get('method')
    const email = searchParams.get('email')
-   const phone = searchParams.get('phone')
+   const supabase = createClient()
 
    const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const params = new URLSearchParams(Array.from(searchParams.entries()))
@@ -106,106 +67,31 @@ function TryComponents({ isLoading, setIsLoading, setFetchedOTP }) {
       })
    }
 
-   const handlePhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const params = new URLSearchParams(Array.from(searchParams.entries()))
-
-      params.set('phone', event.target.value)
-      const search = params.toString()
-      const query = search ? `?${search}` : ''
-
-      router.replace(`${pathname}${query}`, {
-         scroll: false,
-      })
-   }
-
    async function onSubmitEmail() {
+      if (!email) return;
+
       try {
          setIsLoading(true)
 
-         if (!process.env.JWT_SECRET_KEY) {
-            console.error('JWT secret key is missing')
-            setIsLoading(false)
-            return
-         }
-
-         const response = await fetch('/api/auth/otp/email/try', {
-            method: 'POST',
-            body: JSON.stringify({ email }),
-            cache: 'no-store',
+         const { error } = await supabase.auth.signInWithOtp({
+            email: email,
+            options: {
+               emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
          })
 
-         if (response.ok) {
+         if (error) {
+            console.error('Supabase OTP Error:', error.message)
+         } else {
             setFetchedOTP(true)
          }
 
-         setIsLoading(false)
       } catch (error) {
          console.error({ error })
-      }
-   }
-
-   async function onSubmitPhone() {
-      try {
-         setIsLoading(true)
-
-         if (!process.env.JWT_SECRET_KEY) {
-            console.error('JWT secret key is missing')
-            setIsLoading(false)
-            return
-         }
-
-         const response = await fetch('/api/auth/otp/phone/try', {
-            method: 'POST',
-            body: JSON.stringify({ phone }),
-            cache: 'no-store',
-         })
-
-         if (response.ok) {
-            setFetchedOTP(true)
-         }
-
+      } finally {
          setIsLoading(false)
-      } catch (error) {
-         console.error({ error })
       }
    }
-
-   if (method === 'phone')
-      return (
-         <>
-            <div className="grid gap-1">
-               <Label
-                  className="text-sm font-light text-foreground/60"
-                  htmlFor="email"
-               >
-                  Phone
-               </Label>
-               <Input
-                  id="phone"
-                  placeholder="+989123456789"
-                  type="phone"
-                  autoCapitalize="none"
-                  autoComplete="phone"
-                  autoCorrect="off"
-                  disabled={isLoading}
-                  onChange={handlePhoneChange}
-                  required
-               />
-               {isVariableValid(phone) && !isIranianPhoneNumberValid(phone) && (
-                  <p className="mt-2 text-sm text-red-700">
-                     Phone Number is not valid.
-                  </p>
-               )}
-            </div>
-            <Button
-               onClick={onSubmitPhone}
-               disabled={isLoading || !isIranianPhoneNumberValid(phone)}
-            >
-               {isLoading && <Loader className="mr-2 h-4 animate-spin" />}
-               Login with Phone
-            </Button>
-         </>
-      )
 
    return (
       <>
@@ -233,7 +119,7 @@ function TryComponents({ isLoading, setIsLoading, setFetchedOTP }) {
             disabled={isLoading || !isEmailValid(email)}
          >
             {isLoading && <Loader className="mr-2 h-4 animate-spin" />}
-            Login with Email
+            Send Magic Link / OTP
          </Button>
       </>
    )
@@ -243,10 +129,9 @@ function VerifyComponents({ isLoading, setIsLoading }) {
    const router = useRouter()
    const pathname = usePathname()
    const searchParams = useSearchParams()
-   const method = searchParams.get('method')
    const email = searchParams.get('email')
-   const phone = searchParams.get('phone')
    const OTP = searchParams.get('OTP')
+   const supabase = createClient()
 
    const handleOTPChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const params = new URLSearchParams(Array.from(searchParams.entries()))
@@ -261,29 +146,28 @@ function VerifyComponents({ isLoading, setIsLoading }) {
    }
 
    async function onVerifyOTP() {
+      if (!email || !OTP) return;
+
       try {
          setIsLoading(true)
 
-         const response = await fetch(
-            method === 'phone'
-               ? '/api/auth/otp/phone/verify'
-               : '/api/auth/otp/email/verify',
-            {
-               method: 'POST',
-               body: JSON.stringify({
-                  email,
-                  phone,
-                  OTP,
-               }),
-               cache: 'no-store',
-            }
-         )
+         const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token: OTP,
+            type: 'email',
+         })
 
-         if (response.ok) {
+         if (error) {
+            console.error('Supabase Verify OTP Error:', error.message)
+         } else if (data.session) {
+            // Success! 
             window.location.assign(`/`)
          }
+
       } catch (error) {
          console.error({ error })
+      } finally {
+         setIsLoading(false)
       }
    }
 
@@ -292,12 +176,12 @@ function VerifyComponents({ isLoading, setIsLoading }) {
          <div className="grid gap-1">
             <Label
                className="text-sm font-light text-foreground/60"
-               htmlFor="email"
+               htmlFor="OTP"
             >
                One-Time Password
             </Label>
             <Input
-               placeholder="12345"
+               placeholder="123456"
                disabled={isLoading}
                onChange={handleOTPChange}
                required

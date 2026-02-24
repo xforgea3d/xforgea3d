@@ -3,27 +3,19 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id    String  @id @default(cuid())
-  email String?  @unique
-  phone String? @unique
+model Profile {
+  id    String @id // This will map 1:1 with auth.users.id (UUID)
+  email String @unique
+  role  RoleEnum @default(customer)
 
   name     String?
-  birthday String?
-
-  OTP                   String?
-  emailUnsubscribeToken String?  @unique @default(cuid())
-  referralCode          String? @unique
-
-  isBanned          Boolean @default(false)
-  isEmailVerified   Boolean @default(false)
-  isPhoneVerified   Boolean @default(false)
-  isEmailSubscribed Boolean @default(false)
-  isPhoneSubscribed Boolean @default(false)
+  phone    String? @unique
+  avatar   String?
 
   cart     Cart?
   wishlist Product[] @relation("Wishlist")
@@ -40,8 +32,21 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+enum RoleEnum {
+  admin
+  customer
+}
+
+model SiteSettings {
+  id                  Int     @id @default(1)
+  maintenance_enabled Boolean @default(false)
+  maintenance_message String? @default("Site is undergoing maintenance. We will be back shortly.")
+  
+  updatedAt DateTime @updatedAt
+}
+
 model Cart {
-  user   User       @relation(fields: [userId], references: [id])
+  user   Profile    @relation(fields: [userId], references: [id])
   userId String     @id
   items  CartItem[]
 
@@ -57,18 +62,6 @@ model CartItem {
   count     Int
 
   @@unique([cartId, productId], name: "UniqueCartItem")
-}
-
-model Owner {
-  id     String  @id @default(cuid())
-  email  String  @unique
-  phone  String? @unique
-  name   String?
-  avatar String?
-  OTP    String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Author {
@@ -112,7 +105,7 @@ model Product {
 
   orders         OrderItem[]
   cartItems      CartItem[]
-  wishlists      User[]          @relation("Wishlist")
+  wishlists      Profile[]       @relation("Wishlist")
   productReviews ProductReview[]
 
   brand   Brand  @relation(fields: [brandId], references: [id])
@@ -145,7 +138,7 @@ model ProductReview {
 
   product   Product @relation(fields: [productId], references: [id])
   productId String
-  user      User    @relation(fields: [userId], references: [id])
+  user      Profile @relation(fields: [userId], references: [id])
   userId    String
 
   createdAt DateTime @default(now())
@@ -178,7 +171,7 @@ model Order {
   discountCodeId String?
   address        Address?      @relation(fields: [addressId], references: [id])
   addressId      String?
-  user           User          @relation(fields: [userId], references: [id])
+  user           Profile       @relation(fields: [userId], references: [id])
   userId         String
 
   createdAt DateTime @default(now())
@@ -221,7 +214,7 @@ model Address {
   phone      String
   postalCode String
 
-  user   User    @relation(fields: [userId], references: [id])
+  user   Profile @relation(fields: [userId], references: [id])
   userId String
   orders Order[]
 
@@ -235,7 +228,7 @@ model Notification {
   content String
   isRead  Boolean @default(false)
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   Profile   @relation(fields: [userId], references: [id])
   userId String
 
   createdAt DateTime @default(now())
@@ -288,7 +281,7 @@ model Payment {
 
   provider   PaymentProvider @relation(fields: [providerId], references: [id])
   providerId String
-  user       User            @relation(fields: [userId], references: [id])
+  user       Profile         @relation(fields: [userId], references: [id])
   userId     String
   order      Order           @relation(fields: [orderId], references: [id])
   orderId    String
@@ -323,7 +316,7 @@ model Error {
 
   error String
 
-  user   User?   @relation(fields: [userId], references: [id])
+  user   Profile? @relation(fields: [userId], references: [id])
   userId String?
 
   createdAt DateTime @default(now())
@@ -336,7 +329,7 @@ model File {
 
   url String
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   Profile @relation(fields: [userId], references: [id])
   userId String
 
   createdAt DateTime @default(now())
