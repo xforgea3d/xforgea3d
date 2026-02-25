@@ -28,10 +28,14 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import * as z from 'zod'
+import { Textarea } from '@/components/ui/textarea'
+import { BotIcon, ImageIcon } from 'lucide-react'
+import Image from 'next/image'
 
 const formSchema = z.object({
    title: z.string().min(2),
-   description: z.string().min(1),
+   description: z.string().optional(),
+   imageUrl: z.string().optional(),
 })
 
 type CategoryFormValues = z.infer<typeof formSchema>
@@ -58,11 +62,37 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
 
    const form = useForm<CategoryFormValues>({
       resolver: zodResolver(formSchema),
-      defaultValues: initialData || {
-         title: '',
-         description: '',
-      },
+      defaultValues: {
+         title: initialData?.title || '',
+         description: initialData?.description || '',
+         imageUrl: initialData?.imageUrl || '',
+      }
    })
+
+   const [aiPrompt, setAiPrompt] = useState('')
+   const [isGenerating, setIsGenerating] = useState(false)
+
+   const onGenerateImage = async () => {
+      if (!aiPrompt) {
+         toast.error('Lütfen oluşturmak istediğiniz görseli tarif edin.')
+         return
+      }
+      try {
+         setIsGenerating(true)
+         const res = await fetch('/api/generate-image', {
+            method: 'POST',
+            body: JSON.stringify({ prompt: aiPrompt })
+         })
+         if (!res.ok) throw new Error('Generation failed')
+         const data = await res.json()
+         form.setValue('imageUrl', data.url, { shouldDirty: true, shouldValidate: true })
+         toast.success('Yapay zeka ile görsel oluşturuldu!')
+      } catch (error) {
+         toast.error('Görsel oluşturulamadı. Sunucuda OPENAI_API_KEY yüklü olduğundan emin olun.')
+      } finally {
+         setIsGenerating(false)
+      }
+   }
 
    const onSubmit = async (data: CategoryFormValues) => {
       try {
@@ -162,36 +192,78 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                      name="description"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Banner</FormLabel>
-                           <Select
-                              disabled={loading}
-                              onValueChange={field.onChange}
-                              value={field.value}
-                              defaultValue={field.value}
-                           >
-                              <FormControl>
-                                 <SelectTrigger>
-                                    <SelectValue
-                                       defaultValue={field.value}
-                                       placeholder="Select a banner"
-                                    />
-                                 </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                 {banners.map((banner) => (
-                                    <SelectItem
-                                       key={banner.id}
-                                       value={banner.id}
-                                    >
-                                       {banner.label}
-                                    </SelectItem>
-                                 ))}
-                              </SelectContent>
-                           </Select>
+                           <FormLabel>Açıklama</FormLabel>
+                           <FormControl>
+                              <Textarea
+                                 disabled={loading}
+                                 placeholder="Kategori hakkında kısa açıklama..."
+                                 {...field}
+                              />
+                           </FormControl>
                            <FormMessage />
                         </FormItem>
                      )}
                   />
+               </div>
+
+               {/* AI Image Generation Section */}
+               <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-dashed space-y-6">
+                  <div>
+                     <h3 className="text-lg font-medium flex items-center gap-2">
+                        <BotIcon className="w-5 h-5 text-purple-500" />
+                        AI Kategori Arkaplanı Oluşturucu
+                     </h3>
+                     <p className="text-sm text-muted-foreground mt-1">
+                        Bu kategori için açılır menüde (navbar) gösterilecek lüks bir 3D baskı arka plan görseli oluşturun.
+                     </p>
+                  </div>
+
+                  <div className="flex gap-4 items-end">
+                     <div className="flex-1 space-y-2">
+                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                           Oluşturmak istediğiniz görseli tarif edin:
+                        </label>
+                        <Input
+                           placeholder="Örn: Siyah mermer masada duran zarif bir antik yunan heykeli..."
+                           value={aiPrompt}
+                           onChange={(e) => setAiPrompt(e.target.value)}
+                           disabled={isGenerating || loading}
+                        />
+                     </div>
+                     <Button
+                        type="button"
+                        onClick={onGenerateImage}
+                        disabled={isGenerating || loading || !aiPrompt}
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                     >
+                        {isGenerating ? 'Oluşturuluyor...' : 'Görsel Üret'}
+                     </Button>
+                  </div>
+
+                  <FormField
+                     control={form.control}
+                     name="imageUrl"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Arkaplan Görseli URL</FormLabel>
+                           <FormControl>
+                              <Input disabled={loading} placeholder="/bg-figurler.png veya https://..." {...field} />
+                           </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+
+                  {form.watch('imageUrl') && (
+                     <div className="relative w-full h-[200px] rounded-lg overflow-hidden border">
+                        <Image
+                           src={form.watch('imageUrl')!}
+                           alt="Category Preview"
+                           fill
+                           className="object-cover"
+                        />
+                     </div>
+                  )}
                </div>
                <Button disabled={loading} className="ml-auto" type="submit">
                   {action}

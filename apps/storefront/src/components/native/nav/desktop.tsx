@@ -13,7 +13,7 @@ import config from '@/config/site'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 import { PackageOpenIcon, SparklesIcon } from 'lucide-react'
 
 // ── Category definitions matching EXACT DB titles ────────────────────────────
@@ -25,24 +25,28 @@ const categories = [
       href: '/products?category=Figürler',
       description: 'Oyun, anime ve fantezi karakterlerinin detaylı 3D baskı figürleri.',
       emoji: '🎮',
+      image: '/bg-figurler.png',
    },
    {
       title: 'Heykeller',
       href: '/products?category=Heykeller',
       description: 'Antik ve modern sanat eserlerinin 3D baskı replikalları.',
       emoji: '🏛️',
+      image: '/bg-heykeller.png',
    },
    {
       title: 'Dekoratif',
       href: '/products?category=Dekoratif',
       description: 'Ev ve ofis için şık 3D baskı dekoratif parçalar.',
       emoji: '🎨',
+      image: '/bg-dekoratif.png',
    },
    {
       title: 'Aksesuarlar',
       href: '/products?category=Aksesuarlar',
       description: 'Telefon tutucular, organizerlar ve kişisel aksesuarlar.',
       emoji: '⚙️',
+      image: '/bg-aksesuarlar.png',
    },
 ]
 
@@ -95,6 +99,10 @@ export function MainNav() {
 }
 
 export function NavMenu() {
+   const [activeCatImg, setActiveCatImg] = useState('/nav-bg.png')
+   const [activeCatTitle, setActiveCatTitle] = useState('Tüm Kategoriler')
+   const [activeCatDesc, setActiveCatDesc] = useState('Tüm 3D baskı ürünlerimize kategoriye göre göz atın.')
+
    return (
       <NavigationMenu>
          <NavigationMenuList>
@@ -124,8 +132,9 @@ export function NavMenu() {
                               {/* AI-generated background */}
                               <div className="absolute inset-0">
                                  <Image
-                                    src="/nav-bg.png"
-                                    alt="3D Baskı Kategoriler"
+                                    key={activeCatImg} // Force re-render on change to trigger fade if needed
+                                    src={activeCatImg}
+                                    alt={activeCatTitle}
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                                     sizes="200px"
@@ -134,11 +143,11 @@ export function NavMenu() {
                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                               </div>
                               {/* Text */}
-                              <div className="relative z-10 p-5">
+                              <div className="relative z-10 p-5 transition-all duration-300">
                                  <PackageOpenIcon className="h-5 w-5 mb-2 text-orange-400" />
-                                 <div className="text-base font-bold text-white mb-1">Tüm Kategoriler</div>
+                                 <div className="text-base font-bold text-white mb-1">{activeCatTitle}</div>
                                  <p className="text-xs leading-snug text-white/70">
-                                    Tüm 3D baskı ürünlerimize kategoriye göre göz atın.
+                                    {activeCatDesc}
                                  </p>
                               </div>
                            </Link>
@@ -150,10 +159,16 @@ export function NavMenu() {
                            key={c.title}
                            href={c.href}
                            title={`${c.emoji} ${c.title}`}
+                           onMouseEnter={() => {
+                              setActiveCatImg(c.image)
+                              setActiveCatTitle(c.title)
+                              setActiveCatDesc(c.description)
+                           }}
                         >
                            {c.description}
                         </CategoryListItem>
                      ))}
+                     {/* Reset when hovering the wrapper (optional, but good UX to leave the last hovered) */}
                   </ul>
                </NavigationMenuContent>
             </NavigationMenuItem>

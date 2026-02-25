@@ -8,12 +8,8 @@ import { CartContextProvider, useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, ShoppingBasketIcon, X } from 'lucide-react'
 import { useState } from 'react'
 
-export default function CartButton({ product }) {
-   return (
-      <CartContextProvider>
-         <ButtonComponent product={product} />
-      </CartContextProvider>
-   )
+export default function CartButton({ product }: { product: any }) {
+   return <ButtonComponent product={product} />
 }
 
 export function ButtonComponent({ product }) {
@@ -60,6 +56,9 @@ export function ButtonComponent({ product }) {
             const json = await response.json()
 
             dispatchCart(json)
+            window.dispatchEvent(new Event('cart:added'))
+            setFetchingCart(false)
+            return
          }
 
          const localCart = getLocalCart() as any
@@ -84,6 +83,7 @@ export function ButtonComponent({ product }) {
             dispatchCart(localCart)
          }
 
+         window.dispatchEvent(new Event('cart:added'))
          setFetchingCart(false)
       } catch (error) {
          console.error({ error })

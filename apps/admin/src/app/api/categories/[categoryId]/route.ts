@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 export async function GET(
    req: Request,
@@ -50,6 +51,7 @@ export async function DELETE(
          },
       })
 
+      revalidatePath('/', 'layout')
       return NextResponse.json(category)
    } catch (error) {
       console.error('[CATEGORY_DELETE]', error)
@@ -70,18 +72,10 @@ export async function PATCH(
 
       const body = await req.json()
 
-      const { title, description, bannerId } = body
-
-      if (!bannerId) {
-         return new NextResponse('Banner ID is required', { status: 400 })
-      }
+      const { title, description, bannerId, imageUrl } = body
 
       if (!title) {
          return new NextResponse('Name is required', { status: 400 })
-      }
-
-      if (!params.categoryId) {
-         return new NextResponse('Category id is required', { status: 400 })
       }
 
       const updatedCategory = await prisma.category.update({
@@ -91,14 +85,16 @@ export async function PATCH(
          data: {
             title,
             description,
-            banners: {
-               connect: {
-                  id: bannerId,
+            imageUrl,
+            ...(bannerId && {
+               banners: {
+                  connect: { id: bannerId },
                },
-            },
+            }),
          },
       })
 
+      revalidatePath('/', 'layout')
       return NextResponse.json(updatedCategory)
    } catch (error) {
       console.error('[CATEGORY_PATCH]', error)

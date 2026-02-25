@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 export async function POST(req: Request) {
    try {
@@ -11,14 +12,10 @@ export async function POST(req: Request) {
 
       const body = await req.json()
 
-      const { title, description, bannerId } = body
+      const { title, description, bannerId, imageUrl } = body
 
       if (!title) {
          return new NextResponse('Name is required', { status: 400 })
-      }
-
-      if (!bannerId) {
-         return new NextResponse('Banner ID is required', { status: 400 })
       }
 
       // Create a new category
@@ -26,13 +23,17 @@ export async function POST(req: Request) {
          data: {
             title,
             description,
-            banners: {
-               connect: {
-                  id: bannerId,
+            imageUrl,
+            ...(bannerId && {
+               banners: {
+                  connect: { id: bannerId },
                },
-            },
+            }),
          },
       })
+
+      // Revalidate storefront layout since categories are in the nav
+      revalidatePath('/', 'layout')
 
       return NextResponse.json(category)
    } catch (error) {

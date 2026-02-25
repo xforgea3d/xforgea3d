@@ -7,12 +7,12 @@ import { CartGrid } from './components/grid'
 
 export default function Cart() {
    return (
-      <CartContextProvider>
+      <div className="py-8">
          <Heading
-            title="Cart"
-            description="Below is a list of products you have in your cart."
+            title="Sepetiniz"
+            description="Sepetinizdeki ürünlerinizi inceleyin ve sipariş verin."
          />
          <CartGrid />
-      </CartContextProvider>
+      </div>
    )
 }
