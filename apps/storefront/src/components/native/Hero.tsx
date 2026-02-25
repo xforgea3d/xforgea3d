@@ -11,111 +11,115 @@ import { ArrowRightIcon, SparklesIcon, LayersIcon } from 'lucide-react'
  */
 function PrinterAnimation() {
     return (
-        <div
-            className="hidden md:flex absolute right-0 top-0 bottom-0 w-[44%] items-center justify-center overflow-hidden pointer-events-none"
-            aria-hidden="true"
-        >
-            {/* Ambient glow */}
-            <div className="absolute w-72 h-72 rounded-full bg-orange-500/8 dark:bg-orange-400/12 blur-[90px]" />
+        <div className="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 w-[500px] h-[500px] items-center justify-center overflow-hidden pointer-events-none" style={{ perspective: 1000 }}>
+            {/* Ambient Background Glows */}
+            <div className="absolute w-[300px] h-[300px] bg-orange-500/20 dark:bg-orange-600/20 blur-[100px] rounded-full mix-blend-screen" />
+            <div className="absolute w-[200px] h-[200px] bg-amber-400/10 dark:bg-amber-500/10 blur-[60px] rounded-full -translate-x-12 translate-y-12 mix-blend-screen" />
 
-            <div className="relative w-64 h-72">
-                <svg
-                    viewBox="0 0 260 300"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-full h-full"
-                >
-                    {/* ── Gantry rail (horizontal bar at top) ── */}
-                    <rect x="20" y="28" width="220" height="8" rx="4"
-                        className="fill-neutral-300 dark:fill-neutral-600" />
-                    {/* Rail end caps */}
-                    <rect x="14" y="22" width="16" height="20" rx="3"
-                        className="fill-neutral-400 dark:fill-neutral-500" />
-                    <rect x="230" y="22" width="16" height="20" rx="3"
-                        className="fill-neutral-400 dark:fill-neutral-500" />
+            <div className="relative w-full h-full flex items-center justify-center" style={{ transformStyle: 'preserve-3d', transform: 'rotateX(5deg) rotateY(-10deg)' }}>
+                {/* 3D Printer Enclosure */}
+                <div className="relative w-[340px] h-[380px] rounded-3xl border border-neutral-300 dark:border-neutral-700 bg-neutral-100/40 dark:bg-neutral-900/40 backdrop-blur-sm shadow-2xl flex flex-col items-center overflow-hidden">
+                    {/* Top frame/light bar */}
+                    <div className="w-full h-8 bg-neutral-200 dark:bg-neutral-950 border-b border-neutral-300 dark:border-neutral-800 flex items-center justify-center shadow-inner z-20">
+                        <div className="w-32 h-1 bg-orange-400/50 rounded-full shadow-[0_0_10px_#f97316]" />
+                    </div>
 
-                    {/* ── Print head carriage (moves L→R via CSS animation) ── */}
-                    <g style={{ animation: 'gantry 4s ease-in-out infinite alternate' }}>
-                        {/* Carriage block */}
-                        <rect x="100" y="20" width="60" height="24" rx="5"
-                            className="fill-neutral-200 dark:fill-neutral-700"
-                            style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }} />
-                        {/* Hotend body */}
-                        <rect x="118" y="44" width="24" height="32" rx="3"
-                            className="fill-neutral-300 dark:fill-neutral-600" />
-                        {/* Heat block (orange) */}
-                        <rect x="116" y="72" width="28" height="20" rx="3" fill="#f97316" opacity="0.9" />
-                        {/* Nozzle cone */}
-                        <path d="M120 92 L126 108 L134 108 L140 92Z" fill="#ea580c" />
-                        {/* Nozzle tip dot — glowing orange */}
-                        <circle cx="130" cy="110" r="3.5" fill="#f97316">
-                            <animate attributeName="opacity" values="1;0.4;1" dur="0.9s" repeatCount="indefinite" />
-                            <animate attributeName="r" values="3.5;5;3.5" dur="0.9s" repeatCount="indefinite" />
-                        </circle>
-                        {/* Glow behind nozzle tip */}
-                        <circle cx="130" cy="110" r="12" fill="#f97316" opacity="0.15">
-                            <animate attributeName="opacity" values="0.15;0.35;0.15" dur="0.9s" repeatCount="indefinite" />
-                        </circle>
-                        {/* Filament strand coming down into nozzle */}
-                        <line x1="130" y1="20" x2="130" y2="44" stroke="#f97316" strokeWidth="3" strokeLinecap="round"
-                            opacity="0.6" />
-                    </g>
+                    {/* Internal build chamber */}
+                    <div className="relative flex-1 w-full bg-gradient-to-b from-neutral-200/50 to-neutral-50/50 dark:from-neutral-900/50 dark:to-neutral-950/80 shadow-[inset_0_10px_30px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_10px_30px_rgba(0,0,0,0.5)] flex flex-col items-center justify-end pb-8">
 
-                    {/* ── Print bed ── */}
-                    <rect x="30" y="260" width="200" height="10" rx="3"
-                        className="fill-neutral-200 dark:fill-neutral-600" />
-                    {/* Bed texture lines */}
-                    {[40, 55, 70, 85, 100, 115, 130, 145, 160, 175, 190, 205, 220].map(x => (
-                        <line key={x} x1={x} y1="260" x2={x} y2="270" stroke="currentColor"
-                            strokeWidth="0.5" className="text-neutral-300 dark:text-neutral-500" />
-                    ))}
+                        {/* Z-Axis Rods */}
+                        <div className="absolute left-10 top-0 bottom-8 w-2 bg-gradient-to-r from-neutral-300 to-neutral-400 dark:from-neutral-700 dark:to-neutral-600 rounded-full" />
+                        <div className="absolute right-10 top-0 bottom-8 w-2 bg-gradient-to-r from-neutral-300 to-neutral-400 dark:from-neutral-700 dark:to-neutral-600 rounded-full" />
 
-                    {/* ── Printed layers building up ──
-                   Each layer fades in sequentially via animation-delay ── */}
-                    {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
-                        const y = 250 - i * 14
-                        const widths = [160, 148, 132, 118, 106, 88, 68, 44]
-                        const w = widths[i]
-                        const x = 130 - w / 2
-                        const opacity = [0.22, 0.28, 0.35, 0.42, 0.52, 0.63, 0.75, 0.9][i]
-                        return (
-                            <rect
-                                key={i}
-                                x={x} y={y} width={w} height={11} rx="2"
-                                fill="#f97316"
-                                style={{
-                                    opacity: 0,
-                                    animation: `layerIn 0.4s ease-out ${i * 0.5 + 0.2}s forwards`,
-                                }}
-                            />
-                        )
-                    })}
+                        {/* Print Bed (moves UP then slowly DOWN over 6 seconds) */}
+                        <div className="absolute bottom-8 w-[240px] h-6 bg-neutral-300 dark:bg-neutral-800 rounded-lg shadow-xl border-t border-neutral-200 dark:border-neutral-700 animate-bed-drop z-10 flex justify-center">
+                            {/* The printed object container (Sits on bed, overflow hidden, heights out) */}
+                            <div className="absolute bottom-6 w-32 h-[200px] flex items-end justify-center overflow-hidden animate-model-grow">
+                                {/* The solid object filling the space */}
+                                <div className="w-32 h-[200px] flex-shrink-0 relative">
+                                    <svg viewBox="0 0 100 120" preserveAspectRatio="none" className="w-full h-full drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]">
+                                        {/* Low Poly Vase Base */}
+                                        <path d="M20,120 L80,120 L90,60 L70,20 L50,0 L30,20 L10,60 Z" fill="#f97316" />
+                                        {/* Details inside */}
+                                        <path d="M50,0 L30,20 L50,40 Z" fill="rgba(0,0,0,0.2)" />
+                                        <path d="M70,20 L50,40 L90,60 Z" fill="rgba(0,0,0,0.1)" />
+                                        <path d="M50,40 L30,20 L10,60 L50,80 Z" fill="rgba(0,0,0,0.15)" />
+                                        <path d="M50,40 L50,80 L90,60 Z" fill="rgba(0,0,0,0.05)" />
+                                        <path d="M50,80 L10,60 L20,120 L50,120 Z" fill="rgba(0,0,0,0.25)" />
+                                        <path d="M50,80 L50,120 L80,120 L90,60 Z" fill="rgba(0,0,0,0.1)" />
+                                    </svg>
+                                    <div className="absolute inset-x-0 top-0 h-1 bg-white/50 blur-[1px]" />
+                                </div>
+                            </div>
+                        </div>
 
-                    {/* ── Labels ── */}
-                    <text x="130" y="290" textAnchor="middle" fontSize="9" fontWeight="600"
-                        letterSpacing="3" className="fill-orange-500/60 uppercase">
-                        Katman Katman Üretim
-                    </text>
+                        {/* X/Y Gantry (moves around, fixed height) */}
+                        {/* The horizontal rail */}
+                        <div className="absolute top-[80px] w-full h-3 bg-neutral-400 dark:bg-neutral-700 shadow-md z-20">
+                            {/* The print head / toolhead */}
+                            <div className="absolute top-1/2 -translate-y-1/2 w-12 h-16 bg-neutral-800 dark:bg-black rounded-md shadow-2xl border border-neutral-600 dark:border-neutral-800 animate-print-head flex flex-col items-center">
+                                {/* Brand mark on head */}
+                                <div className="mt-2 w-4 h-1 bg-orange-500 rounded-full" />
+                                {/* Hotend cooling fan */}
+                                <div className="mt-2 w-8 h-8 rounded-full border border-neutral-700 flex items-center justify-center animate-spin-slow">
+                                    <div className="w-6 h-6 bg-neutral-700 rounded-full" style={{ background: 'conic-gradient(from 0deg, transparent 0 45deg, #404040 45deg 90deg, transparent 90deg 135deg, #404040 135deg 180deg, transparent 180deg 225deg, #404040 225deg 270deg, transparent 270deg 315deg, #404040 315deg 360deg)' }} />
+                                </div>
+                                {/* Nozzle */}
+                                <div className="absolute -bottom-2 w-2 h-3 bg-zinc-300 dark:bg-zinc-500 clip-nozzle" />
+                                <div className="absolute -bottom-6 w-1 h-6 bg-orange-400/80 animate-pulse shadow-[0_0_8px_#f97316]" />
+                            </div>
+                        </div>
 
-                    {/* ── Z-axis left rail ── */}
-                    <line x1="24" y1="28" x2="24" y2="260" stroke="currentColor" strokeWidth="2"
-                        className="text-neutral-300 dark:text-neutral-600" strokeDasharray="4 4" />
-                    <line x1="236" y1="28" x2="236" y2="260" stroke="currentColor" strokeWidth="2"
-                        className="text-neutral-300 dark:text-neutral-600" strokeDasharray="4 4" />
-                </svg>
+                    </div>
+
+                    {/* Glass glare effect (front panel) */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 dark:from-white/0 dark:via-white/5 dark:to-white/0 pointer-events-none z-30" style={{ transform: 'translateX(-20%) skewX(-15deg)' }} />
+                </div>
             </div>
 
-            {/* Inject CSS keyframes via style tag */}
             <style>{`
-            @keyframes gantry {
-               0%   { transform: translateX(-40px); }
-               100% { transform: translateX(40px); }
-            }
-            @keyframes layerIn {
-               from { opacity: 0; transform: scaleY(0.3); transform-origin: bottom; }
-               to   { opacity: var(--final-opacity, 1); }
-            }
-         `}</style>
+                .clip-nozzle { clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%); }
+                .animate-spin-slow { animation: spin 0.8s linear infinite; }
+                
+                @keyframes head-move {
+                    0% { transform: translate(60px, -50%); }
+                    10% { transform: translate(220px, -50%); }
+                    20% { transform: translate(100px, -50%); }
+                    30% { transform: translate(240px, -50%); }
+                    40% { transform: translate(80px, -50%); }
+                    50% { transform: translate(190px, -50%); }
+                    60% { transform: translate(110px, -50%); }
+                    70% { transform: translate(210px, -50%); }
+                    80% { transform: translate(90px, -50%); }
+                    90% { transform: translate(260px, -50%); }
+                    100% { transform: translate(60px, -50%); }
+                }
+                .animate-print-head {
+                    animation: head-move 6s ease-in-out infinite;
+                }
+
+                @keyframes bed-drop {
+                    0%, 10% { transform: translateY(-200px); }
+                    90%, 100% { transform: translateY(0); }
+                }
+                .animate-bed-drop {
+                    animation: bed-drop 6s ease-in-out infinite;
+                }
+
+                @keyframes grow-model {
+                    0%, 10% { height: 0%; opacity: 0; }
+                    15% { opacity: 1; }
+                    90%, 100% { height: 100%; opacity: 1; }
+                }
+                .animate-model-grow {
+                    animation: grow-model 6s ease-in-out infinite;
+                }
+
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     )
 }
