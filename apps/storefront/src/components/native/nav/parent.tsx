@@ -7,9 +7,10 @@ import { MainNav } from '@/components/native/nav/desktop'
 import { CartNav } from '@/components/native/nav/cart-nav'
 import { Button } from '@/components/ui/button'
 import { useAuthenticated } from '@/hooks/useAuthentication'
-import { LogInIcon, MoonIcon, ShoppingBasketIcon, SunIcon } from 'lucide-react'
+import { LogInIcon, MoonIcon, SunIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 export default function Header() {
    const { authenticated } = useAuthenticated()
@@ -47,17 +48,22 @@ function LoginDialog() {
 
 function ThemeToggle() {
    const { resolvedTheme, setTheme } = useTheme()
+   const [mounted, setMounted] = useState(false)
+   useEffect(() => setMounted(true), [])
 
    return (
       <Button
          variant="outline"
          size="icon"
          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+         suppressHydrationWarning
       >
-         {resolvedTheme === 'dark' ? (
-            <SunIcon className="h-4" />
+         {mounted ? (
+            resolvedTheme === 'dark'
+               ? <SunIcon className="h-4 w-4" />
+               : <MoonIcon className="h-4 w-4" />
          ) : (
-            <MoonIcon className="h-4" />
+            <span className="h-4 w-4" />
          )}
       </Button>
    )

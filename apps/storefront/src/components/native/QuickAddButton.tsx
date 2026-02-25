@@ -1,43 +1,46 @@
 'use client'
 
-import { useState } from 'react'
-import { ShoppingBasketIcon, ShoppingCartIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { CartContextProvider, useCartContext } from '@/state/Cart'
+import { useState, useEffect } from 'react'
+import { ShoppingCartIcon } from 'lucide-react'
+import { useCartContext } from '@/state/Cart'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { getCountInCart, getLocalCart } from '@/lib/cart'
 import toast from 'react-hot-toast'
 
 /**
  * Standalone "Sepete Ekle" button that works directly from the product listing
- * card — no need to enter the product detail page.
+ * card without navigating to the product detail page.
  *
- * It fires a global DOM event "cart:added" so CartNav can react with
- * a bounce animation.
+ * IMPORTANT: Does NOT wrap its own CartContextProvider.
+ * It uses the CartContext already provided by the root layout tree.
+ * This ensures dispatchCart updates the SAME cart that CartNav reads.
  */
 export function QuickAddButton({ product }: { product: any }) {
-    return (
-        <CartContextProvider>
-            <QuickAddInner product={product} />
-        </CartContextProvider>
-    )
-}
-
-function QuickAddInner({ product }: { product: any }) {
     const { authenticated } = useAuthenticated()
     const { cart, dispatchCart } = useCartContext()
     const [loading, setLoading] = useState(false)
     const [added, setAdded] = useState(false)
+    // Mount guard — prevents localStorage read on SSR
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => { setMounted(true) }, [])
 
-    const maxStock = product?.stock || 0
-    const isOutOfStock = maxStock === 0
-    const inCart = getCountInCart({ cartItems: cart?.items, productId: product?.id })
-    const isMaxReached = inCart >= maxStock
+    if (!mounted) {
+        return (
+            <button disabled className="w-full mt-2 h-8 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+                Sepete Ekle
+            </button>
+        )
+    }
+
+    const maxStock = product?.stock ?? 0
+    const isOutOfStock = maxStock === 0 || !product?.isAvailable
+    const cartItems = cart?.items ?? []
+    const inCart = getCountInCart({ cartItems, productId: product?.id })
+    const isMaxReached = maxStock > 0 && inCart >= maxStock
 
     async function handleAdd(e: React.MouseEvent) {
-        e.preventDefault()   // prevent card link navigation
+        e.preventDefault()
         e.stopPropagation()
-
         if (isOutOfStock || isMaxReached || loading) return
 
         try {
@@ -47,41 +50,37 @@ function QuickAddInner({ product }: { product: any }) {
                 const res = await fetch('/api/cart', {
                     method: 'POST',
                     body: JSON.stringify({ productId: product?.id, count: inCart + 1 }),
-                    headers: { 'Content-Type': 'application/json-string' },
+                    headers: { 'Content-Type': 'application/json' },
                     cache: 'no-store',
                 })
+                if (!res.ok) throw new Error('Cart API error')
                 const json = await res.json()
                 dispatchCart(json)
             } else {
-                const localCart = getLocalCart() as any
-                const existing = localCart.items.findIndex((i: any) => i.productId === product?.id)
+                const localCart = getLocalCart() ?? { items: [] }
+                const existing = (localCart.items ?? []).findIndex((i: any) => i.productId === product?.id)
                 if (existing > -1) {
                     localCart.items[existing].count += 1
                 } else {
                     localCart.items.push({ productId: product?.id, product, count: 1 })
                 }
-                dispatchCart(localCart)
+                dispatchCart({ ...localCart })
             }
 
-            // Trigger cart icon bounce animation via custom DOM event
+            // Animate the cart icon
             window.dispatchEvent(new CustomEvent('cart:added'))
 
-            // Show toast
             toast.success(`${product?.title || 'Ürün'} sepete eklendi!`, {
                 icon: '🛒',
                 duration: 2500,
-                style: {
-                    borderRadius: '12px',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                },
+                style: { borderRadius: '12px', fontSize: '13px', fontWeight: 500 },
             })
 
             setAdded(true)
             setTimeout(() => setAdded(false), 2000)
         } catch (err) {
             console.error(err)
-            toast.error('Bir hata oluştu.')
+            toast.error('Bir hata oluştu, tekrar deneyin.')
         } finally {
             setLoading(false)
         }
@@ -89,10 +88,7 @@ function QuickAddInner({ product }: { product: any }) {
 
     if (isOutOfStock) {
         return (
-            <button
-                disabled
-                className="w-full mt-2 h-8 text-xs font-medium rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed"
-            >
+            <button disabled className="w-full mt-2 h-8 text-xs font-medium rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed">
                 Tükendi
             </button>
         )
@@ -113,9 +109,7 @@ function QuickAddInner({ product }: { product: any }) {
         >
             {loading ? (
                 <span className="h-3.5 w-3.5 border-2 border-background/50 border-t-background rounded-full animate-spin" />
-            ) : added ? (
-                '✓ Eklendi!'
-            ) : (
+            ) : added ? '✓ Eklendi!' : (
                 <>
                     <ShoppingCartIcon className="h-3.5 w-3.5" />
                     Sepete Ekle

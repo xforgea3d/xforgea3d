@@ -130,6 +130,13 @@ export function NavMenu() {
                   </ul>
                </NavigationMenuContent>
             </NavigationMenuItem>
+            <NavigationMenuItem>
+               <Link href="/atolye" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                     <div className="font-normal text-orange-500 font-medium">✦ Atölye</div>
+                  </NavigationMenuLink>
+               </Link>
+            </NavigationMenuItem>
          </NavigationMenuList>
       </NavigationMenu>
    )

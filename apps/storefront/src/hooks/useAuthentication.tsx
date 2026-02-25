@@ -12,13 +12,14 @@ export function useAuthenticated() {
             const cookies = document.cookie.split(';')
             const loggedInCookie =
                cookies
-                  .find((cookie) => cookie.startsWith('logged-in'))
-                  .split('=')[1] === 'true'
+                  .find((cookie) => cookie.trim().startsWith('logged-in'))
+                  ?.split('=')[1] === 'true'
 
             setAuthenticated(loggedInCookie ?? false)
          }
       } catch (error) {
          console.error({ error })
+         setAuthenticated(false)
       }
    }, [])
 
