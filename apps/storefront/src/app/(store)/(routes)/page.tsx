@@ -72,7 +72,7 @@ export default async function Index() {
    }
 
    return (
-      <div className="flex flex-col gap-0">
+      <div className="flex flex-col gap-0 -mx-[1.4rem] md:-mx-[4rem] lg:-mx-[6rem] xl:-mx-[8rem] 2xl:-mx-[12rem]">
 
          {/* ── 1. HERO ──────────────────────────────────────────── */}
          <section className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem] pt-2 pb-6">

@@ -29,13 +29,15 @@ export default function Header() {
          <div className="flex h-14 items-center">
             <MainNav />
             <MobileNav />
-            <div className="flex flex-1 items-center space-x-2 justify-end">
-               <div className="flex-none">
+            <div className="flex flex-1 items-center gap-2 justify-end">
+               <div className="flex-none hidden sm:block">
                   <CommandMenu />
                </div>
                <CartNav />
                <ThemeToggle />
-               {authenticated ? <UserNav /> : <LoginDialog />}
+               <div className="flex-shrink-0">
+                  {authenticated ? <UserNav /> : <LoginDialog />}
+               </div>
             </div>
          </div>
       </header>
@@ -46,10 +48,10 @@ export default function Header() {
 
 function LoginDialog() {
    return (
-      <Button className="font-medium flex gap-2" asChild>
+      <Button className="font-medium flex gap-2 whitespace-nowrap" asChild>
          <Link href="/login">
             <LogInIcon className="h-4" />
-            <p>Giriş Yap</p>
+            <span>Giriş Yap</span>
          </Link>
       </Button>
    )
