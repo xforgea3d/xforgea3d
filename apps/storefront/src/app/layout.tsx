@@ -1,19 +1,27 @@
 import { ModalProvider } from '@/providers/modal-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
-import { ToastProvider } from '@/providers/toast-provider'
 import { OrganizationJsonLd, WebSiteJsonLd } from './json-ld'
 import { Inter } from 'next/font/google'
 import dynamic from 'next/dynamic'
 import type { Metadata } from 'next'
+
+import './globals.css'
 
 const NavigationProgressBar = dynamic(
    () => import('@/components/native/NavigationProgressBar').then(mod => ({ default: mod.NavigationProgressBar })),
    { ssr: false }
 )
 
-import './globals.css'
+const LazyToastProvider = dynamic(
+   () => import('@/providers/toast-provider').then(m => ({ default: m.ToastProvider })),
+   { ssr: false }
+)
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+   subsets: ['latin'],
+   display: 'swap',
+   preload: true,
+})
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://xforgea3d.com'
 
@@ -108,7 +116,7 @@ export default async function RootLayout({
             <WebSiteJsonLd />
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                <NavigationProgressBar />
-               <ToastProvider />
+               <LazyToastProvider />
                <ModalProvider />
                {children}
             </ThemeProvider>

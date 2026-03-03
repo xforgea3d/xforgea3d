@@ -3,8 +3,7 @@ export const revalidate = 3600
 import prisma from '@/lib/prisma'
 import Image from 'next/image'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { tr } from 'date-fns/locale'
+const formatTR = (d: Date) => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)
 import { Heading } from '@/components/native/heading'
 
 export const metadata = {
@@ -64,7 +63,7 @@ export default async function BlogPage() {
                      )}
                      {post.published_at && (
                         <p className="text-xs text-muted-foreground">
-                           {format(new Date(post.published_at), 'd MMMM yyyy', { locale: tr })}
+                           {formatTR(new Date(post.published_at))}
                         </p>
                      )}
                   </div>

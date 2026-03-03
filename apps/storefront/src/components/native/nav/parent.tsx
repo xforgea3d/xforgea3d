@@ -1,6 +1,5 @@
 'use client'
 
-import { CommandMenu } from '@/components/composites/command'
 import { MobileNav } from '@/components/native/nav/mobile'
 import { UserNav } from '@/components/native/nav/user'
 import { MainNav } from '@/components/native/nav/desktop'
@@ -11,6 +10,16 @@ import { LogInIcon, MoonIcon, SunIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+
+const CommandMenu = dynamic(
+   () => import('@/components/composites/command').then(m => ({ default: m.CommandMenu })),
+   { ssr: false, loading: () => (
+      <Button variant="outline" className="relative w-full justify-start text-sm font-light text-muted-foreground sm:pr-12 md:w-40 lg:w-64">
+         <span className="inline-flex">Uygulamada ara...</span>
+      </Button>
+   )}
+)
 
 export default function Header() {
    const { authenticated } = useAuthenticated()
@@ -55,6 +64,7 @@ function ThemeToggle() {
       <Button
          variant="outline"
          size="icon"
+         aria-label="Tema degistir"
          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
          suppressHydrationWarning
       >

@@ -6,8 +6,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { format } from 'date-fns'
-import { tr } from 'date-fns/locale'
+const formatTR = (d: Date) => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://xforgea3d.com'
 
@@ -77,7 +76,7 @@ export default async function BlogPostPage({ params }: Props) {
          <h1 className="text-3xl font-bold tracking-tight mb-3">{post.title_tr}</h1>
          {post.published_at && (
             <p className="text-sm text-muted-foreground mb-8">
-               {format(new Date(post.published_at), 'd MMMM yyyy', { locale: tr })}
+               {formatTR(new Date(post.published_at))}
             </p>
          )}
          <div

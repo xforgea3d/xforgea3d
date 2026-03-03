@@ -196,7 +196,7 @@ export default async function Index() {
                      key={step}
                      className="relative flex flex-col rounded-xl border p-6 gap-4"
                   >
-                     <span className="absolute top-4 right-4 text-5xl font-black text-foreground/5 select-none">
+                     <span className="absolute top-4 right-4 text-5xl font-black text-foreground/10 select-none">
                         {step}
                      </span>
                      <div className="p-3 w-fit rounded-xl bg-foreground/5">{icon}</div>

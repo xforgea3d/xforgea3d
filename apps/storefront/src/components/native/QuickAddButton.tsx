@@ -26,7 +26,7 @@ export function QuickAddButton({ product }: { product: any }) {
 
     if (!mounted) {
         return (
-            <button disabled className="w-full mt-2 h-8 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+            <button disabled className="w-full mt-2 h-10 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
                 Sepete Ekle
             </button>
         )
@@ -88,7 +88,7 @@ export function QuickAddButton({ product }: { product: any }) {
 
     if (isOutOfStock) {
         return (
-            <button disabled className="w-full mt-2 h-8 text-xs font-medium rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed">
+            <button disabled className="w-full mt-2 h-10 text-xs font-medium rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed">
                 Tükendi
             </button>
         )
@@ -99,7 +99,7 @@ export function QuickAddButton({ product }: { product: any }) {
             onClick={handleAdd}
             disabled={loading || isMaxReached}
             className={
-                'w-full mt-2 h-8 text-xs font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 ' +
+                'w-full mt-2 h-10 text-xs font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 ' +
                 (added
                     ? 'bg-emerald-500 text-white scale-95'
                     : isMaxReached

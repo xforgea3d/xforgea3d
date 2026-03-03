@@ -43,7 +43,7 @@ export function UserNav() {
    return (
       <DropdownMenu>
          <DropdownMenuTrigger asChild>
-            <Button size="icon" variant="outline" className="h-9">
+            <Button size="icon" variant="outline" className="h-9" aria-label="Kullanici menusu">
                <UserIcon className="h-4" />
             </Button>
          </DropdownMenuTrigger>

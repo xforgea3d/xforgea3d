@@ -72,7 +72,7 @@ export const Product = ({
                   {/* Discount badge overlay */}
                   {hasDiscount && (
                      <div className="absolute top-2 left-2">
-                        <span className="inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
+                        <span className="inline-flex items-center rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
                            -{discountPct}%
                         </span>
                      </div>
