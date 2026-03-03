@@ -16,9 +16,12 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-   const post = await prisma.blogPost.findUnique({
-      where: { slug: params.slug, status: 'published' },
-   })
+   let post: any = null
+   try {
+      post = await prisma.blogPost.findUnique({
+         where: { slug: params.slug, status: 'published' },
+      })
+   } catch { return {} }
    if (!post) return {}
    return {
       title: post.seo_title_tr ?? post.title_tr,

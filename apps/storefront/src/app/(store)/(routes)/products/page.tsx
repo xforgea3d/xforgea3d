@@ -28,18 +28,22 @@ export default async function Products({ searchParams }) {
          : undefined,
    }
 
-   // Fetch all three in parallel
-   const [brands, categories, products] = await Promise.all([
-      prisma.brand.findMany({ orderBy: { title: 'asc' } }),
-      prisma.category.findMany({ orderBy: { title: 'asc' } }),
-      prisma.product.findMany({
-         where: whereClause,
-         orderBy,
-         skip: (Number(page) - 1) * 12,
-         take: 12,
-         include: { brand: true, categories: true },
-      }),
-   ])
+   let brands: any[] = [], categories: any[] = [], products: any[] = []
+   try {
+      ;[brands, categories, products] = await Promise.all([
+         prisma.brand.findMany({ orderBy: { title: 'asc' } }),
+         prisma.category.findMany({ orderBy: { title: 'asc' } }),
+         prisma.product.findMany({
+            where: whereClause,
+            orderBy,
+            skip: (Number(page) - 1) * 12,
+            take: 12,
+            include: { brand: true, categories: true },
+         }),
+      ])
+   } catch (e) {
+      console.warn('[products] DB unavailable, rendering empty state')
+   }
 
    return (
       <>

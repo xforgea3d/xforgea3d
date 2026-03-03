@@ -7,19 +7,24 @@ import { UsersTable } from './components/table'
 import { UserColumn } from './components/table'
 
 export default async function UsersPage() {
-   const users = await prisma.profile.findMany({
-      select: {
-         id: true,
-         name: true,
-         email: true,
-         phone: true,
-         _count: { select: { orders: true } },
-      },
-      take: 50,
-      orderBy: {
-         updatedAt: 'desc',
-      },
-   })
+   let users: any[] = []
+   try {
+      users = await prisma.profile.findMany({
+         select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            _count: { select: { orders: true } },
+         },
+         take: 50,
+         orderBy: {
+            updatedAt: 'desc',
+         },
+      })
+   } catch (error) {
+      console.warn('[UsersPage] Failed to fetch users:', error)
+   }
 
    const formattedUsers: UserColumn[] = users.map((user) => ({
       id: user.id,

@@ -14,26 +14,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
    ]
 
-   // ── Dynamic queries in parallel ──────────────────────────
-   const [pages, posts, products, categories] = await Promise.all([
-      prisma.contentPage.findMany({
-         where: { is_published: true },
-         select: { slug: true, updatedAt: true },
-      }),
-      prisma.blogPost.findMany({
-         where: { status: 'published' },
-         select: { slug: true, updatedAt: true },
-         orderBy: { published_at: 'desc' },
-      }),
-      prisma.product.findMany({
-         where: { isAvailable: true },
-         select: { id: true, updatedAt: true },
-         orderBy: { updatedAt: 'desc' },
-      }),
-      prisma.category.findMany({
-         select: { title: true, updatedAt: true },
-      }),
-   ])
+   // ── Dynamic queries in parallel (graceful fallback if DB unreachable) ──
+   let pages: any[] = [], posts: any[] = [], products: any[] = [], categories: any[] = []
+   try {
+      ;[pages, posts, products, categories] = await Promise.all([
+         prisma.contentPage.findMany({
+            where: { is_published: true },
+            select: { slug: true, updatedAt: true },
+         }),
+         prisma.blogPost.findMany({
+            where: { status: 'published' },
+            select: { slug: true, updatedAt: true },
+            orderBy: { published_at: 'desc' },
+         }),
+         prisma.product.findMany({
+            where: { isAvailable: true },
+            select: { id: true, updatedAt: true },
+            orderBy: { updatedAt: 'desc' },
+         }),
+         prisma.category.findMany({
+            select: { title: true, updatedAt: true },
+         }),
+      ])
+   } catch (e) {
+      console.warn('[sitemap] DB unavailable, returning static routes only')
+   }
 
    // ── CMS pages ────────────────────────────────────────────
    const pageRoutes: MetadataRoute.Sitemap = pages.map((p) => ({

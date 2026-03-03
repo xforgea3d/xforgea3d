@@ -6,20 +6,25 @@ import { PaymentClient } from './components/client'
 import type { PaymentColumn } from './components/columns'
 
 export default async function PaymentsPage() {
-   const payments = await prisma.payment.findMany({
-      select: {
-         id: true,
-         number: true,
-         status: true,
-         payable: true,
-         isSuccessful: true,
-         createdAt: true,
-      },
-      orderBy: {
-         updatedAt: 'desc',
-      },
-      take: 100,
-   })
+   let payments: any[] = []
+   try {
+      payments = await prisma.payment.findMany({
+         select: {
+            id: true,
+            number: true,
+            status: true,
+            payable: true,
+            isSuccessful: true,
+            createdAt: true,
+         },
+         orderBy: {
+            updatedAt: 'desc',
+         },
+         take: 100,
+      })
+   } catch (error) {
+      console.warn('[PaymentsPage] Failed to fetch payments:', error)
+   }
 
    const formattedPayments: PaymentColumn[] = payments.map((payment) => ({
       id: payment.id,

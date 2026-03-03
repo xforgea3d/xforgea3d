@@ -26,12 +26,13 @@ export async function generateMetadata(
    { params, searchParams }: Props,
    parent: ResolvingMetadata
 ): Promise<Metadata> {
-   const product = await prisma.product.findUnique({
-      where: {
-         id: params.productId,
-      },
-      include: { brand: true },
-   })
+   let product: any = null
+   try {
+      product = await prisma.product.findUnique({
+         where: { id: params.productId },
+         include: { brand: true },
+      })
+   } catch { return {} }
 
    if (!product) return {}
 
@@ -64,14 +65,17 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-   // Pre-render the top 20 most popular product pages at build time
-   const products = await prisma.product.findMany({
-      where: { isAvailable: true },
-      select: { id: true },
-      take: 20,
-      orderBy: { orders: { _count: 'desc' } },
-   })
-   return products.map((p) => ({ productId: p.id }))
+   try {
+      const products = await prisma.product.findMany({
+         where: { isAvailable: true },
+         select: { id: true },
+         take: 20,
+         orderBy: { orders: { _count: 'desc' } },
+      })
+      return products.map((p) => ({ productId: p.id }))
+   } catch {
+      return []
+   }
 }
 
 export default async function Product({

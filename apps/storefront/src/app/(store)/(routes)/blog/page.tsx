@@ -13,10 +13,15 @@ export const metadata = {
 }
 
 export default async function BlogPage() {
-   const posts = await prisma.blogPost.findMany({
-      where: { status: 'published' },
-      orderBy: { published_at: 'desc' },
-   })
+   let posts: any[] = []
+   try {
+      posts = await prisma.blogPost.findMany({
+         where: { status: 'published' },
+         orderBy: { published_at: 'desc' },
+      })
+   } catch (e) {
+      console.warn('[blog] DB unavailable during build')
+   }
 
    return (
       <div className="max-w-5xl mx-auto px-4 py-12">

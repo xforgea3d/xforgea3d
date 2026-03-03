@@ -7,9 +7,12 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const page = await prisma.contentPage.findUnique({
-        where: { slug: params.slug, is_published: true },
-    })
+    let page: any = null
+    try {
+        page = await prisma.contentPage.findUnique({
+            where: { slug: params.slug, is_published: true },
+        })
+    } catch { return {} }
     if (!page) return {}
     return {
         title: page.seo_title_tr ?? page.title_tr,
@@ -35,11 +38,14 @@ export default async function StaticPage({ params }: Props) {
     )
 }
 
-// Pre-generate known slugs at build time
 export async function generateStaticParams() {
-    const pages = await prisma.contentPage.findMany({
-        where: { is_published: true },
-        select: { slug: true },
-    })
-    return pages.map(p => ({ slug: p.slug }))
+    try {
+        const pages = await prisma.contentPage.findMany({
+            where: { is_published: true },
+            select: { slug: true },
+        })
+        return pages.map(p => ({ slug: p.slug }))
+    } catch {
+        return []
+    }
 }

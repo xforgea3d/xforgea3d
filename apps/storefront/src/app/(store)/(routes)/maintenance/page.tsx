@@ -1,7 +1,10 @@
 import prisma from '@/lib/prisma'
 
 export default async function MaintenancePage() {
-    const settings = await prisma.siteSettings.findUnique({ where: { id: 1 } }) as any
+    let settings: any = null
+    try {
+        settings = await prisma.siteSettings.findUnique({ where: { id: 1 } })
+    } catch {}
 
     return (
         <div className="min-h-screen flex items-center justify-center p-8">

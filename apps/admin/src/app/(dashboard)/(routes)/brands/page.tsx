@@ -9,11 +9,16 @@ import Link from 'next/link'
 import { BrandColumn, BrandsClient } from './components/table'
 
 export default async function BrandsPage() {
-   const brands = await prisma.brand.findMany({
-      include: {
-         products: true,
-      },
-   })
+   let brands: any[] = []
+   try {
+      brands = await prisma.brand.findMany({
+         include: {
+            products: true,
+         },
+      })
+   } catch (error) {
+      console.warn('[BrandsPage] Failed to fetch brands:', error)
+   }
 
    const formattedBrands: BrandColumn[] = brands.map((brand) => ({
       id: brand.id,

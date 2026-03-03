@@ -9,9 +9,14 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 
 export default async function ContentPagesPage() {
-    const pages = await prisma.contentPage.findMany({
-        orderBy: { updatedAt: 'desc' },
-    })
+    let pages: any[] = []
+    try {
+        pages = await prisma.contentPage.findMany({
+            orderBy: { updatedAt: 'desc' },
+        })
+    } catch (error) {
+        console.warn('[ContentPagesPage] Failed to fetch content pages:', error)
+    }
 
     return (
         <div className="flex-col">

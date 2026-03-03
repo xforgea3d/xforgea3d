@@ -24,24 +24,29 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default async function Index() {
-   // Run all DB queries in parallel — not sequentially
-   const [featuredProducts, blogs, banners] = await Promise.all([
-      prisma.product.findMany({
-         where: { isAvailable: true, isFeatured: true },
-         include: { brand: true, categories: true },
-         take: 8,
-         orderBy: { createdAt: 'desc' },
-      }),
-      prisma.blog.findMany({
-         include: { author: true },
-         take: 3,
-         orderBy: { createdAt: 'desc' },
-      }),
-      prisma.banner.findMany({
-         orderBy: { createdAt: 'desc' },
-         take: 6,
-      }),
-   ])
+   // Run all DB queries in parallel — graceful fallback if DB unreachable during build
+   let featuredProducts: any[] = [], blogs: any[] = [], banners: any[] = []
+   try {
+      ;[featuredProducts, blogs, banners] = await Promise.all([
+         prisma.product.findMany({
+            where: { isAvailable: true, isFeatured: true },
+            include: { brand: true, categories: true },
+            take: 8,
+            orderBy: { createdAt: 'desc' },
+         }),
+         prisma.blog.findMany({
+            include: { author: true },
+            take: 3,
+            orderBy: { createdAt: 'desc' },
+         }),
+         prisma.banner.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 6,
+         }),
+      ])
+   } catch (e) {
+      console.warn('[home] DB unavailable during build, rendering empty state')
+   }
 
    return (
       <div className="flex flex-col gap-0 border-neutral-200 dark:border-neutral-700">

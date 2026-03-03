@@ -12,22 +12,27 @@ import { ProductsTable } from './components/table'
 import { ProductColumn } from './components/table'
 
 export default async function ProductsPage() {
-   const products = await prisma.product.findMany({
-      select: {
-         id: true,
-         title: true,
-         price: true,
-         discount: true,
-         isAvailable: true,
-         categories: { select: { title: true }, take: 1 },
-         brand: { select: { title: true } },
-         _count: { select: { orders: true } },
-      },
-      orderBy: {
-         createdAt: 'desc',
-      },
-      take: 100,
-   })
+   let products: any[] = []
+   try {
+      products = await prisma.product.findMany({
+         select: {
+            id: true,
+            title: true,
+            price: true,
+            discount: true,
+            isAvailable: true,
+            categories: { select: { title: true }, take: 1 },
+            brand: { select: { title: true } },
+            _count: { select: { orders: true } },
+         },
+         orderBy: {
+            createdAt: 'desc',
+         },
+         take: 100,
+      })
+   } catch (error) {
+      console.warn('[ProductsPage] Failed to fetch products:', error)
+   }
 
    const formattedProducts: ProductColumn[] = products.map((product) => ({
       id: product.id,

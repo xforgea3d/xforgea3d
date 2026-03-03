@@ -22,44 +22,49 @@ export default async function OrdersPage({ searchParams }) {
 
    const orderBy = getOrderBy(sort)
 
-   const orders = await prisma.order.findMany({
-      where: {
-         userId,
-         isPaid,
-         orderItems: {
-            some: {
-               product: {
-                  brand: {
-                     title: {
-                        contains: brand,
-                     },
-                  },
-                  categories: {
-                     some: {
+   let orders: any[] = []
+   try {
+      orders = await prisma.order.findMany({
+         where: {
+            userId,
+            isPaid,
+            orderItems: {
+               some: {
+                  product: {
+                     brand: {
                         title: {
-                           contains: category,
+                           contains: brand,
+                        },
+                     },
+                     categories: {
+                        some: {
+                           title: {
+                              contains: category,
+                           },
                         },
                      },
                   },
                },
             },
-         },
-         payable: {
-            gte: minPayable,
-            lte: maxPayable,
-         },
-      },
-      include: {
-         orderItems: {
-            include: {
-               product: true,
+            payable: {
+               gte: minPayable,
+               lte: maxPayable,
             },
          },
-      },
-      skip: (page - 1) * 12,
-      take: 12,
-      orderBy,
-   })
+         include: {
+            orderItems: {
+               include: {
+                  product: true,
+               },
+            },
+         },
+         skip: (page - 1) * 12,
+         take: 12,
+         orderBy,
+      })
+   } catch (error) {
+      console.warn('[OrdersPage] Failed to fetch orders:', error)
+   }
 
    const formattedOrders: OrderColumn[] = orders.map((order) => ({
       id: order.id,

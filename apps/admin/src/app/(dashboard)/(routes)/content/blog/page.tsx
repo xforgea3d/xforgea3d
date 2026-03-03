@@ -9,9 +9,14 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 
 export default async function BlogListPage() {
-    const posts = await prisma.blogPost.findMany({
-        orderBy: { updatedAt: 'desc' },
-    })
+    let posts: any[] = []
+    try {
+        posts = await prisma.blogPost.findMany({
+            orderBy: { updatedAt: 'desc' },
+        })
+    } catch (error) {
+        console.warn('[BlogListPage] Failed to fetch blog posts:', error)
+    }
 
     return (
         <div className="flex-col">
