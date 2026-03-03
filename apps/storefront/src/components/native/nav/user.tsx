@@ -17,6 +17,7 @@ import {
    ListOrderedIcon,
    LogOutIcon,
    MapPinIcon,
+   MessageSquareQuoteIcon,
    UserIcon,
 } from 'lucide-react'
 import { ShoppingBasketIcon } from 'lucide-react'
@@ -65,6 +66,12 @@ export function UserNav() {
                   <Link href="/profile/orders">
                      <ListOrderedIcon className="h-4" />
                      Siparişlerim
+                  </Link>
+               </DropdownMenuItem>
+               <DropdownMenuItem className="flex gap-2" asChild>
+                  <Link href="/profile/quote-requests">
+                     <MessageSquareQuoteIcon className="h-4" />
+                     Taleplerim
                   </Link>
                </DropdownMenuItem>
                <DropdownMenuItem className="flex gap-2" asChild>

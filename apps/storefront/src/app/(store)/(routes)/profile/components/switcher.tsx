@@ -33,6 +33,11 @@ export function UserCombobox({ initialValue }) {
          description: 'Visit your orders.',
          value: '/profile/orders',
       },
+      {
+         title: 'Taleplerim',
+         description: 'Parça talepleriniz.',
+         value: '/profile/quote-requests',
+      },
    ]
 
    function getCategoryTitle() {

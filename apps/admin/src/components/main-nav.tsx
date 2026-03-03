@@ -33,6 +33,11 @@ export function MainNav({
          active: pathname.includes(`/orders`),
       },
       {
+         href: `/quote-requests`,
+         label: 'Parça Talepleri',
+         active: pathname.includes(`/quote-requests`),
+      },
+      {
          href: `/payments`,
          label: 'Ödemeler',
          active: pathname.includes(`/payments`),

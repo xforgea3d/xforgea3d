@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { forwardRef, useState, useEffect } from 'react'
-import { PackageOpenIcon, SparklesIcon, CarIcon } from 'lucide-react'
+import { PackageOpenIcon, SparklesIcon, CarIcon, MessageSquareQuoteIcon } from 'lucide-react'
 
 // ── Category definitions matching EXACT DB titles ────────────────────────────
 const categories = [
@@ -121,6 +121,7 @@ export function NavMenu() {
    // ── Car brands (eager fetch on mount — small payload) ──
    const [carBrands, setCarBrands] = useState<CarBrand[]>([])
    const [activeBrand, setActiveBrand] = useState<CarBrand | null>(null)
+   const [brandsLoaded, setBrandsLoaded] = useState(false)
 
    useEffect(() => {
       fetch('/api/car-brands')
@@ -131,6 +132,7 @@ export function NavMenu() {
             if (data.length > 0) setActiveBrand(data[0])
          })
          .catch(() => {})
+         .finally(() => setBrandsLoaded(true))
    }, [])
 
    return (
@@ -211,9 +213,24 @@ export function NavMenu() {
                </NavigationMenuTrigger>
                <NavigationMenuContent>
                   <div className="p-4 w-[560px] lg:w-[680px]">
-                     {carBrands.length === 0 ? (
-                        <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                     {!brandsLoaded ? (
+                        <div className="flex items-center justify-center h-32 gap-2 text-sm text-muted-foreground">
+                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-orange-400 border-t-transparent" />
                            Araç markaları yükleniyor...
+                        </div>
+                     ) : carBrands.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-32 gap-3 text-sm text-muted-foreground">
+                           <CarIcon className="h-8 w-8 text-muted-foreground/40" />
+                           <p>Henüz araç markası eklenmemiş</p>
+                           <NavigationMenuLink asChild>
+                              <Link
+                                 href="/quote-request"
+                                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-500 text-white text-xs font-semibold hover:bg-orange-600 transition-colors"
+                              >
+                                 <MessageSquareQuoteIcon className="h-3.5 w-3.5" />
+                                 Parça Talep Et / Fiyat Al
+                              </Link>
+                           </NavigationMenuLink>
                         </div>
                      ) : (
                         <div className="grid grid-cols-[200px_1fr] gap-4">
@@ -249,6 +266,16 @@ export function NavMenu() {
                                     </button>
                                  ))}
                               </div>
+                              {/* CTA under brands */}
+                              <NavigationMenuLink asChild>
+                                 <Link
+                                    href="/quote-request"
+                                    className="flex items-center gap-1.5 mt-2 px-3 py-2 rounded-lg bg-orange-500/10 border border-orange-500/25 text-orange-500 text-[10px] font-bold hover:bg-orange-500/20 transition-colors"
+                                 >
+                                    <MessageSquareQuoteIcon className="h-3 w-3" />
+                                    Parça Talep Et / Fiyat Al
+                                 </Link>
+                              </NavigationMenuLink>
                            </div>
 
                            {/* Right panel: Selected brand's models */}

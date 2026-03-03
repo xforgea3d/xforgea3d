@@ -18,6 +18,8 @@ export async function middleware(request: NextRequest) {
    if (pathname.startsWith('/api/revalidate')) return NextResponse.next()
    if (pathname.startsWith('/api/search')) return NextResponse.next()
    if (pathname.startsWith('/api/car-brands')) return NextResponse.next()
+   // Allow public POST to quote-requests (form submission without auth)
+   if (pathname === '/api/quote-requests' && request.method === 'POST') return NextResponse.next()
 
    // ── Session check (only for protected paths) ───────────────────────────
    const { supabaseResponse, user } = await updateSession(request)

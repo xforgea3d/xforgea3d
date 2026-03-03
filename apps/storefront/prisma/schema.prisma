@@ -27,6 +27,7 @@ model Profile {
   productReviews ProductReview[]
   errors         Error[]
   files          File[]
+  quoteRequests  QuoteRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -189,9 +190,10 @@ model Order {
   isPaid      Boolean @default(false)
   isCompleted Boolean @default(false)
 
-  payments   Payment[]
-  orderItems OrderItem[]
-  refund     Refund?
+  payments     Payment[]
+  orderItems   OrderItem[]
+  refund       Refund?
+  quoteRequest QuoteRequest?
 
   discountCode   DiscountCode? @relation(fields: [discountCodeId], references: [id])
   discountCodeId String?
@@ -412,6 +414,7 @@ model CarBrand {
   logoUrl   String?
   sortOrder Int        @default(0)
   models    CarModel[]
+  quoteRequests QuoteRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -426,6 +429,7 @@ model CarModel {
   brand     CarBrand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
   brandId   String
   products  Product[] @relation("CarModelProducts")
+  quoteRequests QuoteRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -489,4 +493,48 @@ model SeoSettings {
   robots_follow                Boolean  @default(true)
 
   updatedAt DateTime @updatedAt
+}
+
+// ── Quote / Part Request System ───────────────────────────────
+
+enum QuoteStatusEnum {
+  Pending
+  Priced
+  Accepted
+  Rejected
+  Completed
+}
+
+model QuoteRequest {
+  id     String          @id @default(cuid())
+  number Int             @unique @default(autoincrement())
+  status QuoteStatusEnum @default(Pending)
+
+  email String
+  name  String?
+  phone String?
+
+  user   Profile? @relation(fields: [userId], references: [id])
+  userId String?
+
+  carBrand   CarBrand? @relation(fields: [carBrandId], references: [id])
+  carBrandId String?
+  carModel   CarModel? @relation(fields: [carModelId], references: [id])
+  carModelId String?
+
+  partDescription String
+  imageUrl        String?
+
+  quotedPrice Float?
+  adminNote   String?
+  respondedAt DateTime?
+
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }

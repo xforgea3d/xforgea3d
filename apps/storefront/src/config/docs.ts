@@ -16,6 +16,10 @@ export const docsConfig: DocsConfig = {
          href: '/products?category=Aksesuarlar',
       },
       {
+         title: 'Parça Talep Et',
+         href: '/quote-request',
+      },
+      {
          title: 'Blog',
          href: '/blog',
          external: false,
@@ -27,12 +31,20 @@ export const docsConfig: DocsConfig = {
          href: '/products',
       },
       {
+         title: 'Parça Talep Et',
+         href: '/quote-request',
+      },
+      {
          title: 'Blog',
          href: '/blog',
       },
       {
          title: 'Siparişlerim',
          href: '/profile/orders',
+      },
+      {
+         title: 'Taleplerim',
+         href: '/profile/quote-requests',
       },
       {
          title: 'Ödemelerim',

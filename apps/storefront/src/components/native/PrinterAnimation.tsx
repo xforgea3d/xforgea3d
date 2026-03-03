@@ -156,10 +156,10 @@ export default function PrinterAnimation() {
               </svg>
 
               {/* ── Printed Object — sits exactly on the bed, grows upward ─── */}
-              <div className="printer-object-wrapper absolute inset-x-0 bottom-full mb-[1px] flex items-end justify-center">
-                <div className="printer-object relative w-[90px] h-[180px] flex-shrink-0">
+              <div className="printer-object-wrapper absolute inset-x-0 bottom-full flex items-end justify-center">
+                <div className="printer-object relative w-[90px] h-[126px] flex-shrink-0">
                   {/* Layer fill — bottom up clip */}
-                  <svg viewBox="0 0 100 140" preserveAspectRatio="xMidYMid meet" className="w-full h-full drop-shadow-[0_0_18px_rgba(249,115,22,0.55)]">
+                  <svg viewBox="0 0 100 140" preserveAspectRatio="xMidYMax meet" className="w-full h-full drop-shadow-[0_0_18px_rgba(249,115,22,0.55)]">
                     {/* ── Main figurine shape (low-poly statue) ── */}
                     {/* Base */}
                     <path d="M15,140 L85,140 L90,120 L80,105 L20,105 L10,120 Z" fill="url(#figBase)" />
@@ -377,7 +377,7 @@ export default function PrinterAnimation() {
           animation: gantry-z-v3 8s ease-in-out infinite;
         }
         @keyframes gantry-z-v3 {
-          0%, 4%    { top: 297px; }
+          0%, 4%    { top: 243px; }
           62%       { top: 117px; }
           70%, 100% { top: 30px; }
         }

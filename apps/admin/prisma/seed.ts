@@ -2,6 +2,96 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+const carBrandsData = [
+   {
+      name: 'BMW', slug: 'bmw', sortOrder: 1,
+      models: [
+         { name: '3 Serisi', slug: '3-serisi', yearRange: '2019-2025' },
+         { name: '5 Serisi', slug: '5-serisi', yearRange: '2020-2025' },
+         { name: 'X3', slug: 'x3', yearRange: '2018-2025' },
+         { name: 'X5', slug: 'x5', yearRange: '2019-2025' },
+         { name: 'M4', slug: 'm4', yearRange: '2021-2025' },
+      ],
+   },
+   {
+      name: 'Mercedes-Benz', slug: 'mercedes-benz', sortOrder: 2,
+      models: [
+         { name: 'C Serisi', slug: 'c-serisi', yearRange: '2018-2025' },
+         { name: 'E Serisi', slug: 'e-serisi', yearRange: '2020-2025' },
+         { name: 'A Serisi', slug: 'a-serisi', yearRange: '2019-2025' },
+         { name: 'GLC', slug: 'glc', yearRange: '2020-2025' },
+      ],
+   },
+   {
+      name: 'Audi', slug: 'audi', sortOrder: 3,
+      models: [
+         { name: 'A3', slug: 'a3', yearRange: '2020-2025' },
+         { name: 'A4', slug: 'a4', yearRange: '2019-2025' },
+         { name: 'A6', slug: 'a6', yearRange: '2018-2025' },
+         { name: 'Q5', slug: 'q5', yearRange: '2019-2025' },
+      ],
+   },
+   {
+      name: 'Volkswagen', slug: 'volkswagen', sortOrder: 4,
+      models: [
+         { name: 'Golf', slug: 'golf', yearRange: '2017-2025' },
+         { name: 'Passat', slug: 'passat', yearRange: '2018-2025' },
+         { name: 'Tiguan', slug: 'tiguan', yearRange: '2019-2025' },
+         { name: 'Polo', slug: 'polo', yearRange: '2018-2025' },
+      ],
+   },
+   {
+      name: 'Toyota', slug: 'toyota', sortOrder: 5,
+      models: [
+         { name: 'Corolla', slug: 'corolla', yearRange: '2019-2025' },
+         { name: 'C-HR', slug: 'c-hr', yearRange: '2020-2025' },
+         { name: 'RAV4', slug: 'rav4', yearRange: '2019-2025' },
+      ],
+   },
+   {
+      name: 'Honda', slug: 'honda', sortOrder: 6,
+      models: [
+         { name: 'Civic', slug: 'civic', yearRange: '2017-2025' },
+         { name: 'CR-V', slug: 'cr-v', yearRange: '2018-2025' },
+         { name: 'Jazz', slug: 'jazz', yearRange: '2020-2025' },
+      ],
+   },
+   {
+      name: 'Hyundai', slug: 'hyundai', sortOrder: 7,
+      models: [
+         { name: 'Tucson', slug: 'tucson', yearRange: '2020-2025' },
+         { name: 'i20', slug: 'i20', yearRange: '2019-2025' },
+         { name: 'Kona', slug: 'kona', yearRange: '2021-2025' },
+         { name: 'Bayon', slug: 'bayon', yearRange: '2021-2025' },
+      ],
+   },
+   {
+      name: 'Renault', slug: 'renault', sortOrder: 8,
+      models: [
+         { name: 'Clio', slug: 'clio', yearRange: '2019-2025' },
+         { name: 'Megane', slug: 'megane', yearRange: '2016-2025' },
+         { name: 'Kadjar', slug: 'kadjar', yearRange: '2018-2025' },
+      ],
+   },
+   {
+      name: 'Fiat', slug: 'fiat', sortOrder: 9,
+      models: [
+         { name: 'Egea', slug: 'egea', yearRange: '2015-2025' },
+         { name: '500', slug: '500', yearRange: '2020-2025' },
+         { name: 'Tipo', slug: 'tipo', yearRange: '2016-2025' },
+      ],
+   },
+   {
+      name: 'Ford', slug: 'ford', sortOrder: 10,
+      models: [
+         { name: 'Focus', slug: 'focus', yearRange: '2018-2025' },
+         { name: 'Kuga', slug: 'kuga', yearRange: '2020-2025' },
+         { name: 'Puma', slug: 'puma', yearRange: '2020-2025' },
+         { name: 'Fiesta', slug: 'fiesta', yearRange: '2017-2024' },
+      ],
+   },
+]
+
 async function main() {
    // Markalar (Brands) oluştur
    const xforgeBrand = await prisma.brand.create({
@@ -175,6 +265,55 @@ async function main() {
          categories: {
             connect: [{ id: aksesuarlarCat.id }]
          },
+      },
+   })
+
+   // ── Car Brands + Models ───────────────────────────────────────────
+   console.log('Araç markaları ve modelleri ekleniyor...')
+
+   for (const brandData of carBrandsData) {
+      const { models, ...brandFields } = brandData
+      const brand = await prisma.carBrand.upsert({
+         where: { slug: brandFields.slug },
+         update: { name: brandFields.name, sortOrder: brandFields.sortOrder },
+         create: brandFields,
+      })
+      console.log(`  Marka: ${brand.name}`)
+
+      for (const model of models) {
+         await prisma.carModel.upsert({
+            where: { slug_brandId: { slug: model.slug, brandId: brand.id } },
+            update: { name: model.name, yearRange: model.yearRange },
+            create: { ...model, brandId: brand.id },
+         })
+      }
+   }
+
+   // ── Hidden "Talep Edilen Parça" product (quote accept → order flow) ──
+   console.log('Gizli talep ürünü ekleniyor...')
+
+   const systemBrand = await prisma.brand.upsert({
+      where: { title: 'xForgea3D' },
+      update: {},
+      create: { title: 'xForgea3D', description: 'Sistem markası' },
+   })
+
+   await prisma.product.upsert({
+      where: { id: 'quote-request-product' },
+      update: {},
+      create: {
+         id: 'quote-request-product',
+         title: 'Talep Edilen Parça',
+         description: 'Parça talep sistemi üzerinden oluşturulan sipariş kalemi.',
+         images: [],
+         keywords: ['talep', 'parça', 'quote'],
+         price: 0,
+         discount: 0,
+         stock: 999999,
+         isPhysical: true,
+         isAvailable: false,
+         isFeatured: false,
+         brandId: systemBrand.id,
       },
    })
 
