@@ -13,7 +13,7 @@ import config from '@/config/site'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { forwardRef, useState, useEffect, useCallback } from 'react'
+import { forwardRef, useState, useEffect } from 'react'
 import { PackageOpenIcon, SparklesIcon, CarIcon } from 'lucide-react'
 
 // ── Category definitions matching EXACT DB titles ────────────────────────────
@@ -118,22 +118,19 @@ export function NavMenu() {
    const [activeCatTitle, setActiveCatTitle] = useState('Tüm Kategoriler')
    const [activeCatDesc, setActiveCatDesc] = useState('Tüm 3D baskı ürünlerimize kategoriye göre göz atın.')
 
-   // ── Car brands lazy-load (fetch only when mega menu opens) ──
+   // ── Car brands (eager fetch on mount — small payload) ──
    const [carBrands, setCarBrands] = useState<CarBrand[]>([])
-   const [carBrandsLoaded, setCarBrandsLoaded] = useState(false)
    const [activeBrand, setActiveBrand] = useState<CarBrand | null>(null)
 
-   const loadCarBrands = useCallback(() => {
-      if (carBrandsLoaded) return
-      setCarBrandsLoaded(true)
+   useEffect(() => {
       fetch('/api/car-brands')
          .then(r => r.json())
          .then((data: CarBrand[]) => {
             setCarBrands(data)
             if (data.length > 0) setActiveBrand(data[0])
          })
-         .catch(() => setCarBrandsLoaded(false))
-   }, [carBrandsLoaded])
+         .catch(() => {})
+   }, [])
 
    return (
       <NavigationMenu>
@@ -205,7 +202,7 @@ export function NavMenu() {
 
             {/* ── Araç Parçaları — Mega Menu ─────────────────────────── */}
             <NavigationMenuItem>
-               <NavigationMenuTrigger onMouseEnter={loadCarBrands} onFocus={loadCarBrands}>
+               <NavigationMenuTrigger>
                   <span className="font-normal text-foreground/70 flex items-center gap-1">
                      <CarIcon className="h-3.5 w-3.5" />
                      Araç Parçaları

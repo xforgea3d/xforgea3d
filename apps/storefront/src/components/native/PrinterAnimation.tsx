@@ -136,7 +136,7 @@ export default function PrinterAnimation() {
                     <div className="printer-hotend-glow absolute bottom-0 w-1.5 h-1.5 bg-orange-400 rounded-full" />
                   </div>
                   {/* Filament glow strand — extends from nozzle toward active layer */}
-                  <div className="printer-filament absolute -bottom-[28px] left-1/2 -translate-x-1/2 w-[3px] rounded-full shadow-[0_0_8px_#f97316,0_0_20px_rgba(249,115,22,0.5)]" />
+                  <div className="printer-filament absolute -bottom-[16px] left-1/2 -translate-x-1/2 w-[3px] rounded-full shadow-[0_0_8px_#f97316,0_0_20px_rgba(249,115,22,0.5)]" />
                   {/* Particles burst around nozzle */}
                   <Particles />
                 </div>
