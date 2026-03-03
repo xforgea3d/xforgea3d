@@ -41,8 +41,19 @@ export default function PrinterAnimation() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Guard: only run on mount (canvas effects via CSS vars)
-    return () => { }
+    const el = containerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        el.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused'
+        el.querySelectorAll('*').forEach((child: any) => {
+          if (child.style) child.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused'
+        })
+      },
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
   }, [])
 
   return (

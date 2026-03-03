@@ -21,9 +21,7 @@ export default function AddressesPage() {
    useEffect(() => {
       async function getOrder() {
          try {
-            const response = await fetch(`/api/addresses`, {
-               cache: 'no-store',
-            })
+            const response = await fetch(`/api/addresses`)
 
             const json = await response.json()
             setAddresses(json)

@@ -18,10 +18,7 @@ export default function UserPage() {
    useEffect(() => {
       async function getOrders() {
          try {
-            const response = await fetch(`/api/orders`, {
-               method: 'GET',
-               cache: 'no-store',
-            })
+            const response = await fetch(`/api/orders`)
 
             const json = await response.json()
             setOrders(json)

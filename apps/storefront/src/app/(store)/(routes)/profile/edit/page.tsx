@@ -18,9 +18,7 @@ export default function UserPage() {
    useEffect(() => {
       async function getUser() {
          try {
-            const response = await fetch(`/api/profile`, {
-               cache: 'no-store',
-            })
+            const response = await fetch(`/api/profile`)
 
             const json = await response.json()
 

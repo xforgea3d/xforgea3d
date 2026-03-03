@@ -15,9 +15,14 @@ export async function GET(req: Request) {
             items: {
                include: {
                   product: {
-                     include: {
-                        brand: true,
-                        categories: true,
+                     select: {
+                        id: true,
+                        title: true,
+                        price: true,
+                        discount: true,
+                        images: true,
+                        isAvailable: true,
+                        stock: true,
                      },
                   },
                },
@@ -48,46 +53,40 @@ export async function POST(req: Request) {
          })
       } else {
          await prisma.cart.upsert({
-            where: {
-               userId,
-            },
+            where: { userId },
             create: {
-               user: {
-                  connect: {
-                     id: userId,
-                  },
-               },
+               user: { connect: { id: userId } },
+               items: { create: { productId, count } },
             },
             update: {
                items: {
                   upsert: {
-                     where: {
-                        UniqueCartItem: {
-                           cartId: userId,
-                           productId,
-                        },
-                     },
-                     update: {
-                        count,
-                     },
-                     create: {
-                        productId,
-                        count,
-                     },
+                     where: { UniqueCartItem: { cartId: userId, productId } },
+                     update: { count },
+                     create: { productId, count },
                   },
                },
             },
          })
       }
 
+      // Single fetch after mutation with minimal product data
       const cart = await prisma.cart.findUniqueOrThrow({
-         where: {
-            userId,
-         },
+         where: { userId },
          include: {
             items: {
                include: {
-                  product: true,
+                  product: {
+                     select: {
+                        id: true,
+                        title: true,
+                        price: true,
+                        discount: true,
+                        images: true,
+                        isAvailable: true,
+                        stock: true,
+                     },
+                  },
                },
             },
          },

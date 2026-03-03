@@ -1,3 +1,5 @@
+export const revalidate = 3600
+
 import prisma from '@/lib/prisma'
 import { BlogPostJsonLd } from '@/app/json-ld'
 import type { Metadata } from 'next'

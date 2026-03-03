@@ -20,16 +20,20 @@ function MagnifierLens({
 }) {
    const lensRef = useRef<HTMLDivElement>(null)
    const [pos, setPos] = useState({ x: 0, y: 0, show: false })
+   const rafRef = useRef<number>(0)
 
    const LENS_SIZE = 130   // px — diameter of the circular lens
    const ZOOM = 2.8        // magnification factor
 
    const handleMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) return
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-      setPos({ x, y, show: true })
+      cancelAnimationFrame(rafRef.current)
+      const clientX = e.clientX
+      const clientY = e.clientY
+      rafRef.current = requestAnimationFrame(() => {
+         const rect = containerRef.current?.getBoundingClientRect()
+         if (!rect) return
+         setPos({ x: clientX - rect.left, y: clientY - rect.top, show: true })
+      })
    }, [containerRef])
 
    const handleLeave = useCallback(() => setPos(p => ({ ...p, show: false })), [])
