@@ -117,7 +117,7 @@ export function MainNav() {
                className="object-contain"
                priority
             />
-            <span className="font-bold text-lg tracking-tight hover:opacity-80 transition-opacity hidden lg:block">
+            <span className="font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
                xForgea<span className="text-orange-500">3D</span>
             </span>
          </Link>
