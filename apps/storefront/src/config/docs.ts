@@ -13,7 +13,11 @@ export const docsConfig: DocsConfig = {
       },
       {
          title: 'Araç Parçaları',
-         href: '/products?category=Aksesuarlar',
+         href: '/products?category=Araç Aksesuarları',
+      },
+      {
+         title: 'Atölye',
+         href: '/atolye',
       },
       {
          title: 'Parça Talep Et',

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { revalidateStorefront } from '@/lib/revalidate-storefront'
 
 export async function GET(
    req: Request,
@@ -42,6 +43,8 @@ export async function PATCH(
          },
       })
 
+      await revalidateStorefront(['/', '/products'])
+
       return NextResponse.json(brand)
    } catch (error) {
       console.error('[CAR_BRAND_PATCH]', error)
@@ -57,6 +60,8 @@ export async function DELETE(
       await prisma.carBrand.delete({
          where: { id: params.brandId },
       })
+      await revalidateStorefront(['/', '/products'])
+
       return NextResponse.json({ ok: true })
    } catch (error) {
       console.error('[CAR_BRAND_DELETE]', error)

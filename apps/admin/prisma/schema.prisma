@@ -438,6 +438,25 @@ model CarModel {
   @@index([brandId])
 }
 
+// ── Navbar Items (admin-managed) ──────────────────────────────
+
+model NavMenuItem {
+  id        String  @id @default(cuid())
+  label     String
+  href      String
+  section   String  @default("main")   // main | mobile | footer
+  sortOrder Int     @default(0)
+  isVisible Boolean @default(true)
+  icon      String? // lucide icon name
+  badge     String? // "Yeni" etc.
+  parentId  String? // for sub-items (unused for now)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([section, sortOrder])
+}
+
 // ── CMS Models ────────────────────────────────────────────────
 
 model ContentPage {

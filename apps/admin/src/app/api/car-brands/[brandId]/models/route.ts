@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { revalidateStorefront } from '@/lib/revalidate-storefront'
 
 export async function POST(
    req: Request,
@@ -22,6 +23,8 @@ export async function POST(
             brandId: params.brandId,
          },
       })
+
+      await revalidateStorefront(['/', '/products'])
 
       return NextResponse.json(model)
    } catch (error) {

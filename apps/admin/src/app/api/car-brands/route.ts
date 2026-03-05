@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { revalidateStorefront } from '@/lib/revalidate-storefront'
 
 export async function GET() {
    try {
@@ -30,6 +31,8 @@ export async function POST(req: Request) {
       const brand = await prisma.carBrand.create({
          data: { name, slug, logoUrl, sortOrder: sortOrder || 0 },
       })
+
+      await revalidateStorefront(['/', '/products'])
 
       return NextResponse.json(brand)
    } catch (error) {

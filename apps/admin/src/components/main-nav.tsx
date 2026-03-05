@@ -58,6 +58,11 @@ export function MainNav({
          active: pathname.includes(`/car-brands`),
       },
       {
+         href: `/nav-items`,
+         label: 'Navbar',
+         active: pathname.includes(`/nav-items`),
+      },
+      {
          href: `/content/blog`,
          label: 'Blog',
          active: pathname.startsWith(`/content/blog`),
