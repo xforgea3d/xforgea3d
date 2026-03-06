@@ -9,6 +9,11 @@ import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+// Admin kullanıcı adı → email eşlemesi
+const ADMIN_USERS: Record<string, string> = {
+   adminvolkan: 'adminvolkan@xforgea3d.com',
+}
+
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
@@ -26,23 +31,19 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       setErrorMsg(null)
 
       try {
-         // Eğer "admin" girilirse arkada emaile çevirelim (Supabase Auth email ister)
-         const email = username.toLowerCase() === 'admin' ? 'admin@xforgea3d.com' : username
+         const key = username.toLowerCase().trim()
+         const email = ADMIN_USERS[key] || (key.includes('@') ? key : `${key}@xforgea3d.com`)
+         const isKnownAdmin = key in ADMIN_USERS
 
          // 1. Giriş yapmayı dene
-         let { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-         })
+         let { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-         // 2. Eğer kullanıcı yoksa (Invalid login credentials) ve admin girilmişse otomatik kayıt yap
-         if (error && error.message.includes('Invalid login credentials') && username.toLowerCase() === 'admin') {
+         // 2. Bilinen admin kullanıcısıysa ve hesap yoksa otomatik kayıt yap
+         if (error && error.message.includes('Invalid login credentials') && isKnownAdmin) {
             const { error: signUpError } = await supabase.auth.signUp({
                email,
                password,
-               options: {
-                  data: { name: 'Admin' }
-               }
+               options: { data: { name: 'Admin' } },
             })
 
             if (signUpError) {
@@ -51,19 +52,30 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                return
             }
 
-            // Kayıt başarılı olduysa tekrar giriş yapmayı dene
+            // Profili admin rolüne yükselt
+            await fetch('/api/auth/promote', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ email }),
+            })
+
+            // Tekrar giriş yap
             const retry = await supabase.auth.signInWithPassword({ email, password })
             data = retry.data
             error = retry.error
          }
 
          if (error) {
-            setErrorMsg('Giriş başarısız: ' + error.message)
+            if (error.message.includes('Email not confirmed')) {
+               setErrorMsg('E-posta doğrulaması gerekli. Supabase panelden e-posta doğrulamayı kapatın.')
+            } else {
+               setErrorMsg('Giriş başarısız: Kullanıcı adı veya şifre hatalı.')
+            }
          } else if (data.session) {
             router.push('/')
             router.refresh()
          }
-      } catch (error: any) {
+      } catch {
          setErrorMsg('Bir hata oluştu.')
       } finally {
          setIsLoading(false)
@@ -76,11 +88,11 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             <div className="grid gap-4">
                <div className="grid gap-1">
                   <Label className="text-sm font-light text-foreground/60" htmlFor="username">
-                     Kullanıcı Adı veya E-posta
+                     Kullanıcı Adı
                   </Label>
                   <Input
                      id="username"
-                     placeholder="admin"
+                     placeholder="adminvolkan"
                      type="text"
                      autoCapitalize="none"
                      autoCorrect="off"

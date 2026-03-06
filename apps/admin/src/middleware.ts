@@ -76,6 +76,9 @@ export const config = {
       '/users/:path*',
       '/content/:path*',
       '/settings/:path*',
+      '/car-brands/:path*',
+      '/nav-items/:path*',
+      '/quote-requests/:path*',
       '/api/:path*',
    ],
 }
