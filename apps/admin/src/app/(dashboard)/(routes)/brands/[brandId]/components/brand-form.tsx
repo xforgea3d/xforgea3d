@@ -11,6 +11,7 @@ import {
    FormMessage,
 } from '@/components/ui/form'
 import { Heading } from '@/components/ui/heading'
+import ImageUpload from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,7 +26,7 @@ import * as z from 'zod'
 const formSchema = z.object({
    title: z.string().min(2),
    description: z.string().min(1).optional(),
-   logo: z.string().url().optional(),
+   logo: z.string().optional(),
 })
 
 type BrandFormValues = z.infer<typeof formSchema>
@@ -41,10 +42,10 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
    const [open, setOpen] = useState(false)
    const [loading, setLoading] = useState(false)
 
-   const title = initialData ? 'Edit Brand' : 'Create Brand'
-   const description = initialData ? 'Edit a brand.' : 'Add a new brand'
-   const toastMessage = initialData ? 'Brand updated.' : 'Brand created.'
-   const action = initialData ? 'Save changes' : 'Create'
+   const title = initialData ? 'Koleksiyon Düzenle' : 'Yeni Koleksiyon'
+   const description = initialData ? 'Koleksiyon bilgilerini güncelleyin.' : 'Yeni bir koleksiyon ekleyin.'
+   const toastMessage = initialData ? 'Koleksiyon güncellendi.' : 'Koleksiyon oluşturuldu.'
+   const action = initialData ? 'Kaydet' : 'Oluştur'
 
    const form = useForm<BrandFormValues>({
       resolver: zodResolver(formSchema),
@@ -87,10 +88,10 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
 
          router.refresh()
          router.push(`/brands`)
-         toast.success('Brand deleted.')
+         toast.success('Koleksiyon silindi.')
       } catch (error: any) {
          toast.error(
-            'Make sure you removed all products using this brand first.'
+            'Önce bu koleksiyonu kullanan tüm ürünleri kaldırın.'
          )
       } finally {
          setLoading(false)
@@ -131,11 +132,11 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
                      name="title"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Title</FormLabel>
+                           <FormLabel>Koleksiyon Adı</FormLabel>
                            <FormControl>
                               <Input
                                  disabled={loading}
-                                 placeholder="Brand title"
+                                 placeholder="Koleksiyon adı"
                                  {...field}
                               />
                            </FormControl>
@@ -148,11 +149,11 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
                      name="description"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Description</FormLabel>
+                           <FormLabel>Açıklama</FormLabel>
                            <FormControl>
                               <Input
                                  disabled={loading}
-                                 placeholder="Brand description"
+                                 placeholder="Koleksiyon açıklaması"
                                  {...field}
                               />
                            </FormControl>
@@ -165,12 +166,13 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
                      name="logo"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Logo URL</FormLabel>
+                           <FormLabel>Logo</FormLabel>
                            <FormControl>
-                              <Input
+                              <ImageUpload
+                                 value={field.value ? [field.value] : []}
                                  disabled={loading}
-                                 placeholder="https://example.com/logo.png"
-                                 {...field}
+                                 onChange={(url) => field.onChange(url)}
+                                 onRemove={() => field.onChange('')}
                               />
                            </FormControl>
                            <FormMessage />

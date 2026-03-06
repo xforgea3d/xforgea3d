@@ -124,15 +124,17 @@ export default async function Index() {
                            className="group relative flex flex-col items-center rounded-xl border bg-background p-4 hover:border-orange-500/40 hover:shadow-lg hover:shadow-orange-500/5 transition-all"
                         >
                            {brand.logoUrl ? (
-                              <Image
-                                 src={brand.logoUrl}
-                                 alt={brand.name}
-                                 width={48}
-                                 height={48}
-                                 className="object-contain mb-2 group-hover:scale-110 transition-transform"
-                              />
+                              <div className="w-14 h-14 flex items-center justify-center bg-white rounded-lg mb-2 group-hover:scale-110 transition-transform">
+                                 <Image
+                                    src={brand.logoUrl}
+                                    alt={brand.name}
+                                    width={40}
+                                    height={40}
+                                    className="object-contain"
+                                 />
+                              </div>
                            ) : (
-                              <div className="w-12 h-12 rounded-full bg-foreground/5 flex items-center justify-center mb-2 group-hover:bg-orange-500/10 transition-colors">
+                              <div className="w-14 h-14 rounded-lg bg-foreground/5 flex items-center justify-center mb-2 group-hover:bg-orange-500/10 transition-colors">
                                  <span className="text-lg font-bold text-muted-foreground">{brand.name.charAt(0)}</span>
                               </div>
                            )}

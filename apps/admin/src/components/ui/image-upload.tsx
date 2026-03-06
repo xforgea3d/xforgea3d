@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ImagePlus, Trash, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
+import { toast } from 'react-hot-toast'
 
 interface ImageUploadProps {
    disabled?: boolean
@@ -54,7 +55,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
       } catch (error) {
          console.error('Error uploading image:', error)
-         alert('Failed to upload image. Server error.')
+         toast.error('Görsel yüklenemedi. Sunucu hatası.')
       } finally {
          setIsUploading(false)
          if (inputRef.current) {
@@ -117,7 +118,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             ) : (
                <ImagePlus className="h-4 w-4" />
             )}
-            <p>{isUploading ? 'Uploading...' : 'Upload an Image'}</p>
+            <p>{isUploading ? 'Yükleniyor...' : 'Görsel Yükle'}</p>
          </Button>
       </div>
    )

@@ -53,7 +53,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ initialData }) => {
    const [loading, setLoading] = useState(false)
 
    const toastMessage = 'Payment updated.'
-   const action = 'Save changes'
+   const action = 'Kaydet'
 
    const defaultValues = initialData
       ? {
@@ -76,17 +76,19 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ initialData }) => {
          setLoading(true)
 
          if (initialData) {
-            await fetch(`/api/payments/${params.paymentId}`, {
+            const res = await fetch(`/api/payments/${params.paymentId}`, {
                method: 'PATCH',
+               headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify(data),
-               cache: 'no-store',
             })
+            if (!res.ok) throw new Error(await res.text())
          } else {
-            await fetch(`/api/payments`, {
+            const res = await fetch(`/api/payments`, {
                method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify(data),
-               cache: 'no-store',
             })
+            if (!res.ok) throw new Error(await res.text())
          }
 
          router.refresh()

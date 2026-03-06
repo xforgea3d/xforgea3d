@@ -38,8 +38,8 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
 
    const [loading, setLoading] = useState(false)
 
-   const toastMessage = 'User updated.'
-   const action = 'Save changes'
+   const toastMessage = 'Kullanıcı güncellendi.'
+   const action = 'Kaydet'
 
    const defaultValues = initialData
       ? {
@@ -61,24 +61,26 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
          setLoading(true)
 
          if (initialData) {
-            await fetch(`/api/users/${params.userId}`, {
+            const res = await fetch(`/api/users/${params.userId}`, {
                method: 'PATCH',
+               headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify(data),
-               cache: 'no-store',
             })
+            if (!res.ok) throw new Error(await res.text())
          } else {
-            await fetch(`/api/users`, {
+            const res = await fetch(`/api/users`, {
                method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify(data),
-               cache: 'no-store',
             })
+            if (!res.ok) throw new Error(await res.text())
          }
 
          router.refresh()
          router.push(`/users`)
          toast.success(toastMessage)
       } catch (error: any) {
-         toast.error('Something went wrong.')
+         toast.error('Bir hata oluştu.')
       } finally {
          setLoading(false)
       }

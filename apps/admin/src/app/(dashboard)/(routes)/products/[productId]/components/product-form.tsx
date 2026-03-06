@@ -73,10 +73,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
    const [open, setOpen] = useState(false)
    const [loading, setLoading] = useState(false)
 
-   const title = initialData ? 'Edit product' : 'Create product'
-   const description = initialData ? 'Edit a product.' : 'Add a new product'
-   const toastMessage = initialData ? 'Product updated.' : 'Product created.'
-   const action = initialData ? 'Save changes' : 'Create'
+   const title = initialData ? 'Ürün Düzenle' : 'Yeni Ürün'
+   const description = initialData ? 'Ürün bilgilerini güncelleyin.' : 'Yeni bir ürün ekleyin.'
+   const toastMessage = initialData ? 'Ürün güncellendi.' : 'Ürün oluşturuldu.'
+   const action = initialData ? 'Kaydet' : 'Oluştur'
 
    const defaultValues = initialData
       ? {
@@ -157,9 +157,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
          router.refresh()
          router.push(`/products`)
-         toast.success('Product deleted.')
+         toast.success('Ürün silindi.')
       } catch (error: any) {
-         toast.error('Something went wrong.')
+         toast.error('Bir hata oluştu.')
       } finally {
          setLoading(false)
          setOpen(false)
@@ -198,7 +198,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   name="images"
                   render={({ field }) => (
                      <FormItem>
-                        <FormLabel>Images</FormLabel>
+                        <FormLabel>Görseller</FormLabel>
                         <FormControl>
                            <ImageUpload
                               value={field.value}
@@ -225,11 +225,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="title"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Name</FormLabel>
+                           <FormLabel>Ürün Adı</FormLabel>
                            <FormControl>
                               <Input
                                  disabled={loading}
-                                 placeholder="Product title"
+                                 placeholder="Ürün başlığı"
                                  {...field}
                               />
                            </FormControl>
@@ -242,7 +242,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="price"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Price</FormLabel>
+                           <FormLabel>Fiyat</FormLabel>
                            <FormControl>
                               <Input
                                  type="number"
@@ -260,7 +260,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="discount"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Discount</FormLabel>
+                           <FormLabel>İndirim</FormLabel>
                            <FormControl>
                               <Input
                                  type="number"
@@ -278,7 +278,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="stock"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Stock</FormLabel>
+                           <FormLabel>Stok</FormLabel>
                            <FormControl>
                               <Input
                                  type="number"
@@ -342,7 +342,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="brandId"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Marka (Brand)</FormLabel>
+                           <FormLabel>Koleksiyon</FormLabel>
                            <Select disabled={loading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
                                  <SelectTrigger>

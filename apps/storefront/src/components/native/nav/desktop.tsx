@@ -475,15 +475,17 @@ function VehiclePartsDropdown({
                            )}
                         >
                            {brand.logoUrl ? (
-                              <Image
-                                 src={brand.logoUrl}
-                                 alt={brand.name}
-                                 width={28}
-                                 height={28}
-                                 className="object-contain"
-                              />
+                              <div className="w-7 h-7 flex items-center justify-center bg-white rounded-md">
+                                 <Image
+                                    src={brand.logoUrl}
+                                    alt={brand.name}
+                                    width={24}
+                                    height={24}
+                                    className="object-contain"
+                                 />
+                              </div>
                            ) : (
-                              <div className="w-7 h-7 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-bold">
+                              <div className="w-7 h-7 rounded-md bg-foreground/10 flex items-center justify-center text-[10px] font-bold">
                                  {brand.name.charAt(0)}
                               </div>
                            )}
@@ -522,12 +524,12 @@ function VehiclePartsDropdown({
                                     className="group flex flex-col rounded-lg border border-transparent p-2.5 transition-all hover:border-border hover:bg-accent"
                                  >
                                     {model.imageUrl ? (
-                                       <div className="relative w-full h-20 rounded-md overflow-hidden mb-2 bg-muted">
+                                       <div className="relative w-full h-20 rounded-md overflow-hidden mb-2 bg-white/5">
                                           <Image
                                              src={model.imageUrl}
                                              alt={model.name}
                                              fill
-                                             className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                             className="object-contain p-1 transition-transform duration-500 group-hover:scale-105"
                                              sizes="150px"
                                           />
                                        </div>

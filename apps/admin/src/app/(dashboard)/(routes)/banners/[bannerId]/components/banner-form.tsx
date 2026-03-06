@@ -42,10 +42,10 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
    const [open, setOpen] = useState(false)
    const [loading, setLoading] = useState(false)
 
-   const title = initialData ? 'Edit banner' : 'Create banner'
-   const description = initialData ? 'Edit a banner.' : 'Add a new banner'
-   const toastMessage = initialData ? 'Banner updated.' : 'Banner created.'
-   const action = initialData ? 'Save changes' : 'Create'
+   const title = initialData ? 'Banner Düzenle' : 'Yeni Banner'
+   const description = initialData ? 'Banner bilgilerini güncelleyin.' : 'Yeni bir banner ekleyin.'
+   const toastMessage = initialData ? 'Banner güncellendi.' : 'Banner oluşturuldu.'
+   const action = initialData ? 'Kaydet' : 'Oluştur'
 
    const form = useForm<BannerFormValues>({
       resolver: zodResolver(formSchema),
@@ -87,10 +87,10 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
 
          router.refresh()
          router.push(`/banners`)
-         toast.success('Banner deleted.')
+         toast.success('Banner silindi.')
       } catch (error: any) {
          toast.error(
-            'Make sure you removed all categories using this banner first.'
+            'Önce bu banneri kullanan tüm kategorileri kaldırın.'
          )
       } finally {
          setLoading(false)
@@ -130,7 +130,7 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
                   name="image"
                   render={({ field }) => (
                      <FormItem>
-                        <FormLabel>Background image</FormLabel>
+                        <FormLabel>Arkaplan Görseli</FormLabel>
                         <FormControl>
                            <ImageUpload
                               value={field.value ? [field.value] : []}
@@ -149,11 +149,11 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
                      name="label"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Label</FormLabel>
+                           <FormLabel>Başlık</FormLabel>
                            <FormControl>
                               <Input
                                  disabled={loading}
-                                 placeholder="Banner label"
+                                 placeholder="Banner başlığı"
                                  {...field}
                               />
                            </FormControl>

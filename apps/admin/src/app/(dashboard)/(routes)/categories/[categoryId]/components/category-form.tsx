@@ -55,10 +55,10 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
    const [open, setOpen] = useState(false)
    const [loading, setLoading] = useState(false)
 
-   const title = initialData ? 'Edit category' : 'Create category'
-   const description = initialData ? 'Edit a category.' : 'Add a new category'
-   const toastMessage = initialData ? 'Category updated.' : 'Category created.'
-   const action = initialData ? 'Save changes' : 'Create'
+   const title = initialData ? 'Kategori Düzenle' : 'Yeni Kategori'
+   const description = initialData ? 'Kategori bilgilerini güncelleyin.' : 'Yeni bir kategori ekleyin.'
+   const toastMessage = initialData ? 'Kategori güncellendi.' : 'Kategori oluşturuldu.'
+   const action = initialData ? 'Kaydet' : 'Oluştur'
 
    const form = useForm<CategoryFormValues>({
       resolver: zodResolver(formSchema),
@@ -81,14 +81,15 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
          setIsGenerating(true)
          const res = await fetch('/api/generate-image', {
             method: 'POST',
-            body: JSON.stringify({ prompt: aiPrompt })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: aiPrompt, context: 'category' })
          })
-         if (!res.ok) throw new Error('Generation failed')
+         if (!res.ok) throw new Error(await res.text())
          const data = await res.json()
          form.setValue('imageUrl', data.url, { shouldDirty: true, shouldValidate: true })
          toast.success('Yapay zeka ile görsel oluşturuldu!')
-      } catch (error) {
-         toast.error('Görsel oluşturulamadı. Sunucuda OPENAI_API_KEY yüklü olduğundan emin olun.')
+      } catch (error: any) {
+         toast.error('Görsel oluşturulamadı: ' + (error?.message || 'Bilinmeyen hata'))
       } finally {
          setIsGenerating(false)
       }
@@ -126,10 +127,10 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
 
          router.refresh()
          router.push(`/categories`)
-         toast.success('Category deleted.')
+         toast.success('Kategori silindi.')
       } catch (error: any) {
          toast.error(
-            'Make sure you removed all products using this category first.'
+            'Önce bu kategoriyi kullanan tüm ürünleri kaldırın.'
          )
       } finally {
          setLoading(false)
@@ -170,7 +171,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                      name="title"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Name</FormLabel>
+                           <FormLabel>Kategori Adı</FormLabel>
                            <FormControl>
                               <Input
                                  disabled={loading}

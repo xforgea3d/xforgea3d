@@ -11,10 +11,12 @@ import {
    FormMessage,
 } from '@/components/ui/form'
 import { Heading } from '@/components/ui/heading'
+import ImageUpload from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Trash } from 'lucide-react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -83,24 +85,19 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
    const onSubmit = async (data: FormValues) => {
       try {
          setLoading(true)
-         if (initialData) {
-            await fetch(`/api/car-brands/${initialData.id}`, {
-               method: 'PATCH',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify(data),
-            })
-         } else {
-            await fetch('/api/car-brands', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify(data),
-            })
-         }
+         const url = initialData ? `/api/car-brands/${initialData.id}` : '/api/car-brands'
+         const method = initialData ? 'PATCH' : 'POST'
+         const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+         })
+         if (!res.ok) throw new Error(await res.text())
          router.refresh()
          router.push('/car-brands')
          toast.success(toastMessage)
-      } catch {
-         toast.error('Bir hata oluştu.')
+      } catch (e: any) {
+         toast.error('Hata: ' + (e?.message || 'Bilinmeyen'))
       } finally {
          setLoading(false)
       }
@@ -109,12 +106,13 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
    const onDelete = async () => {
       try {
          setLoading(true)
-         await fetch(`/api/car-brands/${initialData!.id}`, { method: 'DELETE' })
+         const res = await fetch(`/api/car-brands/${initialData!.id}`, { method: 'DELETE' })
+         if (!res.ok) throw new Error(await res.text())
          router.refresh()
          router.push('/car-brands')
          toast.success('Marka silindi.')
-      } catch {
-         toast.error('Bir hata oluştu.')
+      } catch (e: any) {
+         toast.error('Hata: ' + (e?.message || 'Bilinmeyen'))
       } finally {
          setLoading(false)
          setOpen(false)
@@ -128,6 +126,8 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
          form.setValue('slug', slugify(name))
       }
    }
+
+   const logoUrl = form.watch('logoUrl')
 
    return (
       <>
@@ -143,6 +143,42 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
          <Separator />
          <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
+               {/* Logo Upload */}
+               <div className="space-y-3">
+                  <FormField
+                     control={form.control}
+                     name="logoUrl"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Marka Logosu</FormLabel>
+                           <FormControl>
+                              <ImageUpload
+                                 value={field.value ? [field.value] : []}
+                                 disabled={loading}
+                                 onChange={(url) => field.onChange(url)}
+                                 onRemove={() => field.onChange('')}
+                              />
+                           </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  {logoUrl && (
+                     <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                        <div className="relative w-16 h-16 bg-white rounded-lg border flex items-center justify-center overflow-hidden">
+                           <Image
+                              src={logoUrl}
+                              alt="Logo preview"
+                              width={56}
+                              height={56}
+                              className="object-contain"
+                           />
+                        </div>
+                        <span className="text-xs text-muted-foreground truncate flex-1">{logoUrl}</span>
+                     </div>
+                  )}
+               </div>
+
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <FormField
                      control={form.control}
@@ -170,19 +206,6 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
                            <FormLabel>Slug</FormLabel>
                            <FormControl>
                               <Input disabled={loading} placeholder="bmw" {...field} />
-                           </FormControl>
-                           <FormMessage />
-                        </FormItem>
-                     )}
-                  />
-                  <FormField
-                     control={form.control}
-                     name="logoUrl"
-                     render={({ field }) => (
-                        <FormItem>
-                           <FormLabel>Logo URL</FormLabel>
-                           <FormControl>
-                              <Input disabled={loading} placeholder="https://..." {...field} />
                            </FormControl>
                            <FormMessage />
                         </FormItem>

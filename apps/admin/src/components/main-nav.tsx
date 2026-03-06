@@ -1,9 +1,61 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
 import Link from 'next/link'
-import { useParams, usePathname } from 'next/navigation'
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
+import {
+   LayoutDashboard,
+   ShoppingBag,
+   Layers,
+   Image as ImageIcon,
+   Tag,
+   Car,
+   Navigation,
+   FileText,
+   Settings,
+   ChevronDown,
+   ShoppingCart,
+   MessageSquare,
+   CreditCard,
+   Users,
+} from 'lucide-react'
+
+const navGroups = [
+   {
+      label: 'Mağaza',
+      items: [
+         { href: '/products', label: 'Ürünler', icon: ShoppingBag },
+         { href: '/categories', label: 'Kategoriler', icon: Layers },
+         { href: '/brands', label: 'Koleksiyonlar', icon: Tag },
+         { href: '/banners', label: 'Bannerlar', icon: ImageIcon },
+      ],
+   },
+   {
+      label: 'Araçlar',
+      items: [
+         { href: '/car-brands', label: 'Araç Markaları', icon: Car },
+         { href: '/quote-requests', label: 'Parça Talepleri', icon: MessageSquare },
+      ],
+   },
+   {
+      label: 'Satışlar',
+      items: [
+         { href: '/orders', label: 'Siparişler', icon: ShoppingCart },
+         { href: '/payments', label: 'Ödemeler', icon: CreditCard },
+         { href: '/users', label: 'Kullanıcılar', icon: Users },
+      ],
+   },
+   {
+      label: 'İçerik',
+      items: [
+         { href: '/nav-items', label: 'Navbar', icon: Navigation },
+         { href: '/content/blog', label: 'Blog', icon: FileText },
+         { href: '/content/pages', label: 'Sayfalar', icon: FileText },
+         { href: '/settings/site', label: 'Ayarlar', icon: Settings },
+      ],
+   },
+]
 
 export function MainNav({
    className,
@@ -11,80 +63,12 @@ export function MainNav({
 }: React.HTMLAttributes<HTMLElement>) {
    const pathname = usePathname()
 
-   const routes = [
-      {
-         href: `/banners`,
-         label: 'Bannerlar',
-         active: pathname.includes(`/banners`),
-      },
-      {
-         href: `/categories`,
-         label: 'Kategoriler',
-         active: pathname.includes(`/categories`),
-      },
-      {
-         href: `/products`,
-         label: 'Ürünler',
-         active: pathname.includes(`/products`),
-      },
-      {
-         href: `/orders`,
-         label: 'Siparişler',
-         active: pathname.includes(`/orders`),
-      },
-      {
-         href: `/quote-requests`,
-         label: 'Parça Talepleri',
-         active: pathname.includes(`/quote-requests`),
-      },
-      {
-         href: `/payments`,
-         label: 'Ödemeler',
-         active: pathname.includes(`/payments`),
-      },
-      {
-         href: `/users`,
-         label: 'Kullanıcılar',
-         active: pathname.includes(`/users`),
-      },
-      {
-         href: `/brands`,
-         label: 'Koleksiyonlar',
-         active: pathname.includes(`/brands`) && !pathname.includes(`/car-brands`),
-      },
-      {
-         href: `/car-brands`,
-         label: 'Araç Markaları',
-         active: pathname.includes(`/car-brands`),
-      },
-      {
-         href: `/nav-items`,
-         label: 'Navbar',
-         active: pathname.includes(`/nav-items`),
-      },
-      {
-         href: `/content/blog`,
-         label: 'Blog',
-         active: pathname.startsWith(`/content/blog`),
-      },
-      {
-         href: `/content/pages`,
-         label: 'Sayfalar',
-         active: pathname.startsWith(`/content/pages`),
-      },
-      {
-         href: `/settings/site`,
-         label: 'Ayarlar',
-         active: pathname.startsWith(`/settings`),
-      },
-   ]
-
    return (
       <nav
-         className={cn('flex items-center space-x-4 lg:space-x-6', className)}
+         className={cn('flex items-center gap-1', className)}
          {...props}
       >
-         <Link href="/" className="flex items-center gap-2 mr-2 flex-shrink-0">
+         <Link href="/" className="flex items-center gap-2 mr-4 flex-shrink-0">
             <Image
                src="/logo.png"
                alt="xForgea3D"
@@ -93,21 +77,42 @@ export function MainNav({
                className="object-contain"
                priority
             />
-            <span className="font-bold text-sm hidden lg:block">xForgea3D</span>
+            <span className="font-bold text-sm hidden xl:block">xForgea3D</span>
          </Link>
-         {routes.map((route) => (
-            <Link
-               key={route.href}
-               href={route.href}
-               className={cn(
-                  'text-sm transition-colors hover:text-primary',
-                  route.active
-                     ? 'font-semibold'
-                     : 'font-light text-muted-foreground'
-               )}
-            >
-               {route.label}
-            </Link>
+
+         {navGroups.map((group) => (
+            <div key={group.label} className="relative group">
+               <button className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors">
+                  {group.label}
+                  <ChevronDown className="h-3 w-3 opacity-50" />
+               </button>
+               <div className="absolute left-0 top-full pt-1 z-50 hidden group-hover:block">
+                  <div className="bg-popover border rounded-lg shadow-lg py-1 min-w-[180px]">
+                     {group.items.map((item) => {
+                        const isActive =
+                           item.href === '/'
+                              ? pathname === '/'
+                              : pathname.startsWith(item.href)
+                        const Icon = item.icon
+                        return (
+                           <Link
+                              key={item.href}
+                              href={item.href}
+                              className={cn(
+                                 'flex items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-accent',
+                                 isActive
+                                    ? 'font-medium text-foreground bg-accent/50'
+                                    : 'text-muted-foreground'
+                              )}
+                           >
+                              <Icon className="h-4 w-4" />
+                              {item.label}
+                           </Link>
+                        )
+                     })}
+                  </div>
+               </div>
+            </div>
          ))}
       </nav>
    )
