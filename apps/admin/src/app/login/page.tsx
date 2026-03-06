@@ -1,74 +1,124 @@
-import { UserAuthForm } from '@/app/login/components/user-auth-form'
-import config from '@/config/site'
-import { Metadata } from 'next'
-import Link from 'next/link'
+'use client'
 
-export const metadata: Metadata = {
-   title: 'Giriş Yap',
-   description: 'xForgea3D yönetim panelinize giriş yapın.',
-}
+import { UserAuthForm } from '@/app/login/components/user-auth-form'
+import { motion } from 'framer-motion'
 
 export default function AuthenticationPage() {
    return (
-      <div className="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-         <div className="relative hidden h-full flex-col bg-muted p-10 dark:border-r lg:flex">
-            <div className="absolute inset-0 bg-zinc-900" />
-            <Link
-               href="/"
-               className="relative z-20 flex items-center text-lg font-medium"
-            >
-               <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-2 h-6 w-6"
-               >
-                  <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
-               </svg>
-               {config.name}
-            </Link>
-            <div className="relative z-20 mt-auto">
-               <blockquote className="space-y-2">
-                  <p className="text-lg">
-                     &ldquo;xForgea3D yönetim paneli ile siparişlerimizi takip etmek ve ürünleri yönetmek çok daha kolay oldu.&rdquo;
-                  </p>
-                  <footer className="text-sm">xForgea3D Ekibi</footer>
-               </blockquote>
-            </div>
+      <div className="relative min-h-screen bg-black flex items-center justify-center overflow-hidden">
+         {/* Animated background grid */}
+         <div className="absolute inset-0 opacity-[0.03]">
+            <div
+               className="absolute inset-0"
+               style={{
+                  backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px),
+                                    linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
+                  backgroundSize: '60px 60px',
+               }}
+            />
          </div>
-         <div className="p-8">
-            <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-               <div className="flex flex-col space-y-2 text-center">
-                  <h1 className="text-2xl font-semibold tracking-tight">
-                     Giriş Yap
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                     Yönetim panelinize erişmek için kullanıcı adınızı ve şifrenizi girin.
-                  </p>
+
+         {/* Floating orbs */}
+         <motion.div
+            className="absolute w-[500px] h-[500px] rounded-full"
+            style={{
+               background: 'radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)',
+               top: '-10%',
+               right: '-10%',
+            }}
+            animate={{
+               scale: [1, 1.2, 1],
+               opacity: [0.5, 0.8, 0.5],
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+         />
+         <motion.div
+            className="absolute w-[400px] h-[400px] rounded-full"
+            style={{
+               background: 'radial-gradient(circle, rgba(249,115,22,0.05) 0%, transparent 70%)',
+               bottom: '-15%',
+               left: '-10%',
+            }}
+            animate={{
+               scale: [1.2, 1, 1.2],
+               opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+         />
+
+         {/* Subtle scan line */}
+         <motion.div
+            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/20 to-transparent"
+            animate={{ top: ['0%', '100%'] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+         />
+
+         {/* Main content */}
+         <div className="relative z-10 w-full max-w-sm mx-auto px-6">
+            {/* Logo + Brand */}
+            <motion.div
+               className="text-center mb-10"
+               initial={{ opacity: 0, y: -30 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+               {/* Animated logo mark */}
+               <motion.div
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-2xl border border-white/[0.06] bg-white/[0.02] mb-6 backdrop-blur-sm"
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2, type: 'spring', stiffness: 200 }}
+               >
+                  <motion.span
+                     className="text-2xl font-black text-white tracking-tighter"
+                     animate={{ opacity: [0.7, 1, 0.7] }}
+                     transition={{ duration: 3, repeat: Infinity }}
+                  >
+                     x<span className="text-orange-500">F</span>
+                  </motion.span>
+               </motion.div>
+
+               <motion.h1
+                  className="text-xl font-semibold text-white tracking-tight"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+               >
+                  xForgea<span className="text-orange-500">3D</span>
+               </motion.h1>
+               <motion.p
+                  className="text-[13px] text-white/30 mt-1.5 tracking-wide"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6, duration: 0.6 }}
+               >
+                  Yönetim Paneli
+               </motion.p>
+            </motion.div>
+
+            {/* Login card */}
+            <motion.div
+               className="relative"
+               initial={{ opacity: 0, y: 30, scale: 0.95 }}
+               animate={{ opacity: 1, y: 0, scale: 1 }}
+               transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+               {/* Card glow border */}
+               <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-white/[0.08] to-transparent" />
+               <div className="relative rounded-2xl bg-white/[0.03] backdrop-blur-xl p-8 border border-white/[0.04]">
+                  <UserAuthForm />
                </div>
-               <UserAuthForm />
-               <p className="px-8 text-center text-sm text-muted-foreground">
-                  Devam ederek{' '}
-                  <Link
-                     href="/terms"
-                     className="underline underline-offset-4 hover:text-primary"
-                  >
-                     Kullanım Koşullarımızı
-                  </Link>{' '}
-                  ve{' '}
-                  <Link
-                     href="/privacy"
-                     className="underline underline-offset-4 hover:text-primary"
-                  >
-                     Gizlilik Politikamızı
-                  </Link>
-                  {' '}kabul etmiş olursunuz.
-               </p>
-            </div>
+            </motion.div>
+
+            {/* Footer */}
+            <motion.p
+               className="text-center text-[11px] text-white/15 mt-8 tracking-wider"
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               transition={{ delay: 1.2, duration: 1 }}
+            >
+               &copy; 2025 xForgea3D
+            </motion.p>
          </div>
       </div>
    )

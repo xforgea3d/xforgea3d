@@ -1,9 +1,7 @@
-import { Fragment } from 'react'
+export const metadata = {
+   title: 'Giriş Yap — xForgea3D',
+}
 
-export default async function DashboardLayout({
-   children,
-}: {
-   children: React.ReactNode
-}) {
-   return <Fragment>{children}</Fragment>
+export default function LoginLayout({ children }: { children: React.ReactNode }) {
+   return <div className="dark">{children}</div>
 }
