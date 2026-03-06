@@ -3,7 +3,6 @@
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -15,7 +14,6 @@ export function UserAuthForm({ className }: { className?: string }) {
    const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
    const [success, setSuccess] = React.useState(false)
    const [focusedField, setFocusedField] = React.useState<string | null>(null)
-   const router = useRouter()
    const supabase = createClient()
 
    async function onSubmit(e: React.FormEvent) {
@@ -41,8 +39,7 @@ export function UserAuthForm({ className }: { className?: string }) {
          } else if (data.session) {
             setSuccess(true)
             setTimeout(() => {
-               router.push('/')
-               router.refresh()
+               window.location.href = '/'
             }, 800)
          }
       } catch {
