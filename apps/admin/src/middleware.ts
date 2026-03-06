@@ -1,6 +1,5 @@
 import { updateSession } from '@/lib/supabase/middleware'
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 
 // Tek yetkili admin — başka kimse admin olamaz
 const ALLOWED_ADMIN_EMAIL = 'adminvolkan@xforgea3d.com'
@@ -29,34 +28,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login?error=not_admin', request.url))
    }
 
-   // Rol kontrolü (çift güvenlik)
-   const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-         cookies: {
-            get(name: string) {
-               return request.cookies.get(name)?.value
-            },
-            set() {},
-            remove() {},
-         },
-      }
-   )
-
-   const { data: profile } = await supabase
-      .from('Profile')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-   if (!profile || profile.role !== 'admin') {
-      if (isTargetingAPI()) {
-         return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
-      }
-      return NextResponse.redirect(new URL('/login?error=not_admin', request.url))
-   }
-
    const requestHeaders = new Headers(request.headers)
    requestHeaders.set('X-USER-ID', user.id)
 
@@ -64,6 +35,7 @@ export async function middleware(request: NextRequest) {
       request: { headers: requestHeaders },
    })
 
+   // Supabase session cookie'lerini koru
    supabaseResponse.cookies.getAll().forEach((cookie) => {
       response.cookies.set(cookie.name, cookie.value, cookie as any)
    })
