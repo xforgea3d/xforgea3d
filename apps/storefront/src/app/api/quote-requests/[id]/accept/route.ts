@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { verifyCsrfToken } from '@/lib/csrf'
 import { NextResponse } from 'next/server'
 
 /**
@@ -15,10 +16,22 @@ export async function POST(
          return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
       }
 
-      const { addressId } = await req.json()
+      const { addressId, csrfToken } = await req.json()
+
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
+         return NextResponse.json({ error: 'Gecersiz istek. Sayfayi yenileyip tekrar deneyin.' }, { status: 403 })
+      }
 
       if (!addressId) {
-         return NextResponse.json({ error: 'Adres seçimi zorunludur' }, { status: 400 })
+         return NextResponse.json({ error: 'Adres secimi zorunludur' }, { status: 400 })
+      }
+
+      // Verify address belongs to user
+      const address = await prisma.address.findFirst({
+         where: { id: addressId, userId },
+      })
+      if (!address) {
+         return NextResponse.json({ error: 'Adres bulunamadi veya size ait degil' }, { status: 403 })
       }
 
       // Fetch the quote request
@@ -37,6 +50,11 @@ export async function POST(
          )
       }
 
+      // Idempotency: already accepted
+      if (quoteRequest.orderId) {
+         return NextResponse.json({ orderId: quoteRequest.orderId })
+      }
+
       if (!quoteRequest.quotedPrice || quoteRequest.quotedPrice <= 0) {
          return NextResponse.json(
             { error: 'Geçersiz fiyat' },
@@ -48,44 +66,47 @@ export async function POST(
       const tax = parseFloat((price * 0.09).toFixed(2))
       const payable = parseFloat((price + tax).toFixed(2))
 
-      // Create order with the hidden "Talep Edilen Parça" product
-      const order = await prisma.order.create({
-         data: {
-            user: { connect: { id: userId } },
-            status: 'OnayBekleniyor',
-            total: price,
-            tax,
-            payable,
-            discount: 0,
-            shipping: 0,
-            address: { connect: { id: addressId } },
-            orderItems: {
-               create: {
-                  product: { connect: { id: 'quote-request-product' } },
-                  count: 1,
-                  price,
-                  discount: 0,
-                  isCustom: true,
-                  customSnapshot: {
-                     quoteRequestId: quoteRequest.id,
-                     quoteNumber: quoteRequest.number,
-                     partDescription: quoteRequest.partDescription,
-                     carBrand: quoteRequest.carBrand?.name || null,
-                     carModel: quoteRequest.carModel?.name || null,
-                     imageUrl: quoteRequest.imageUrl,
+      // Atomic: create order + update quote request in transaction
+      const order = await prisma.$transaction(async (tx) => {
+         const created = await tx.order.create({
+            data: {
+               user: { connect: { id: userId } },
+               status: 'OnayBekleniyor',
+               total: price,
+               tax,
+               payable,
+               discount: 0,
+               shipping: 0,
+               address: { connect: { id: addressId } },
+               orderItems: {
+                  create: {
+                     product: { connect: { id: 'quote-request-product' } },
+                     count: 1,
+                     price,
+                     discount: 0,
+                     isCustom: true,
+                     customSnapshot: {
+                        quoteRequestId: quoteRequest.id,
+                        quoteNumber: quoteRequest.number,
+                        partDescription: quoteRequest.partDescription,
+                        carBrand: quoteRequest.carBrand?.name || null,
+                        carModel: quoteRequest.carModel?.name || null,
+                        imageUrl: quoteRequest.imageUrl,
+                     },
                   },
                },
             },
-         },
-      })
+         })
 
-      // Update quote request status to Accepted and link to order
-      await prisma.quoteRequest.update({
-         where: { id: quoteRequest.id },
-         data: {
-            status: 'Accepted',
-            orderId: order.id,
-         },
+         await tx.quoteRequest.update({
+            where: { id: quoteRequest.id },
+            data: {
+               status: 'Accepted',
+               orderId: created.id,
+            },
+         })
+
+         return created
       })
 
       // Notify admins

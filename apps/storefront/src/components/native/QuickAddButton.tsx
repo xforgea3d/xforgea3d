@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ShoppingCartIcon } from 'lucide-react'
 import { useCartContext } from '@/state/Cart'
 import { useAuthenticated } from '@/hooks/useAuthentication'
+import { useCsrf } from '@/hooks/useCsrf'
 import { getCountInCart, getLocalCart } from '@/lib/cart'
 import toast from 'react-hot-toast'
 
@@ -17,6 +18,7 @@ import toast from 'react-hot-toast'
  */
 export function QuickAddButton({ product }: { product: any }) {
     const { authenticated } = useAuthenticated()
+    const csrfToken = useCsrf()
     const { cart, dispatchCart } = useCartContext()
     const [loading, setLoading] = useState(false)
     const [added, setAdded] = useState(false)
@@ -49,7 +51,7 @@ export function QuickAddButton({ product }: { product: any }) {
             if (authenticated) {
                 const res = await fetch('/api/cart', {
                     method: 'POST',
-                    body: JSON.stringify({ productId: product?.id, count: inCart + 1 }),
+                    body: JSON.stringify({ productId: product?.id, count: inCart + 1, csrfToken }),
                     headers: { 'Content-Type': 'application/json' },
                     cache: 'no-store',
                 })

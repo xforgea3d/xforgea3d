@@ -1,8 +1,11 @@
 import { updateSession } from '@/lib/supabase/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Tek yetkili admin — başka kimse admin olamaz
-const ALLOWED_ADMIN_EMAIL = 'adminvolkan@xforgea3d.com'
+// Tek yetkili admin — env variable ile ayarlanabilir
+const ALLOWED_ADMIN_EMAIL = process.env.ADMIN_EMAIL
+if (!ALLOWED_ADMIN_EMAIL) {
+   throw new Error('ADMIN_EMAIL environment variable is required')
+}
 
 export async function middleware(request: NextRequest) {
    if (request.nextUrl.pathname.startsWith('/api/auth')) return NextResponse.next()

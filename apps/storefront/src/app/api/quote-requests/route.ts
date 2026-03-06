@@ -3,6 +3,12 @@ import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 
+const ALLOWED_TYPES = new Set([
+   'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+])
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const supabase = createClient(
    process.env.NEXT_PUBLIC_SUPABASE_URL!,
    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -10,7 +16,6 @@ const supabase = createClient(
 
 /**
  * POST /api/quote-requests — PUBLIC (no auth required)
- * Accepts FormData: data (JSON string) + optional image (File)
  */
 export async function POST(req: Request) {
    try {
@@ -22,18 +27,39 @@ export async function POST(req: Request) {
          return NextResponse.json({ error: 'Veri eksik' }, { status: 400 })
       }
 
-      const data = JSON.parse(rawData)
+      let data: any
+      try {
+         data = JSON.parse(rawData)
+      } catch {
+         return NextResponse.json({ error: 'Gecersiz veri formati' }, { status: 400 })
+      }
 
       if (!data.email || !data.partDescription) {
          return NextResponse.json(
-            { error: 'E-posta ve parça açıklaması zorunludur' },
+            { error: 'E-posta ve parca aciklamasi zorunludur' },
             { status: 400 }
          )
+      }
+
+      if (!EMAIL_REGEX.test(data.email)) {
+         return NextResponse.json({ error: 'Gecersiz e-posta adresi' }, { status: 400 })
+      }
+
+      if (data.partDescription.length > 2000) {
+         return NextResponse.json({ error: 'Aciklama cok uzun (maks 2000 karakter)' }, { status: 400 })
       }
 
       // Upload image to Supabase Storage if provided
       let imageUrl: string | null = null
       if (imageFile) {
+         if (imageFile.size > MAX_FILE_SIZE) {
+            return NextResponse.json({ error: 'Dosya boyutu 5MB limitini asiyor' }, { status: 400 })
+         }
+
+         if (!ALLOWED_TYPES.has(imageFile.type)) {
+            return NextResponse.json({ error: 'Sadece resim dosyalari yuklenebilir' }, { status: 400 })
+         }
+
          const buffer = Buffer.from(await imageFile.arrayBuffer())
          const filename = `quote-requests/${randomUUID()}-${imageFile.name.replace(/[^a-z0-9.-]/gi, '_')}`
 
@@ -50,7 +76,6 @@ export async function POST(req: Request) {
          }
       }
 
-      // Optionally link to logged-in user
       const userId = req.headers.get('X-USER-ID') || null
 
       const quoteRequest = await prisma.quoteRequest.create({
@@ -77,7 +102,7 @@ export async function POST(req: Request) {
             await prisma.notification.createMany({
                data: admins.map((admin) => ({
                   userId: admin.id,
-                  content: `Yeni parça talebi #${quoteRequest.number} — ${data.partDescription.slice(0, 80)}`,
+                  content: `Yeni parca talebi #${quoteRequest.number} - ${data.partDescription.slice(0, 80)}`,
                })),
             })
          }
@@ -88,7 +113,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ id: quoteRequest.id, number: quoteRequest.number })
    } catch (error) {
       console.error('[QUOTE_POST]', error)
-      return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
+      return NextResponse.json({ error: 'Sunucu hatasi' }, { status: 500 })
    }
 }
 
@@ -114,6 +139,6 @@ export async function GET(req: Request) {
       return NextResponse.json(requests)
    } catch (error) {
       console.error('[QUOTE_GET]', error)
-      return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
+      return NextResponse.json({ error: 'Sunucu hatasi' }, { status: 500 })
    }
 }

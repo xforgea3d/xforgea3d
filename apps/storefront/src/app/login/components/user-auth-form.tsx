@@ -126,7 +126,8 @@ function SignInForm({ isLoading, setIsLoading, supabase }) {
             setErrorMsg('E-posta veya şifre hatalı.')
             console.error('SignIn Error:', error.message)
          } else if (data.session) {
-            window.location.assign(redirectParams ? redirectParams : `/`)
+            const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'
+            window.location.assign(target)
          }
       } catch (error) {
          setErrorMsg('Beklenmeyen bir hata oluştu.')
@@ -218,7 +219,8 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
             setErrorMsg('Bu e-posta adresi zaten kullanımda.')
          } else if (data.session) {
             // Auto sign in enabled without email verification
-            window.location.assign(redirectParams ? redirectParams : `/`)
+            const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'
+            window.location.assign(target)
          } else {
             // Email confirmation required
             setSuccessMsg('Kayıt başarılı! Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın.')

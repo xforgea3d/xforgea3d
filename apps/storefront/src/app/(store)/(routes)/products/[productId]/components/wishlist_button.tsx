@@ -3,12 +3,14 @@
 import { Spinner } from '@/components/native/icons'
 import { Button } from '@/components/ui/button'
 import { useAuthenticated } from '@/hooks/useAuthentication'
+import { useCsrf } from '@/hooks/useCsrf'
 import { HeartIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export default function WishlistButton({ product }) {
    const { authenticated } = useAuthenticated()
+   const csrfToken = useCsrf()
 
    const [wishlist, setWishlist] = useState(null)
    const [fetchingWishlist, setFetchingWishlist] = useState(true)
@@ -43,7 +45,7 @@ export default function WishlistButton({ product }) {
          setFetchingWishlist(true)
          const response = await fetch('/api/wishlist', {
             method: 'POST',
-            body: JSON.stringify({ productId: product?.id, connect: true }),
+            body: JSON.stringify({ productId: product?.id, connect: true, csrfToken }),
             headers: { 'Content-Type': 'application/json' },
          })
          const json = await response.json()
@@ -60,7 +62,7 @@ export default function WishlistButton({ product }) {
          setFetchingWishlist(true)
          const response = await fetch('/api/wishlist', {
             method: 'DELETE',
-            body: JSON.stringify({ productId: product.id, connect: false }),
+            body: JSON.stringify({ productId: product.id, connect: false, csrfToken }),
             headers: { 'Content-Type': 'application/json' },
          })
          const json = await response.json()

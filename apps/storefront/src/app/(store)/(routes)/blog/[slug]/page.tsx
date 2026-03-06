@@ -1,6 +1,7 @@
 export const revalidate = 3600
 
 import prisma from '@/lib/prisma'
+import { sanitizeHtml } from '@/lib/sanitize'
 import { BlogPostJsonLd } from '@/app/json-ld'
 import type { Metadata } from 'next'
 import Image from 'next/image'
@@ -81,7 +82,7 @@ export default async function BlogPostPage({ params }: Props) {
          )}
          <div
             className="prose prose-neutral dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.body_html_tr ?? '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.body_html_tr ?? '') }}
          />
          <div className="mt-12 pt-6 border-t">
             <Link href="/blog" className="text-sm underline underline-offset-4 text-muted-foreground hover:text-foreground">

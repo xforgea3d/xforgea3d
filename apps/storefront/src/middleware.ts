@@ -1,27 +1,75 @@
 import { updateSession } from '@/lib/supabase/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
-/**
- * Lightweight middleware — ONLY runs on truly protected routes.
- * Previously this fetched /api/maintenance-status on EVERY request,
- * adding a full Supabase round-trip (100-400ms) to every page load.
- * That fetch has been removed entirely; maintenance mode checks are
- * now handled at the component level if needed.
- */
+// Simple in-memory rate limiter (per Vercel instance)
+const hits = new Map<string, { count: number; resetAt: number }>()
+function checkRate(key: string, limit: number, windowMs: number): boolean {
+   const now = Date.now()
+   const entry = hits.get(key)
+   if (!entry || entry.resetAt < now) {
+      hits.set(key, { count: 1, resetAt: now + windowMs })
+      return true
+   }
+   entry.count++
+   return entry.count <= limit
+}
+
+// Cleanup stale entries
+if (typeof globalThis !== 'undefined') {
+   const g = globalThis as any
+   if (!g.__rateLimitCleanup) {
+      g.__rateLimitCleanup = setInterval(() => {
+         const now = Date.now()
+         for (const [key, val] of hits) {
+            if (val.resetAt < now) hits.delete(key)
+         }
+      }, 60_000)
+   }
+}
+
+// Public API routes that don't need auth
+const PUBLIC_API_ROUTES = [
+   '/api/auth',
+   '/api/products',
+   '/api/revalidate',
+   '/api/search',
+   '/api/car-brands',
+   '/api/nav-items',
+]
+
+// Rate-limited public POST endpoints
+const RATE_LIMITED_POSTS: Record<string, { limit: number; windowMs: number }> = {
+   '/api/quote-requests': { limit: 5, windowMs: 60_000 },
+   '/api/custom-order': { limit: 5, windowMs: 60_000 },
+   '/api/payment/callback': { limit: 30, windowMs: 60_000 },
+}
+
 export async function middleware(request: NextRequest) {
    const { pathname } = request.nextUrl
+   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 
-   // ── Always allow public API routes ─────────────────────────────────────
-   if (pathname.startsWith('/api/auth')) return NextResponse.next()
-   if (pathname.startsWith('/api/custom-order')) return NextResponse.next()
-   if (pathname.startsWith('/api/products')) return NextResponse.next()
-   if (pathname.startsWith('/api/revalidate')) return NextResponse.next()
-   if (pathname.startsWith('/api/search')) return NextResponse.next()
-   if (pathname.startsWith('/api/car-brands')) return NextResponse.next()
+   // Rate limit public POST endpoints
+   const rlConfig = RATE_LIMITED_POSTS[pathname]
+   if (rlConfig && request.method === 'POST') {
+      if (!checkRate(`${ip}:${pathname}`, rlConfig.limit, rlConfig.windowMs)) {
+         return NextResponse.json(
+            { error: 'Cok fazla istek. Lutfen bekleyin.' },
+            { status: 429 }
+         )
+      }
+   }
+
+   // Always allow public API routes
+   for (const route of PUBLIC_API_ROUTES) {
+      if (pathname.startsWith(route)) return NextResponse.next()
+   }
+
    // Allow public POST to quote-requests (form submission without auth)
    if (pathname === '/api/quote-requests' && request.method === 'POST') return NextResponse.next()
+   // Allow public POST to custom-order
+   if (pathname === '/api/custom-order' && request.method === 'POST') return NextResponse.next()
 
-   // ── Session check (only for protected paths) ───────────────────────────
+   // Session check (only for protected paths)
    const { supabaseResponse, user } = await updateSession(request)
 
    if (!user) {
@@ -38,11 +86,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-   // ONLY protect these routes — do NOT run middleware on every page
    matcher: [
       '/profile/:path*',
       '/checkout/:path*',
-      // We protect all APIs by default, but exclude public ones at the top of the function
-      '/api/:path*'
+      '/api/:path*',
    ],
 }

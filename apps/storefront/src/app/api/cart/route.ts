@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { verifyCsrfToken } from '@/lib/csrf'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -9,7 +10,7 @@ export async function GET(req: Request) {
          return new NextResponse('Unauthorized', { status: 401 })
       }
 
-      const cart = await prisma.cart.findUniqueOrThrow({
+      let cart = await prisma.cart.findUnique({
          where: { userId },
          include: {
             items: {
@@ -30,6 +31,29 @@ export async function GET(req: Request) {
          },
       })
 
+      if (!cart) {
+         cart = await prisma.cart.create({
+            data: { user: { connect: { id: userId } } },
+            include: {
+               items: {
+                  include: {
+                     product: {
+                        select: {
+                           id: true,
+                           title: true,
+                           price: true,
+                           discount: true,
+                           images: true,
+                           isAvailable: true,
+                           stock: true,
+                        },
+                     },
+                  },
+               },
+            },
+         })
+      }
+
       return NextResponse.json(cart)
    } catch (error) {
       console.error('[GET_CART]', error)
@@ -45,7 +69,19 @@ export async function POST(req: Request) {
          return new NextResponse('Unauthorized', { status: 401 })
       }
 
-      const { productId, count } = await req.json()
+      const { productId, count, csrfToken } = await req.json()
+
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
+         return new NextResponse('Gecersiz istek. Sayfayi yenileyip tekrar deneyin.', { status: 403 })
+      }
+
+      if (!productId || typeof count !== 'number') {
+         return new NextResponse('productId ve count zorunlu', { status: 400 })
+      }
+
+      if (count > 99) {
+         return new NextResponse('Maksimum 99 adet eklenebilir', { status: 400 })
+      }
 
       if (count < 1) {
          await prisma.cartItem.delete({
@@ -70,7 +106,6 @@ export async function POST(req: Request) {
          })
       }
 
-      // Single fetch after mutation with minimal product data
       const cart = await prisma.cart.findUniqueOrThrow({
          where: { userId },
          include: {
@@ -94,7 +129,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json(cart)
    } catch (error) {
-      console.error('[PRODUCT_DELETE]', error)
+      console.error('[CART_POST]', error)
       return new NextResponse('Internal error', { status: 500 })
    }
 }

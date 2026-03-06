@@ -209,6 +209,7 @@ model Order {
   @@index([addressId])
   @@index([discountCodeId])
   @@index([userId, status])           // admin order tracking filter
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -329,6 +330,7 @@ model Payment {
   @@index([userId])
   @@index([providerId])
   @@index([orderId])
+  @@index([createdAt])
 }
 
 enum PaymentStatusEnum {

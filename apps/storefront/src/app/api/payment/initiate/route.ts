@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { verifyCsrfToken } from '@/lib/csrf'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
@@ -11,9 +12,14 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
 
-      const { orderId } = await req.json()
+      const { orderId, csrfToken } = await req.json()
       if (!orderId) {
          return NextResponse.json({ error: 'orderId is required' }, { status: 400 })
+      }
+
+      // CSRF validation
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
+         return NextResponse.json({ error: 'Gecersiz istek. Sayfayi yenileyip tekrar deneyin.' }, { status: 403 })
       }
 
       // Verify order exists and belongs to this user

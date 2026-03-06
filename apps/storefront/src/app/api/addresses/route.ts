@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { verifyCsrfToken } from '@/lib/csrf'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -10,9 +11,7 @@ export async function GET(req: Request) {
       }
 
       const addresses = await prisma.address.findMany({
-         where: {
-            userId,
-         },
+         where: { userId },
       })
 
       return NextResponse.json(addresses)
@@ -30,19 +29,32 @@ export async function POST(req: Request) {
          return new NextResponse('Unauthorized', { status: 401 })
       }
 
-      const { address, city, phone, postalCode } = await req.json()
+      const { address, city, phone, postalCode, csrfToken } = await req.json()
+
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
+         return new NextResponse('Gecersiz istek. Sayfayi yenileyip tekrar deneyin.', { status: 403 })
+      }
+
+      if (!address || !city || !phone) {
+         return new NextResponse('Adres, sehir ve telefon zorunlu alanlardir', { status: 400 })
+      }
+
+      if (address.length > 500 || city.length > 100) {
+         return new NextResponse('Alan uzunlugu limiti asildi', { status: 400 })
+      }
+
+      const phoneClean = phone.replace(/[^0-9+]/g, '')
+      if (phoneClean.length < 10 || phoneClean.length > 15) {
+         return new NextResponse('Gecersiz telefon numarasi', { status: 400 })
+      }
 
       const object = await prisma.address.create({
          data: {
-            user: {
-               connect: {
-                  id: userId,
-               },
-            },
-            city,
-            address,
-            phone,
-            postalCode,
+            user: { connect: { id: userId } },
+            city: city.trim(),
+            address: address.trim(),
+            phone: phoneClean,
+            postalCode: postalCode?.trim() || null,
          },
       })
 

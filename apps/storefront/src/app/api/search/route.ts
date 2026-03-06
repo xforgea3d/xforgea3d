@@ -6,7 +6,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url)
         const query = searchParams.get('q')
 
-        if (!query || query.length < 2) {
+        if (!query || query.length < 2 || query.length > 100) {
             return NextResponse.json({ products: [] })
         }
 

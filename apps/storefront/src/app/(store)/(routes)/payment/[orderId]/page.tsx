@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
+import { PaymentButton } from './payment-button'
 
 interface Props {
    params: { orderId: string }
@@ -208,31 +209,3 @@ export default async function PaymentPage({ params, searchParams }: Props) {
    )
 }
 
-// ── Client-side Payment Button ───────────────────────────────
-function PaymentButton({
-   orderId,
-   amount,
-   isTest = false,
-}: {
-   orderId: string
-   amount: number
-   isTest?: boolean
-}) {
-   return (
-      <form action={`/api/payment/initiate`} method="POST">
-         <input type="hidden" name="orderId" value={orderId} />
-         <button
-            type="submit"
-            className={`w-full py-3 px-6 rounded-lg font-medium text-center transition-opacity hover:opacity-90 ${
-               isTest
-                  ? 'bg-amber-500 text-white'
-                  : 'bg-foreground text-background'
-            }`}
-         >
-            {isTest
-               ? `Test Odemesi Yap (${amount.toFixed(2)} TL)`
-               : `${amount.toFixed(2)} TL Ode`}
-         </button>
-      </form>
-   )
-}

@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader } from '@/components/ui/loader'
 import { useAuthenticated } from '@/hooks/useAuthentication'
+import { useCsrf } from '@/hooks/useCsrf'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -22,6 +23,7 @@ export default function QuoteRequestDetailPage({
    params: { requestId: string }
 }) {
    const { authenticated } = useAuthenticated()
+   const csrfToken = useCsrf()
    const router = useRouter()
    const [data, setData] = useState<any>(null)
    const [addresses, setAddresses] = useState<any[]>([])
@@ -61,7 +63,7 @@ export default function QuoteRequestDetailPage({
          const res = await fetch(`/api/quote-requests/${params.requestId}/accept`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ addressId: selectedAddress }),
+            body: JSON.stringify({ addressId: selectedAddress, csrfToken }),
          })
 
          if (!res.ok) {

@@ -21,11 +21,26 @@ export async function POST(req: Request) {
 
       if (!rawData) return NextResponse.json({ error: 'Veri eksik' }, { status: 400 })
 
-      const data = JSON.parse(rawData)
+      let data: any
+      try {
+         data = JSON.parse(rawData)
+      } catch {
+         return NextResponse.json({ error: 'Gecersiz veri formati' }, { status: 400 })
+      }
 
       // Upload SVG to Supabase Storage
       let svgUrl: string | null = null
       if (svgFile) {
+         const MAX_SIZE = 5 * 1024 * 1024 // 5MB
+         if (svgFile.size > MAX_SIZE) {
+            return NextResponse.json({ error: 'Dosya boyutu 5MB limitini asiyor' }, { status: 400 })
+         }
+
+         const allowedTypes = new Set(['image/svg+xml', 'image/png', 'image/jpeg', 'image/webp'])
+         if (!allowedTypes.has(svgFile.type)) {
+            return NextResponse.json({ error: 'Desteklenmeyen dosya tipi' }, { status: 400 })
+         }
+
          const buffer = Buffer.from(await svgFile.arrayBuffer())
          const filename = `custom-orders/${randomUUID()}-${svgFile.name.replace(/[^a-z0-9.-]/gi, '_')}`
 

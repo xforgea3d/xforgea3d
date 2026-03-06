@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { sanitizeHtml } from '@/lib/sanitize'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
@@ -32,7 +33,7 @@ export default async function StaticPage({ params }: Props) {
             <h1 className="text-3xl font-bold tracking-tight mb-8">{page.title_tr}</h1>
             <div
                 className="prose prose-neutral dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: page.body_html_tr ?? '' }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.body_html_tr ?? '') }}
             />
         </div>
     )

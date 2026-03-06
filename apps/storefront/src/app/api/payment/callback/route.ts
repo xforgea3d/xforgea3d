@@ -4,25 +4,11 @@ import crypto from 'crypto'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://xforgea3d.com'
 
-/**
- * POST /api/payment/callback
- *
- * Webhook handler for payment provider callbacks.
- * The bank/POS provider sends payment result here after 3D Secure or payment completion.
- *
- * Expected body fields (varies by provider — adapt to your chosen POS):
- *   - merchant_oid / order_id / refId: payment reference
- *   - status: success / fail / error
- *   - total_amount: amount paid
- *   - hash / signature: HMAC signature for validation
- *   - card_pan: masked card number (optional)
- */
 export async function POST(req: NextRequest) {
    try {
       const body = await req.json().catch(() => null)
       const formData = body ? null : await req.formData().catch(() => null)
 
-      // Support both JSON and form-encoded callbacks
       const getField = (key: string): string | null => {
          if (body && body[key]) return String(body[key])
          if (formData && formData.get(key)) return String(formData.get(key))
@@ -40,7 +26,6 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ error: 'Missing reference' }, { status: 400 })
       }
 
-      // Find the payment record
       const payment = await prisma.payment.findUnique({
          where: { refId },
          include: { order: true },
@@ -51,12 +36,19 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ error: 'Payment not found' }, { status: 404 })
       }
 
-      // ── Signature validation ──────────────────────────────
+      // Idempotency: already processed
+      if (payment.isSuccessful) {
+         return NextResponse.json({ status: 'OK', message: 'Already processed' })
+      }
+
+      // Signature validation - REQUIRED when secret key is configured
       const secretKey = process.env.PAYMENT_SECRET_KEY
-      if (secretKey && hash) {
-         // Validate HMAC signature from provider
-         // The exact signature algorithm depends on your provider.
-         // Common pattern: HMAC-SHA256(merchantId + refId + amount, secretKey)
+      if (secretKey) {
+         if (!hash) {
+            console.error('[PAYMENT_CALLBACK] Missing signature for refId:', refId)
+            return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
+         }
+
          const merchantId = process.env.PAYMENT_MERCHANT_ID ?? ''
          const expectedHashStr = `${merchantId}${refId}${totalAmount ?? payment.payable.toFixed(2)}`
          const expectedHash = crypto
@@ -74,31 +66,42 @@ export async function POST(req: NextRequest) {
 
             return NextResponse.json({ error: 'Invalid signature' }, { status: 403 })
          }
+      } else if (process.env.NODE_ENV === 'production') {
+         console.error('[PAYMENT_CALLBACK] PAYMENT_SECRET_KEY not configured in production')
+         return NextResponse.json({ error: 'Payment validation not configured' }, { status: 500 })
       }
 
-      // ── Process payment result ────────────────────────────
+      // Process payment result
       const isSuccess = status === 'success' || status === 'completed' || status === 'paid'
 
       if (isSuccess) {
-         // Update payment record
-         await prisma.payment.update({
-            where: { id: payment.id },
-            data: {
-               status: 'Paid',
-               isSuccessful: true,
-               cardPan: cardPan ?? undefined,
-               cardHash: hash ?? undefined,
-               fee: totalAmount ? parseFloat(totalAmount) : undefined,
-            },
+         // Atomic update with idempotency check inside transaction
+         const result = await prisma.$transaction(async (tx) => {
+            const current = await tx.payment.findUniqueOrThrow({ where: { id: payment.id } })
+            if (current.isSuccessful) return { alreadyProcessed: true }
+
+            await tx.payment.update({
+               where: { id: payment.id },
+               data: {
+                  status: 'Paid',
+                  isSuccessful: true,
+                  cardPan: cardPan ?? undefined,
+                  cardHash: hash ?? undefined,
+                  fee: totalAmount ? parseFloat(totalAmount) : undefined,
+               },
+            })
+            await tx.order.update({
+               where: { id: payment.orderId },
+               data: { isPaid: true },
+            })
+            return { alreadyProcessed: false }
          })
 
-         // Update order as paid
-         await prisma.order.update({
-            where: { id: payment.orderId },
-            data: { isPaid: true },
-         })
+         if (result.alreadyProcessed) {
+            return NextResponse.json({ status: 'OK', message: 'Already processed' })
+         }
 
-         // Notify admins about successful payment
+         // Notify admins (best-effort)
          try {
             const admins = await prisma.profile.findMany({
                where: { role: 'admin' },
@@ -116,10 +119,8 @@ export async function POST(req: NextRequest) {
             console.error('[PAYMENT_CALLBACK_NOTIFY]', notifyErr)
          }
 
-         // Return success response to payment provider
          return NextResponse.json({ status: 'OK', message: 'Payment confirmed' })
       } else {
-         // Payment failed
          await prisma.payment.update({
             where: { id: payment.id },
             data: {

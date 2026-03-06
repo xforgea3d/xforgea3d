@@ -1,4 +1,5 @@
 import config from '@/config/site'
+import { verifyCsrfToken } from '@/lib/csrf'
 import Mail from '@/emails/order_notification_owner'
 import prisma from '@/lib/prisma'
 import { sendMail } from '@persepolis/mail'
@@ -23,6 +24,7 @@ export async function GET(req: Request) {
             _count: { select: { orderItems: true } },
          },
          orderBy: { createdAt: 'desc' },
+         take: 100,
       })
 
       return NextResponse.json(orders)
@@ -37,76 +39,113 @@ export async function POST(req: Request) {
       const userId = req.headers.get('X-USER-ID')
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
-      const { addressId, discountCode } = await req.json()
+      const { addressId, discountCode, csrfToken } = await req.json()
+
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
+         return new NextResponse('Gecersiz istek. Sayfayi yenileyip tekrar deneyin.', { status: 403 })
+      }
 
       if (!addressId) return new NextResponse('addressId is required', { status: 400 })
 
-      // Validate discount code if provided
-      if (discountCode) {
-         const now = new Date()
-         const dc = await prisma.discountCode.findUnique({
-            where: { code: discountCode },
-         })
-         if (!dc || dc.stock < 1 || dc.endDate < now || dc.startDate > now) {
-            return new NextResponse('Geçersiz veya süresi dolmuş indirim kodu', { status: 400 })
+      // Verify address belongs to this user
+      const address = await prisma.address.findFirst({
+         where: { id: addressId, userId },
+      })
+      if (!address) {
+         return new NextResponse('Adres bulunamadi veya size ait degil', { status: 403 })
+      }
+
+      // Use transaction for atomic order creation
+      const order = await prisma.$transaction(async (tx) => {
+         // Validate discount code inside transaction
+         if (discountCode) {
+            const now = new Date()
+            const dc = await tx.discountCode.findUnique({
+               where: { code: discountCode },
+            })
+            if (!dc || dc.stock < 1 || dc.endDate < now || dc.startDate > now) {
+               throw new Error('INVALID_DISCOUNT')
+            }
          }
-      }
 
-      const cart = await prisma.cart.findUniqueOrThrow({
-         where: { userId },
-         include: { items: { include: { product: true } } },
-      })
-
-      if (!cart.items.length) {
-         return new NextResponse('Sepet boş', { status: 400 })
-      }
-
-      const { tax, total, discount, payable } = calculateCosts({ cart })
-
-      const order = await prisma.order.create({
-         data: {
-            user: { connect: { id: userId } },
-            status: 'OnayBekleniyor',
-            total,
-            tax,
-            payable,
-            discount,
-            shipping: 0,
-            address: { connect: { id: addressId } },
-            ...(discountCode && {
-               discountCode: { connect: { code: discountCode } },
-            }),
-            orderItems: {
-               create: cart.items.map((item) => ({
-                  count: item.count,
-                  price: item.product.price,
-                  discount: item.product.discount,
-                  product: { connect: { id: item.productId } },
-               })),
-            },
-         },
-         include: { orderItems: true, address: true },
-      })
-
-      // Decrement discount code stock if used
-      if (discountCode) {
-         await prisma.discountCode.update({
-            where: { code: discountCode },
-            data: { stock: { decrement: 1 } },
+         const cart = await tx.cart.findUniqueOrThrow({
+            where: { userId },
+            include: { items: { include: { product: true } } },
          })
-      }
 
-      // Notify admin profiles (role === 'admin')
+         if (!cart.items.length) {
+            throw new Error('EMPTY_CART')
+         }
+
+         // Validate stock availability
+         for (const item of cart.items) {
+            if (!item.product.isAvailable) {
+               throw new Error(`UNAVAILABLE:${item.product.title}`)
+            }
+            if (item.product.stock < item.count) {
+               throw new Error(`OUT_OF_STOCK:${item.product.title}`)
+            }
+         }
+
+         const { tax, total, discount, payable } = calculateCosts({ cart })
+
+         const created = await tx.order.create({
+            data: {
+               user: { connect: { id: userId } },
+               status: 'OnayBekleniyor',
+               total,
+               tax,
+               payable,
+               discount,
+               shipping: 0,
+               address: { connect: { id: addressId } },
+               ...(discountCode && {
+                  discountCode: { connect: { code: discountCode } },
+               }),
+               orderItems: {
+                  create: cart.items.map((item) => ({
+                     count: item.count,
+                     price: item.product.price,
+                     discount: item.product.discount,
+                     product: { connect: { id: item.productId } },
+                  })),
+               },
+            },
+            include: { orderItems: true, address: true },
+         })
+
+         // Decrement discount code stock atomically
+         if (discountCode) {
+            await tx.discountCode.update({
+               where: { code: discountCode },
+               data: { stock: { decrement: 1 } },
+            })
+         }
+
+         // Decrement product stock
+         for (const item of cart.items) {
+            await tx.product.update({
+               where: { id: item.productId },
+               data: { stock: { decrement: item.count } },
+            })
+         }
+
+         return created
+      })
+
+      // Notify admin profiles (best-effort, outside transaction)
       try {
          const admins = await prisma.profile.findMany({
             where: { role: 'admin' },
          })
 
+         const payable = order.payable
+
          if (admins.length) {
             await prisma.notification.createMany({
                data: admins.map((admin) => ({
                   userId: admin.id,
-                  content: `Sipariş #${order.number} oluşturuldu — ${payable.toFixed(2)} TL.`,
+                  content: `Siparis #${order.number} olusturuldu - ${payable.toFixed(2)} TL.`,
                })),
             })
 
@@ -114,7 +153,7 @@ export async function POST(req: Request) {
                await sendMail({
                   name: config.name,
                   to: admin.email,
-                  subject: 'Yeni sipariş alındı.',
+                  subject: 'Yeni siparis alindi.',
                   html: await render(
                      Mail({
                         id: order.id,
@@ -126,12 +165,23 @@ export async function POST(req: Request) {
             }
          }
       } catch (notifyError) {
-         // Don't fail the order if notifications fail
          console.error('[ORDER_NOTIFY]', notifyError)
       }
 
       return NextResponse.json(order)
-   } catch (error) {
+   } catch (error: any) {
+      if (error?.message === 'INVALID_DISCOUNT') {
+         return new NextResponse('Gecersiz veya suresi dolmus indirim kodu', { status: 400 })
+      }
+      if (error?.message === 'EMPTY_CART') {
+         return new NextResponse('Sepet bos', { status: 400 })
+      }
+      if (error?.message?.startsWith('UNAVAILABLE:')) {
+         return new NextResponse(`${error.message.split(':')[1]} su an mevcut degil`, { status: 400 })
+      }
+      if (error?.message?.startsWith('OUT_OF_STOCK:')) {
+         return new NextResponse(`${error.message.split(':')[1]} icin yeterli stok yok`, { status: 400 })
+      }
       console.error('[ORDER_POST]', error)
       return new NextResponse('Internal error', { status: 500 })
    }

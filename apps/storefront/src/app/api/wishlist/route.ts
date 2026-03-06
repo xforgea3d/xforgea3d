@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { verifyCsrfToken } from '@/lib/csrf'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -27,7 +28,10 @@ export async function POST(req: Request) {
       const userId = req.headers.get('X-USER-ID')
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
-      const { productId } = await req.json()
+      const { productId, csrfToken } = await req.json()
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
+         return new NextResponse('Gecersiz istek', { status: 403 })
+      }
       if (!productId) return new NextResponse('productId is required', { status: 400 })
 
       const profile = await prisma.profile.update({
@@ -48,7 +52,10 @@ export async function DELETE(req: Request) {
       const userId = req.headers.get('X-USER-ID')
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
-      const { productId } = await req.json()
+      const { productId, csrfToken } = await req.json()
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
+         return new NextResponse('Gecersiz istek', { status: 403 })
+      }
       if (!productId) return new NextResponse('productId is required', { status: 400 })
 
       const profile = await prisma.profile.update({

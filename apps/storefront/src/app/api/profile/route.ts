@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { verifyCsrfToken } from '@/lib/csrf'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -39,13 +40,27 @@ export async function PATCH(req: Request) {
       const userId = req.headers.get('X-USER-ID')
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
-      const { name, phone, avatar } = await req.json()
+      const { name, phone, avatar, csrfToken } = await req.json()
+
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
+         return new NextResponse('Gecersiz istek. Sayfayi yenileyip tekrar deneyin.', { status: 403 })
+      }
+
+      if (name !== undefined && (typeof name !== 'string' || name.length > 100)) {
+         return new NextResponse('Gecersiz isim', { status: 400 })
+      }
+      if (phone !== undefined && (typeof phone !== 'string' || phone.length > 20)) {
+         return new NextResponse('Gecersiz telefon', { status: 400 })
+      }
+      if (avatar !== undefined && (typeof avatar !== 'string' || avatar.length > 500)) {
+         return new NextResponse('Gecersiz avatar', { status: 400 })
+      }
 
       const profile = await prisma.profile.update({
          where: { id: userId },
          data: {
-            ...(name !== undefined && { name }),
-            ...(phone !== undefined && { phone }),
+            ...(name !== undefined && { name: name.trim() }),
+            ...(phone !== undefined && { phone: phone.trim() }),
             ...(avatar !== undefined && { avatar }),
          },
       })

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useCsrf } from '@/hooks/useCsrf'
 import { useCartContext } from '@/state/Cart'
 import { CheckCircle2Icon, Loader2, MapPin, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -22,6 +23,7 @@ interface Address {
 
 export default function CheckoutPage() {
    const router = useRouter()
+   const csrfToken = useCsrf()
    const { cart, refreshCart } = useCartContext()
 
    const [addresses, setAddresses] = useState<Address[]>([])
@@ -71,7 +73,7 @@ export default function CheckoutPage() {
          const res = await fetch('/api/addresses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newAddress),
+            body: JSON.stringify({ ...newAddress, csrfToken }),
          })
          if (!res.ok) throw new Error()
          const created = await res.json()
@@ -103,6 +105,7 @@ export default function CheckoutPage() {
             body: JSON.stringify({
                addressId: selectedAddress,
                ...(discountCode && { discountCode }),
+               csrfToken,
             }),
          })
 

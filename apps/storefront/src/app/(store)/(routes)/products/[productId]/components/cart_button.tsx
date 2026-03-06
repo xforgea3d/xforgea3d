@@ -3,6 +3,7 @@
 import { Spinner } from '@/components/native/icons'
 import { Button } from '@/components/ui/button'
 import { useAuthenticated } from '@/hooks/useAuthentication'
+import { useCsrf } from '@/hooks/useCsrf'
 import { getCountInCart, getLocalCart } from '@/lib/cart'
 import { CartContextProvider, useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, ShoppingBasketIcon, X } from 'lucide-react'
@@ -14,6 +15,7 @@ export default function CartButton({ product }: { product: any }) {
 
 export function ButtonComponent({ product }) {
    const { authenticated } = useAuthenticated()
+   const csrfToken = useCsrf()
    const { loading, cart, refreshCart, dispatchCart } = useCartContext()
 
    const [fetchingCart, setFetchingCart] = useState(false)
@@ -47,6 +49,7 @@ export function ButtonComponent({ product }) {
                         cartItems: cart?.items,
                         productId: product?.id,
                      }) + 1,
+                  csrfToken,
                }),
                cache: 'no-store',
                headers: {
@@ -110,6 +113,7 @@ export function ButtonComponent({ product }) {
                         cartItems: cart?.items,
                         productId: product?.id,
                      }) - 1,
+                  csrfToken,
                }),
                cache: 'no-store',
                headers: {

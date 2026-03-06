@@ -106,7 +106,10 @@ export async function GET(req: NextRequest) {
    const headerSecret = req.headers.get('x-cron-secret')
    const envSecret = process.env.CRON_SECRET
 
-   if (envSecret && cronSecret !== envSecret && headerSecret !== envSecret) {
+   if (!envSecret) {
+      return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
+   }
+   if (cronSecret !== envSecret && headerSecret !== envSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
    }
 

@@ -12,6 +12,7 @@ import {
    CardTitle,
 } from '@/components/ui/card'
 import { useAuthenticated } from '@/hooks/useAuthentication'
+import { useCsrf } from '@/hooks/useCsrf'
 import { getCountInCart, getLocalCart, writeLocalCart } from '@/lib/cart'
 import { useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, X } from 'lucide-react'
@@ -21,6 +22,7 @@ import { useEffect, useState } from 'react'
 
 export const Item = ({ cartItem }) => {
    const { authenticated } = useAuthenticated()
+   const csrfToken = useCsrf()
    const { loading, cart, refreshCart, dispatchCart } = useCartContext()
    const [fetchingCart, setFetchingCart] = useState(false)
 
@@ -63,10 +65,11 @@ export const Item = ({ cartItem }) => {
                   productId,
                   count:
                      getCountInCart({ cartItems: cart?.items, productId }) + 1,
+                  csrfToken,
                }),
                cache: 'no-store',
                headers: {
-                  'Content-Type': 'application/json-string',
+                  'Content-Type': 'application/json',
                },
             })
 
@@ -120,10 +123,11 @@ export const Item = ({ cartItem }) => {
                   productId,
                   count:
                      getCountInCart({ cartItems: cart?.items, productId }) - 1,
+                  csrfToken,
                }),
                cache: 'no-store',
                headers: {
-                  'Content-Type': 'application/json-string',
+                  'Content-Type': 'application/json',
                },
             })
 
