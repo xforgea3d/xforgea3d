@@ -24,8 +24,15 @@ export function UserAuthForm({ className }: { className?: string }) {
       setErrorMsg(null)
 
       try {
-         // Kullanıcı adını sessizce email'e çevir
-         const email = `${username.toLowerCase().trim()}@xforgea3d.com`
+         const key = username.toLowerCase().trim()
+
+         if (key !== 'adminvolkan') {
+            setErrorMsg('Yetkisiz kullanıcı.')
+            setIsLoading(false)
+            return
+         }
+
+         const email = `${key}@xforgea3d.com`
 
          const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 

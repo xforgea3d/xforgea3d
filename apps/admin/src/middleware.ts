@@ -2,15 +2,16 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+// Tek yetkili admin — başka kimse admin olamaz
+const ALLOWED_ADMIN_EMAIL = 'adminvolkan@xforgea3d.com'
+
 export async function middleware(request: NextRequest) {
-   // Always allow auth API routes and upload/generate endpoints
    if (request.nextUrl.pathname.startsWith('/api/auth')) return NextResponse.next()
 
    function isTargetingAPI() {
       return request.nextUrl.pathname.startsWith('/api')
    }
 
-   // Update session using Supabase SSR
    const { supabaseResponse, user } = await updateSession(request)
 
    if (!user) {
@@ -20,8 +21,15 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
    }
 
-   // Verify admin role via Supabase - check profile table
-   // We use a lightweight Supabase query to check admin role
+   // Email kontrolü — sadece adminvolkan girebilir
+   if (user.email !== ALLOWED_ADMIN_EMAIL) {
+      if (isTargetingAPI()) {
+         return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
+      }
+      return NextResponse.redirect(new URL('/login?error=not_admin', request.url))
+   }
+
+   // Rol kontrolü (çift güvenlik)
    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -49,7 +57,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login?error=not_admin', request.url))
    }
 
-   // Pass admin user ID in headers
    const requestHeaders = new Headers(request.headers)
    requestHeaders.set('X-USER-ID', user.id)
 
