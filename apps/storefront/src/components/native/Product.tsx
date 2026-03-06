@@ -46,12 +46,12 @@ export const Product = ({
 
    return (
       <div className="group block relative h-full">
-         <Link href={`/products/${product.id}`} className="block h-full">
-            <div className={cn(
-               "relative flex flex-col h-full overflow-hidden rounded-xl border bg-card transition-all duration-300",
-               "group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] group-hover:-translate-y-1",
-               "dark:group-hover:shadow-[0_8px_30px_rgba(249,115,22,0.12)] dark:group-hover:border-orange-500/25"
-            )}>
+         <div className={cn(
+            "relative flex flex-col h-full overflow-hidden rounded-xl border bg-card transition-all duration-300",
+            "group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] group-hover:-translate-y-1",
+            "dark:group-hover:shadow-[0_8px_30px_rgba(249,115,22,0.12)] dark:group-hover:border-orange-500/25"
+         )}>
+            <Link href={`/products/${product.id}`} className="block">
                {/* Image container */}
                <div className="relative h-56 sm:h-64 w-full flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                   {product?.images?.[0] ? (
@@ -91,7 +91,7 @@ export const Product = ({
                {/* Card body */}
                <div className="p-4 flex flex-col flex-grow space-y-2">
                   {product?.categories?.[0]?.title && (
-                     <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mt-auto">
+                     <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                         {product.categories[0].title}
                      </p>
                   )}
@@ -111,15 +111,15 @@ export const Product = ({
                      )}
                   </div>
                </div>
-            </div>
-         </Link>
+            </Link>
 
-         {/* Quick-add button — renders outside the Link so it doesn't navigate */}
-         {product?.isAvailable && (
-            <div className="px-0 pt-1">
-               <QuickAddButton product={product} />
-            </div>
-         )}
+            {/* Quick-add button — inside card but outside Link */}
+            {product?.isAvailable && (
+               <div className="px-4 pb-4">
+                  <QuickAddButton product={product} />
+               </div>
+            )}
+         </div>
       </div>
    )
 }
