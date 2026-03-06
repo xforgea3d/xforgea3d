@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
 
@@ -65,8 +66,16 @@ export async function POST(request: Request) {
             .getPublicUrl(filePath)
 
         return NextResponse.json({ url: publicUrl })
-    } catch (error) {
+    } catch (error: any) {
         console.error('Server upload error:', error)
+        logError({
+            message: error?.message || '[FILES_POST] Unhandled error',
+            stack: error?.stack,
+            severity: 'critical',
+            source: 'backend',
+            statusCode: 500,
+            ...extractRequestContext(request),
+        })
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }

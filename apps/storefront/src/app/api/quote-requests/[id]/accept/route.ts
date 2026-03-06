@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextResponse } from 'next/server'
 
 /**
@@ -124,13 +125,29 @@ export async function POST(
                })),
             })
          }
-      } catch (notifyError) {
+      } catch (notifyError: any) {
          console.error('[QUOTE_ACCEPT_NOTIFY]', notifyError)
+         logError({
+            message: notifyError?.message || '[QUOTE_ACCEPT_NOTIFY] Notification failed',
+            stack: notifyError?.stack,
+            severity: 'low',
+            source: 'backend',
+            statusCode: 500,
+            ...extractRequestContext(req),
+         })
       }
 
       return NextResponse.json({ orderId: order.id })
-   } catch (error) {
+   } catch (error: any) {
       console.error('[QUOTE_ACCEPT]', error)
+      logError({
+         message: error?.message || '[QUOTE_ACCEPT] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
    }
 }

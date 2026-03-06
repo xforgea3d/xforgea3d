@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -15,8 +16,16 @@ export async function GET(req: Request) {
       })
 
       return NextResponse.json(addresses)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[ADDRESSES_GET]', error)
+      logError({
+         message: error?.message || '[ADDRESSES_GET] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return new NextResponse('Internal error', { status: 500 })
    }
 }
@@ -59,8 +68,16 @@ export async function POST(req: Request) {
       })
 
       return NextResponse.json(object)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[ADDRESS_POST]', error)
+      logError({
+         message: error?.message || '[ADDRESS_POST] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return new NextResponse('Internal error', { status: 500 })
    }
 }

@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
@@ -106,13 +107,29 @@ export async function POST(req: Request) {
                })),
             })
          }
-      } catch (notifyError) {
+      } catch (notifyError: any) {
          console.error('[QUOTE_NOTIFY]', notifyError)
+         logError({
+            message: notifyError?.message || '[QUOTE_NOTIFY] Notification failed',
+            stack: notifyError?.stack,
+            severity: 'low',
+            source: 'backend',
+            statusCode: 500,
+            ...extractRequestContext(req),
+         })
       }
 
       return NextResponse.json({ id: quoteRequest.id, number: quoteRequest.number })
-   } catch (error) {
+   } catch (error: any) {
       console.error('[QUOTE_POST]', error)
+      logError({
+         message: error?.message || '[QUOTE_POST] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return NextResponse.json({ error: 'Sunucu hatasi' }, { status: 500 })
    }
 }
@@ -137,8 +154,16 @@ export async function GET(req: Request) {
       })
 
       return NextResponse.json(requests)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[QUOTE_GET]', error)
+      logError({
+         message: error?.message || '[QUOTE_GET] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return NextResponse.json({ error: 'Sunucu hatasi' }, { status: 500 })
    }
 }

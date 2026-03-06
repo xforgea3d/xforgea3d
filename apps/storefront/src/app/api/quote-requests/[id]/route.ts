@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextResponse } from 'next/server'
 
 /**
@@ -29,8 +30,16 @@ export async function GET(
       }
 
       return NextResponse.json(quoteRequest)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[QUOTE_DETAIL]', error)
+      logError({
+         message: error?.message || '[QUOTE_DETAIL] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
    }
 }

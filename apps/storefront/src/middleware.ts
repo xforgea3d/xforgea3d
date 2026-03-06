@@ -35,6 +35,7 @@ const PUBLIC_API_ROUTES = [
    '/api/search',
    '/api/car-brands',
    '/api/nav-items',
+   '/api/error-logs',
 ]
 
 // Rate-limited public POST endpoints
@@ -42,6 +43,7 @@ const RATE_LIMITED_POSTS: Record<string, { limit: number; windowMs: number }> = 
    '/api/quote-requests': { limit: 5, windowMs: 60_000 },
    '/api/custom-order': { limit: 5, windowMs: 60_000 },
    '/api/payment/callback': { limit: 30, windowMs: 60_000 },
+   '/api/error-logs': { limit: 20, windowMs: 60_000 },
 }
 
 export async function middleware(request: NextRequest) {

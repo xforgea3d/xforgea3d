@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -33,8 +34,16 @@ export async function GET(req: Request) {
 
         return NextResponse.json({ products })
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('[SEARCH_GET]', error)
+        logError({
+            message: error?.message || '[SEARCH_GET] Unhandled error',
+            stack: error?.stack,
+            severity: 'critical',
+            source: 'backend',
+            statusCode: 500,
+            ...extractRequestContext(req),
+        })
         return new NextResponse("Internal Error", { status: 500 })
     }
 }

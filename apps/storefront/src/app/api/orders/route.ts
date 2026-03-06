@@ -1,5 +1,6 @@
 import config from '@/config/site'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import Mail from '@/emails/order_notification_owner'
 import prisma from '@/lib/prisma'
 import { sendMail } from '@persepolis/mail'
@@ -28,8 +29,16 @@ export async function GET(req: Request) {
       })
 
       return NextResponse.json(orders)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[ORDERS_GET]', error)
+      logError({
+         message: error?.message || '[ORDERS_GET] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return new NextResponse('Internal error', { status: 500 })
    }
 }
@@ -164,8 +173,16 @@ export async function POST(req: Request) {
                }).catch((e) => console.error('[ADMIN_MAIL]', e))
             }
          }
-      } catch (notifyError) {
+      } catch (notifyError: any) {
          console.error('[ORDER_NOTIFY]', notifyError)
+         logError({
+            message: notifyError?.message || '[ORDER_NOTIFY] Notification failed',
+            stack: notifyError?.stack,
+            severity: 'low',
+            source: 'backend',
+            statusCode: 500,
+            ...extractRequestContext(req),
+         })
       }
 
       return NextResponse.json(order)
@@ -183,6 +200,14 @@ export async function POST(req: Request) {
          return new NextResponse(`${error.message.split(':')[1]} icin yeterli stok yok`, { status: 400 })
       }
       console.error('[ORDER_POST]', error)
+      logError({
+         message: error?.message || '[ORDER_POST] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return new NextResponse('Internal error', { status: 500 })
    }
 }

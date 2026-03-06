@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
@@ -115,8 +116,16 @@ export async function POST(req: NextRequest) {
                   })),
                })
             }
-         } catch (notifyErr) {
+         } catch (notifyErr: any) {
             console.error('[PAYMENT_CALLBACK_NOTIFY]', notifyErr)
+            logError({
+               message: notifyErr?.message || '[PAYMENT_CALLBACK_NOTIFY] Notification failed',
+               stack: notifyErr?.stack,
+               severity: 'low',
+               source: 'payment',
+               statusCode: 500,
+               ...extractRequestContext(req),
+            })
          }
 
          return NextResponse.json({ status: 'OK', message: 'Payment confirmed' })
@@ -132,8 +141,16 @@ export async function POST(req: NextRequest) {
 
          return NextResponse.json({ status: 'OK', message: 'Payment failure recorded' })
       }
-   } catch (error) {
+   } catch (error: any) {
       console.error('[PAYMENT_CALLBACK]', error)
+      logError({
+         message: error?.message || '[PAYMENT_CALLBACK] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'payment',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return NextResponse.json(
          { error: 'Callback processing failed' },
          { status: 500 }

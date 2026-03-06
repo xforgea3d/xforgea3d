@@ -1,5 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
+import { reportError } from '@/lib/error-reporter'
+
 export default function GlobalError({
    error,
    reset,
@@ -7,6 +10,16 @@ export default function GlobalError({
    error: Error & { digest?: string }
    reset: () => void
 }) {
+   useEffect(() => {
+      reportError({
+         message: error.message,
+         stack: error.stack,
+         severity: 'critical',
+         source: 'frontend',
+         metadata: { digest: error.digest },
+      })
+   }, [error])
+
    return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
          <h2 className="text-2xl font-bold">Bir hata olustu</h2>

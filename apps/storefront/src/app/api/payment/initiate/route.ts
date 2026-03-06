@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
@@ -177,8 +178,16 @@ export async function POST(req: NextRequest) {
             message: 'Odeme altyapisi test modunda. Gercek odeme islemi yapilmayacak.',
          })
       }
-   } catch (error) {
+   } catch (error: any) {
       console.error('[PAYMENT_INITIATE]', error)
+      logError({
+         message: error?.message || '[PAYMENT_INITIATE] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'payment',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return NextResponse.json(
          { error: 'Odeme baslatilirken bir hata olustu' },
          { status: 500 }

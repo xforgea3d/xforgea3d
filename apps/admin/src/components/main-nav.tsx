@@ -19,6 +19,7 @@ import {
    MessageSquare,
    CreditCard,
    Users,
+   Bug,
 } from 'lucide-react'
 
 const navGroups = [
@@ -52,6 +53,12 @@ const navGroups = [
          { href: '/nav-items', label: 'Navbar', icon: Navigation },
          { href: '/content/blog', label: 'Blog', icon: FileText },
          { href: '/content/pages', label: 'Sayfalar', icon: FileText },
+      ],
+   },
+   {
+      label: 'Sistem',
+      items: [
+         { href: '/error-logs', label: 'Hata Loglari', icon: Bug },
          { href: '/settings/site', label: 'Ayarlar', icon: Settings },
       ],
    },

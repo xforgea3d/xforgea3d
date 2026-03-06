@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
@@ -17,8 +18,16 @@ export async function GET(req: Request) {
       })
 
       return NextResponse.json(profile.wishlist)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[WISHLIST_GET]', error)
+      logError({
+         message: error?.message || '[WISHLIST_GET] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return new NextResponse('Internal error', { status: 500 })
    }
 }
@@ -41,8 +50,16 @@ export async function POST(req: Request) {
       })
 
       return NextResponse.json(profile.wishlist)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[WISHLIST_POST]', error)
+      logError({
+         message: error?.message || '[WISHLIST_POST] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return new NextResponse('Internal error', { status: 500 })
    }
 }
@@ -65,8 +82,16 @@ export async function DELETE(req: Request) {
       })
 
       return NextResponse.json(profile.wishlist)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[WISHLIST_DELETE]', error)
+      logError({
+         message: error?.message || '[WISHLIST_DELETE] Unhandled error',
+         stack: error?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return new NextResponse('Internal error', { status: 500 })
    }
 }

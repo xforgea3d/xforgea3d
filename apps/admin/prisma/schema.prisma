@@ -351,16 +351,44 @@ model PaymentProvider {
 }
 
 model Error {
-  id String @id @default(cuid())
+  id        String   @id @default(cuid())
+  message   String
+  stack     String?  @db.Text
+  severity  ErrorSeverity @default(medium)
+  source    ErrorSource   @default(backend)
+  path      String?
+  method    String?
+  statusCode Int?
+  userAgent String?
+  ip        String?
+  metadata  Json?
+  resolved  Boolean  @default(false)
 
-  error String
-
-  user   Profile? @relation(fields: [userId], references: [id])
-  userId String?
+  user      Profile? @relation(fields: [userId], references: [id])
+  userId    String?
 
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@index([severity])
+  @@index([source])
+  @@index([createdAt])
+  @@index([resolved])
+}
+
+enum ErrorSeverity {
+  low
+  medium
+  high
+  critical
+}
+
+enum ErrorSource {
+  frontend
+  backend
+  middleware
+  payment
+  external
 }
 
 model File {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { logError, extractRequestContext } from '@/lib/error-logger'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 
@@ -87,8 +88,16 @@ export async function POST(req: Request) {
       }
 
       return NextResponse.json({ success: true })
-   } catch (err) {
+   } catch (err: any) {
       console.error('[Custom Order Error]', err)
+      logError({
+         message: err?.message || '[Custom Order Error] Unhandled error',
+         stack: err?.stack,
+         severity: 'critical',
+         source: 'backend',
+         statusCode: 500,
+         ...extractRequestContext(req),
+      })
       return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 })
    }
 }
