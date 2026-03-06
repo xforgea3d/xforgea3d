@@ -4,9 +4,6 @@ import { revalidateStorefront } from '@/lib/revalidate-storefront'
 
 export async function GET(req: Request) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const posts = await prisma.blogPost.findMany({ orderBy: { updatedAt: 'desc' } })
         return NextResponse.json(posts)
     } catch (error) {
@@ -17,9 +14,6 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const data = await req.json()
         if (!data.title) return new NextResponse('Title is required', { status: 400 })
 

@@ -8,12 +8,6 @@ export async function GET(
    { params }: { params: { productId: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
-
       if (!params.productId) {
          return new NextResponse('Product id is required', { status: 400 })
       }
@@ -36,12 +30,6 @@ export async function DELETE(
    { params }: { params: { productId: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
-
       const product = await prisma.product.delete({
          where: {
             id: params.productId,
@@ -66,12 +54,6 @@ export async function PATCH(
    try {
       if (!params.productId) {
          return new NextResponse('Product Id is required', { status: 400 })
-      }
-
-      const userId = req.headers.get('X-USER-ID')
-
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
       }
 
       const { title, description, price, discount, stock, isFeatured, isAvailable, images, keywords, categoryIds, carModelIds, brandId, productType, customOptions } = await req.json()

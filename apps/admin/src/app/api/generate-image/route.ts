@@ -13,11 +13,6 @@ const CONTEXT_PROMPTS: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
    try {
-      const userId = request.headers.get('X-USER-ID')
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
-
       const { prompt, context } = await request.json()
 
       if (!prompt) {

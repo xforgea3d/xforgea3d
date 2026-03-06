@@ -89,7 +89,8 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
       if (!deleteTarget) return
       try {
          setLoading(true)
-         await fetch(`/api/car-brands/${brandId}/models/${deleteTarget}`, { method: 'DELETE' })
+         const res = await fetch(`/api/car-brands/${brandId}/models/${deleteTarget}`, { method: 'DELETE' })
+         if (!res.ok) throw new Error('Silme başarısız')
          router.refresh()
          toast.success('Model silindi.')
       } catch {
@@ -110,11 +111,12 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
          if (!uploadRes.ok) throw new Error('Upload failed')
          const { url } = await uploadRes.json()
 
-         await fetch(`/api/car-brands/${brandId}/models/${modelId}`, {
+         const patchRes = await fetch(`/api/car-brands/${brandId}/models/${modelId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ imageUrl: url }),
          })
+         if (!patchRes.ok) throw new Error('Güncelleme başarısız')
          router.refresh()
          toast.success('Görsel yüklendi!')
       } catch (e: any) {
@@ -139,11 +141,12 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
          if (!res.ok) throw new Error(await res.text())
          const { url } = await res.json()
 
-         await fetch(`/api/car-brands/${brandId}/models/${model.id}`, {
+         const patchRes = await fetch(`/api/car-brands/${brandId}/models/${model.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ imageUrl: url }),
          })
+         if (!patchRes.ok) throw new Error('Güncelleme başarısız')
 
          router.refresh()
          toast.success('AI görsel oluşturuldu!')

@@ -111,7 +111,8 @@ export default function NavItemsPage() {
       if (!deleteTarget) return
       try {
          setSaving(true)
-         await fetch(`/api/nav-items/${deleteTarget}`, { method: 'DELETE' })
+         const res = await fetch(`/api/nav-items/${deleteTarget}`, { method: 'DELETE' })
+         if (!res.ok) throw new Error('Silme başarısız')
          await fetchItems()
          toast.success('Menü öğesi silindi')
       } catch {
@@ -125,11 +126,12 @@ export default function NavItemsPage() {
 
    const handleToggleVisibility = async (item: NavItem) => {
       try {
-         await fetch(`/api/nav-items/${item.id}`, {
+         const res = await fetch(`/api/nav-items/${item.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ isVisible: !item.isVisible }),
          })
+         if (!res.ok) throw new Error('Güncelleme başarısız')
          await fetchItems()
          toast.success(item.isVisible ? 'Gizlendi' : 'Gösterildi')
       } catch {
@@ -141,7 +143,7 @@ export default function NavItemsPage() {
       if (!editId) return
       try {
          setSaving(true)
-         await fetch(`/api/nav-items/${editId}`, {
+         const res = await fetch(`/api/nav-items/${editId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -151,6 +153,7 @@ export default function NavItemsPage() {
                badge: editBadge || null,
             }),
          })
+         if (!res.ok) throw new Error('Güncelleme başarısız')
          setEditId(null)
          await fetchItems()
          toast.success('Güncellendi')
@@ -170,11 +173,12 @@ export default function NavItemsPage() {
          isVisible: si.isVisible,
       }))
       try {
-         await fetch('/api/nav-items', {
+         const res = await fetch('/api/nav-items', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ items: updated }),
          })
+         if (!res.ok) throw new Error('Sıralama başarısız')
          await fetchItems()
       } catch {
          toast.error('Sıralama hatası')
@@ -190,11 +194,12 @@ export default function NavItemsPage() {
          isVisible: si.isVisible,
       }))
       try {
-         await fetch('/api/nav-items', {
+         const res = await fetch('/api/nav-items', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ items: updated }),
          })
+         if (!res.ok) throw new Error('Sıralama başarısız')
          await fetchItems()
       } catch {
          toast.error('Sıralama hatası')

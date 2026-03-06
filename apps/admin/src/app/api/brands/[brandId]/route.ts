@@ -8,8 +8,6 @@ export async function GET(
    { params }: { params: { brandId: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) return new NextResponse('Unauthorized', { status: 401 })
       if (!params.brandId) return new NextResponse('Brand id is required', { status: 400 })
 
       const brand = await prisma.brand.findUnique({
@@ -30,8 +28,6 @@ export async function DELETE(
    { params }: { params: { brandId: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) return new NextResponse('Unauthorized', { status: 401 })
       if (!params.brandId) return new NextResponse('Brand id is required', { status: 400 })
 
       const brand = await prisma.brand.delete({
@@ -53,8 +49,6 @@ export async function PATCH(
    { params }: { params: { brandId: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) return new NextResponse('Unauthorized', { status: 401 })
       if (!params.brandId) return new NextResponse('Brand id is required', { status: 400 })
 
       const body = await req.json()

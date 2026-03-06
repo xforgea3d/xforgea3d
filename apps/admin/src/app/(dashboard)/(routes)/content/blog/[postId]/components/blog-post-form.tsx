@@ -69,15 +69,17 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
                 published_at: data.status === 'published' ? new Date().toISOString() : null,
             }
             if (isNew) {
-                await fetch('/api/content/blog', {
+                const res = await fetch('/api/content/blog', {
                     method: 'POST', body: JSON.stringify(payload),
                     headers: { 'Content-Type': 'application/json' },
                 })
+                if (!res.ok) throw new Error('Oluşturma başarısız')
             } else {
-                await fetch(`/api/content/blog/${params.postId}`, {
+                const res = await fetch(`/api/content/blog/${params.postId}`, {
                     method: 'PATCH', body: JSON.stringify(payload),
                     headers: { 'Content-Type': 'application/json' },
                 })
+                if (!res.ok) throw new Error('Güncelleme başarısız')
             }
             router.refresh()
             router.push('/content/blog')
@@ -92,7 +94,8 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
     const onDelete = async () => {
         try {
             setLoading(true)
-            await fetch(`/api/content/blog/${params.postId}`, { method: 'DELETE' })
+            const res = await fetch(`/api/content/blog/${params.postId}`, { method: 'DELETE' })
+            if (!res.ok) throw new Error('Silme başarısız')
             router.refresh()
             router.push('/content/blog')
             toast.success('Yazı silindi.')

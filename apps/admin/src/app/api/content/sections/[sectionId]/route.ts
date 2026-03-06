@@ -4,9 +4,6 @@ import { revalidateStorefront } from '@/lib/revalidate-storefront'
 
 export async function PATCH(req: Request, { params }: { params: { sectionId: string } }) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const data = await req.json()
         const section = await prisma.homepageSection.update({
             where: { id: params.sectionId },
@@ -22,9 +19,6 @@ export async function PATCH(req: Request, { params }: { params: { sectionId: str
 
 export async function DELETE(_: Request, { params }: { params: { sectionId: string } }) {
     try {
-        const userId = _.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         await prisma.homepageSection.delete({ where: { id: params.sectionId } })
         await revalidateStorefront(['/'])
         return NextResponse.json({ ok: true })

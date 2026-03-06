@@ -30,11 +30,6 @@ export async function PATCH(
    { params }: { params: { brandId: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
-
       const body = await req.json()
       const { name, slug, logoUrl, sortOrder } = body
 
@@ -62,11 +57,6 @@ export async function DELETE(
    { params }: { params: { brandId: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
-
       await prisma.carBrand.delete({
          where: { id: params.brandId },
       })

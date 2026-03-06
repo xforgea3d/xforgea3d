@@ -120,10 +120,11 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
       try {
          setLoading(true)
 
-         await fetch(`/api/categories/${params.categoryId}`, {
+         const res = await fetch(`/api/categories/${params.categoryId}`, {
             method: 'DELETE',
             cache: 'no-store',
          })
+         if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
          router.push(`/categories`)

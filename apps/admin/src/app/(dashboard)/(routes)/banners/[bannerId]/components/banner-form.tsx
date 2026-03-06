@@ -80,10 +80,11 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
       try {
          setLoading(true)
 
-         await fetch(`/api/banners/${params.bannerId}`, {
+         const res = await fetch(`/api/banners/${params.bannerId}`, {
             method: 'DELETE',
             cache: 'no-store',
          })
+         if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
          router.push(`/banners`)

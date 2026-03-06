@@ -8,12 +8,6 @@ export async function PATCH(
     { params }: { params: { orderId: string } }
 ) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-
-        if (!userId) {
-            return new NextResponse('Unauthorized', { status: 401 })
-        }
-
         if (!params.orderId) {
             return new NextResponse('Order ID is required', { status: 400 })
         }

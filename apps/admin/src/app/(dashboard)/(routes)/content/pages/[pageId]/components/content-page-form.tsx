@@ -53,15 +53,17 @@ export function ContentPageForm({ initialData }: { initialData: ContentPage | nu
         try {
             setLoading(true)
             if (isNew) {
-                await fetch('/api/content/pages', {
+                const res = await fetch('/api/content/pages', {
                     method: 'POST', body: JSON.stringify(data),
                     headers: { 'Content-Type': 'application/json' },
                 })
+                if (!res.ok) throw new Error('Oluşturma başarısız')
             } else {
-                await fetch(`/api/content/pages/${params.pageId}`, {
+                const res = await fetch(`/api/content/pages/${params.pageId}`, {
                     method: 'PATCH', body: JSON.stringify(data),
                     headers: { 'Content-Type': 'application/json' },
                 })
+                if (!res.ok) throw new Error('Güncelleme başarısız')
             }
             router.refresh()
             router.push('/content/pages')
@@ -76,7 +78,8 @@ export function ContentPageForm({ initialData }: { initialData: ContentPage | nu
     const onDelete = async () => {
         try {
             setLoading(true)
-            await fetch(`/api/content/pages/${params.pageId}`, { method: 'DELETE' })
+            const res = await fetch(`/api/content/pages/${params.pageId}`, { method: 'DELETE' })
+            if (!res.ok) throw new Error('Silme başarısız')
             router.refresh()
             router.push('/content/pages')
             toast.success('Sayfa silindi.')

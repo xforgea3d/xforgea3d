@@ -5,9 +5,6 @@ import { revalidateStorefront } from '@/lib/revalidate-storefront'
 // POST body: [{ id: string, sort_order: number }]
 export async function POST(req: Request) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const items: { id: string; sort_order: number }[] = await req.json()
         await Promise.all(
             items.map(({ id, sort_order }) =>

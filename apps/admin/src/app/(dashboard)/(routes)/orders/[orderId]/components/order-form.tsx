@@ -71,19 +71,18 @@ export const OrderForm: React.FC<OrderFormProps> = ({ initialData }) => {
    })
 
    const onSubmit = async (data: OrderFormValues) => {
-      // Optimistic instant feedback
-      toast.success('Sipariş güncellendi.')
-      router.refresh()
-
       try {
-         await fetch(`/api/orders/${params.orderId}`, {
+         const res = await fetch(`/api/orders/${params.orderId}`, {
             method: 'PATCH',
             body: JSON.stringify(data),
             cache: 'no-store',
             headers: { 'Content-Type': 'application/json' },
          })
+         if (!res.ok) throw new Error('Güncelleme başarısız')
+         router.refresh()
+         toast.success('Sipariş güncellendi.')
       } catch {
-         toast.error('Değişiklik kaydedilemedi. Geri alınıyor.')
+         toast.error('Değişiklik kaydedilemedi.')
          router.refresh()
       }
    }

@@ -4,11 +4,6 @@ import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(req: Request) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) {
-            return new NextResponse('Unauthorized', { status: 401 })
-        }
-
         const { prompt, brandName, modelName } = await req.json()
 
         if (!prompt && !modelName) {

@@ -7,12 +7,6 @@ export async function PATCH(
     { params }: { params: { userId: string } }
 ) {
     try {
-        const adminId = req.headers.get('X-USER-ID')
-
-        if (!adminId) {
-            return new NextResponse('Unauthorized', { status: 401 })
-        }
-
         if (!params.userId) {
             return new NextResponse('User ID is required', { status: 400 })
         }

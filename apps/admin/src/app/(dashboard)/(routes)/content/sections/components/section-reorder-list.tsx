@@ -28,11 +28,12 @@ export function SectionReorderList({ initialSections }: { initialSections: Secti
     async function toggleEnabled(id: string, current: boolean) {
         setSaving(id)
         try {
-            await fetch(`/api/content/sections/${id}`, {
+            const res = await fetch(`/api/content/sections/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ is_enabled: !current }),
                 headers: { 'Content-Type': 'application/json' },
             })
+            if (!res.ok) throw new Error('Güncelleme başarısız')
             setSections(s => s.map(x => x.id === id ? { ...x, is_enabled: !current } : x))
             toast.success('Güncellendi.')
         } finally {
@@ -49,11 +50,12 @@ export function SectionReorderList({ initialSections }: { initialSections: Secti
             ;[next[idx], next[swapIdx]] = [next[swapIdx], next[idx]]
         const reordered = next.map((s, i) => ({ ...s, sort_order: i }))
         setSections(reordered)
-        await fetch('/api/content/sections/reorder', {
+        const res = await fetch('/api/content/sections/reorder', {
             method: 'POST',
             body: JSON.stringify(reordered.map(s => ({ id: s.id, sort_order: s.sort_order }))),
             headers: { 'Content-Type': 'application/json' },
         })
+        if (!res.ok) toast.error('Sıralama kaydedilemedi')
     }
 
     function startEdit(s: Section) {
@@ -65,7 +67,7 @@ export function SectionReorderList({ initialSections }: { initialSections: Secti
     async function saveEdit(id: string) {
         setSaving(id)
         try {
-            await fetch(`/api/content/sections/${id}`, {
+            const res = await fetch(`/api/content/sections/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
                     title_tr: editTitle,
@@ -73,6 +75,7 @@ export function SectionReorderList({ initialSections }: { initialSections: Secti
                 }),
                 headers: { 'Content-Type': 'application/json' },
             })
+            if (!res.ok) throw new Error('Güncelleme başarısız')
             setSections(s => s.map(x => x.id === id
                 ? { ...x, title_tr: editTitle, content_json: editJson ? JSON.parse(editJson) : null }
                 : x

@@ -81,10 +81,11 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
       try {
          setLoading(true)
 
-         await fetch(`/api/brands/${params.brandId}`, {
+         const res = await fetch(`/api/brands/${params.brandId}`, {
             method: 'DELETE',
             cache: 'no-store',
          })
+         if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
          router.push(`/brands`)

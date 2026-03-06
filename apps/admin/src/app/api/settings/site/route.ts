@@ -3,9 +3,6 @@ import { NextResponse } from 'next/server'
 
 export async function PATCH(req: Request) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const data = await req.json()
         const settings = await prisma.siteSettings.upsert({
             where: { id: 1 },
@@ -21,9 +18,6 @@ export async function PATCH(req: Request) {
 
 export async function GET(req: Request) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const settings = await prisma.siteSettings.upsert({
             where: { id: 1 },
             update: {},

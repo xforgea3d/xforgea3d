@@ -5,12 +5,6 @@ import { revalidateStorefront } from '@/lib/revalidate-storefront'
 
 export async function POST(req: Request) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
-
       const body = await req.json()
 
       const { title, description, logo } = body

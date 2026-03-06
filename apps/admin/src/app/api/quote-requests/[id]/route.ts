@@ -10,9 +10,6 @@ export async function GET(
    { params }: { params: { id: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
       const quoteRequest = await prisma.quoteRequest.findUnique({
          where: { id: params.id },
          include: {
@@ -39,9 +36,6 @@ export async function PATCH(
    { params }: { params: { id: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
       const body = await req.json()
       const { status, quotedPrice, adminNote } = body
 

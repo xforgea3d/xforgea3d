@@ -15,9 +15,6 @@ export async function GET(_: Request, { params }: { params: { postId: string } }
 
 export async function PATCH(req: Request, { params }: { params: { postId: string } }) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const data = await req.json()
         const post = await prisma.blogPost.update({ where: { id: params.postId }, data })
         await revalidateStorefront(['/blog', `/blog/${post.slug ?? params.postId}`, '/'])
@@ -30,9 +27,6 @@ export async function PATCH(req: Request, { params }: { params: { postId: string
 
 export async function DELETE(_: Request, { params }: { params: { postId: string } }) {
     try {
-        const userId = _.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         await prisma.blogPost.delete({ where: { id: params.postId } })
         await revalidateStorefront(['/blog', '/'])
         return NextResponse.json({ ok: true })

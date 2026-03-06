@@ -15,9 +15,6 @@ export async function GET(_: Request, { params }: { params: { pageId: string } }
 
 export async function PATCH(req: Request, { params }: { params: { pageId: string } }) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const data = await req.json()
         const page = await prisma.contentPage.update({ where: { id: params.pageId }, data })
         await revalidateStorefront([`/page/${page.slug}`, '/'])
@@ -30,9 +27,6 @@ export async function PATCH(req: Request, { params }: { params: { pageId: string
 
 export async function DELETE(_: Request, { params }: { params: { pageId: string } }) {
     try {
-        const userId = _.headers.get('X-USER-ID')
-        if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
         const page = await prisma.contentPage.findUnique({ where: { id: params.pageId } })
         await prisma.contentPage.delete({ where: { id: params.pageId } })
         if (page?.slug) await revalidateStorefront([`/page/${page.slug}`, '/'])

@@ -30,12 +30,6 @@ export async function PATCH(
     { params }: { params: { bannerId: string } }
 ) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-
-        if (!userId) {
-            return new NextResponse('Unauthorized', { status: 401 })
-        }
-
         const body = await req.json()
 
         const { label, image } = body
@@ -77,12 +71,6 @@ export async function DELETE(
     { params }: { params: { bannerId: string } }
 ) {
     try {
-        const userId = req.headers.get('X-USER-ID')
-
-        if (!userId) {
-            return new NextResponse('Unauthorized', { status: 401 })
-        }
-
         if (!params.bannerId) {
             return new NextResponse('Banner id is required', { status: 400 })
         }

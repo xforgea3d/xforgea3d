@@ -152,10 +152,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       try {
          setLoading(true)
 
-         await fetch(`/api/products/${params.productId}`, {
+         const res = await fetch(`/api/products/${params.productId}`, {
             method: 'DELETE',
             cache: 'no-store',
          })
+         if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
          router.push(`/products`)

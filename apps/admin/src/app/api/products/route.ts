@@ -3,9 +3,6 @@ import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
       const body = await req.json()
 
       if (!body.title) return new NextResponse('Title is required', { status: 400 })
@@ -46,9 +43,6 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-      if (!userId) return new NextResponse('Unauthorized', { status: 401 })
-
       const { searchParams } = new URL(req.url)
       const categoryId = searchParams.get('categoryId') || undefined
       const isFeatured = searchParams.get('isFeatured')
