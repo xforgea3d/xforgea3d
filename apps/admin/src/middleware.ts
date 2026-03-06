@@ -1,14 +1,13 @@
 import { updateSession } from '@/lib/supabase/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Tek yetkili admin — env variable ile ayarlanabilir
-const ALLOWED_ADMIN_EMAIL = process.env.ADMIN_EMAIL
-if (!ALLOWED_ADMIN_EMAIL) {
-   throw new Error('ADMIN_EMAIL environment variable is required')
-}
-
 export async function middleware(request: NextRequest) {
    if (request.nextUrl.pathname.startsWith('/api/auth')) return NextResponse.next()
+
+   const ALLOWED_ADMIN_EMAIL = process.env.ADMIN_EMAIL
+   if (!ALLOWED_ADMIN_EMAIL) {
+      return NextResponse.json({ error: 'ADMIN_EMAIL not configured' }, { status: 500 })
+   }
 
    function isTargetingAPI() {
       return request.nextUrl.pathname.startsWith('/api')
@@ -23,7 +22,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
    }
 
-   // Email kontrolü — sadece adminvolkan girebilir
    if (user.email !== ALLOWED_ADMIN_EMAIL) {
       if (isTargetingAPI()) {
          return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
