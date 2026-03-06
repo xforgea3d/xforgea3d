@@ -29,7 +29,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Category, CarModel } from '@prisma/client'
 import { Trash, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
@@ -69,6 +69,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 }) => {
    const params = useParams()
    const router = useRouter()
+   const searchParams = useSearchParams()
+   const prefilledCarModelId = searchParams.get('carModelId')
 
    const [open, setOpen] = useState(false)
    const [loading, setLoading] = useState(false)
@@ -101,7 +103,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          categoryId: '',
          productType: 'READY',
          customOptions: '',
-         carModelIds: [],
+         carModelIds: prefilledCarModelId ? [prefilledCarModelId] : [],
          isFeatured: false,
          isAvailable: false,
       }

@@ -16,77 +16,30 @@ import Link from 'next/link'
 import { forwardRef, useState, useEffect } from 'react'
 import { PackageOpenIcon, SparklesIcon, CarIcon, MessageSquareQuoteIcon } from 'lucide-react'
 
-// ── Fallback category definitions (used when DB nav items empty) ──────────────
-const defaultCategories = [
-   {
-      title: 'Figürler',
-      href: '/products?category=Figürler',
-      description: 'Oyun, anime ve fantezi karakterlerinin detaylı 3D baskı figürleri.',
-      emoji: '🎮',
-      image: '/bg-figurler.png',
-   },
-   {
-      title: 'Heykeller',
-      href: '/products?category=Heykeller',
-      description: 'Antik ve modern sanat eserlerinin 3D baskı replikalları.',
-      emoji: '🏛️',
-      image: '/bg-heykeller.png',
-   },
-   {
-      title: 'Dekoratif',
-      href: '/products?category=Dekoratif',
-      description: 'Ev ve ofis için şık 3D baskı dekoratif parçalar.',
-      emoji: '🎨',
-      image: '/bg-dekoratif.png',
-   },
-   {
-      title: 'Aksesuarlar',
-      href: '/products?category=Aksesuarlar',
-      description: 'Telefon tutucular, organizerlar ve kişisel aksesuarlar.',
-      emoji: '⚙️',
-      image: '/bg-aksesuarlar.png',
-   },
-   {
-      title: 'Araç Aksesuarları',
-      href: '/products?category=Araç Aksesuarları',
-      description: '3D baskı özel araç aksesuarları ve iç mekan parçaları.',
-      emoji: '🚗',
-      image: '/bg-aksesuarlar.png',
-   },
-]
+// ── DB types for categories/collections ──────────────────────────────────────
+interface DbCategory {
+   id: string
+   title: string
+   description: string | null
+   imageUrl: string | null
+   _count: { products: number }
+}
 
-const defaultCollections = [
-   {
-      title: 'Oyun Koleksiyonu',
-      href: '/products?category=Figürler',
-      description: 'Elden Ring, Zelda, anime ve popüler oyun karakterleri.',
-      badge: 'Yeni',
-   },
-   {
-      title: 'Sanat & Heykel',
-      href: '/products?category=Heykeller',
-      description: 'Rodin, Yunan mitolojisi ve modern sanat eserleri.',
-      badge: null,
-   },
-   {
-      title: 'Ev Dekoru',
-      href: '/products?category=Dekoratif',
-      description: 'Geometrik duvar sanatı, süsler ve dekoratif parçalar.',
-      badge: null,
-   },
-   {
-      title: 'Kişisel Aksesuarlar',
-      href: '/products?category=Aksesuarlar',
-      description: 'Masaüstü organizerlar, telefon tutucular ve daha fazlası.',
-      badge: null,
-   },
-   {
-      title: 'Araç Aksesuarları',
-      href: '/products?category=Araç Aksesuarları',
-      description: '3D baskı araç telefon tutucu, vites topuzu, amblem ve daha fazlası.',
-      badge: 'Yeni',
-   },
-]
+interface DbCollection {
+   id: string
+   title: string
+   description: string | null
+   logo: string | null
+   _count: { products: number }
+}
+
+const categoryEmojis: Record<string, string> = {
+   'Figürler': '🎮',
+   'Heykeller': '🏛️',
+   'Dekoratif': '🎨',
+   'Aksesuarlar': '⚙️',
+   'Araç Aksesuarları': '🚗',
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface CarModel {
@@ -151,6 +104,12 @@ export function NavMenu() {
    const [navItems, setNavItems] = useState<NavItem[]>([])
    const [navLoaded, setNavLoaded] = useState(false)
 
+   // ── Categories from DB ──
+   const [dbCategories, setDbCategories] = useState<DbCategory[]>([])
+
+   // ── Collections (brands) from DB ──
+   const [dbCollections, setDbCollections] = useState<DbCollection[]>([])
+
    useEffect(() => {
       // Fetch car brands
       fetch('/api/car-brands')
@@ -171,6 +130,22 @@ export function NavMenu() {
          })
          .catch(() => {})
          .finally(() => setNavLoaded(true))
+
+      // Fetch categories
+      fetch('/api/categories')
+         .then(r => r.json())
+         .then((data) => {
+            if (Array.isArray(data)) setDbCategories(data)
+         })
+         .catch(() => {})
+
+      // Fetch collections (brands)
+      fetch('/api/collections')
+         .then(r => r.json())
+         .then((data) => {
+            if (Array.isArray(data)) setDbCollections(data)
+         })
+         .catch(() => {})
    }, [])
 
    // Filter main nav items
@@ -205,6 +180,7 @@ export function NavMenu() {
                               </NavigationMenuTrigger>
                               <NavigationMenuContent>
                                  <CategoriesDropdown
+                                    categories={dbCategories}
                                     activeCatImg={activeCatImg}
                                     activeCatTitle={activeCatTitle}
                                     activeCatDesc={activeCatDesc}
@@ -247,7 +223,7 @@ export function NavMenu() {
                                  <span className="font-normal text-foreground/70">{item.label}</span>
                               </NavigationMenuTrigger>
                               <NavigationMenuContent>
-                                 <CollectionsDropdown />
+                                 <CollectionsDropdown collections={dbCollections} />
                               </NavigationMenuContent>
                            </NavigationMenuItem>
                         )
@@ -297,6 +273,7 @@ export function NavMenu() {
                      </NavigationMenuTrigger>
                      <NavigationMenuContent>
                         <CategoriesDropdown
+                           categories={dbCategories}
                            activeCatImg={activeCatImg}
                            activeCatTitle={activeCatTitle}
                            activeCatDesc={activeCatDesc}
@@ -331,7 +308,7 @@ export function NavMenu() {
                         <span className="font-normal text-foreground/70">Koleksiyonlar</span>
                      </NavigationMenuTrigger>
                      <NavigationMenuContent>
-                        <CollectionsDropdown />
+                        <CollectionsDropdown collections={dbCollections} />
                      </NavigationMenuContent>
                   </NavigationMenuItem>
 
@@ -357,6 +334,7 @@ export function NavMenu() {
 // ── Dropdown Components ─────────────────────────────────────────────────────
 
 function CategoriesDropdown({
+   categories,
    activeCatImg,
    activeCatTitle,
    activeCatDesc,
@@ -364,6 +342,7 @@ function CategoriesDropdown({
    setActiveCatTitle,
    setActiveCatDesc,
 }: {
+   categories: DbCategory[]
    activeCatImg: string
    activeCatTitle: string
    activeCatDesc: string
@@ -371,6 +350,17 @@ function CategoriesDropdown({
    setActiveCatTitle: (v: string) => void
    setActiveCatDesc: (v: string) => void
 }) {
+   // Map DB categories to display items
+   const items = categories.length > 0
+      ? categories.map(c => ({
+           title: c.title,
+           href: `/products?category=${encodeURIComponent(c.title)}`,
+           description: c.description || `${c.title} kategorisindeki ürünleri keşfedin.`,
+           emoji: categoryEmojis[c.title] || '📦',
+           image: c.imageUrl || '/nav-bg.png',
+        }))
+      : [] // No fallback — if no categories in DB, show empty
+
    return (
       <ul className="grid gap-3 p-4 md:w-[420px] lg:w-[560px] lg:grid-cols-[.72fr_1fr]">
          <li className="row-span-5">
@@ -399,20 +389,26 @@ function CategoriesDropdown({
                </Link>
             </NavigationMenuLink>
          </li>
-         {defaultCategories.map(c => (
-            <CategoryListItem
-               key={c.title}
-               href={c.href}
-               title={`${c.emoji} ${c.title}`}
-               onMouseEnter={() => {
-                  setActiveCatImg(c.image)
-                  setActiveCatTitle(c.title)
-                  setActiveCatDesc(c.description)
-               }}
-            >
-               {c.description}
-            </CategoryListItem>
-         ))}
+         {items.length > 0 ? (
+            items.map(c => (
+               <CategoryListItem
+                  key={c.title}
+                  href={c.href}
+                  title={`${c.emoji} ${c.title}`}
+                  onMouseEnter={() => {
+                     setActiveCatImg(c.image)
+                     setActiveCatTitle(c.title)
+                     setActiveCatDesc(c.description)
+                  }}
+               >
+                  {c.description}
+               </CategoryListItem>
+            ))
+         ) : (
+            <li className="flex items-center justify-center p-4 text-sm text-muted-foreground col-span-1">
+               Henüz kategori eklenmemiş
+            </li>
+         )}
       </ul>
    )
 }
@@ -547,7 +543,7 @@ function VehiclePartsDropdown({
    )
 }
 
-function CollectionsDropdown() {
+function CollectionsDropdown({ collections }: { collections: DbCollection[] }) {
    return (
       <div className="p-4 w-[480px] md:w-[560px]">
          <div className="relative w-full h-28 rounded-xl overflow-hidden mb-3">
@@ -567,13 +563,24 @@ function CollectionsDropdown() {
                </div>
             </div>
          </div>
-         <ul className="grid grid-cols-2 gap-2">
-            {defaultCollections.map(c => (
-               <CollectionItem key={c.title} href={c.href} title={c.title} badge={c.badge}>
-                  {c.description}
-               </CollectionItem>
-            ))}
-         </ul>
+         {collections.length > 0 ? (
+            <ul className="grid grid-cols-2 gap-2">
+               {collections.map(c => (
+                  <CollectionItem
+                     key={c.id}
+                     href={`/products?brand=${encodeURIComponent(c.title)}`}
+                     title={c.title}
+                     badge={null}
+                  >
+                     {c.description || `${c.title} koleksiyonundaki ürünleri keşfedin.`}
+                  </CollectionItem>
+               ))}
+            </ul>
+         ) : (
+            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+               Henüz koleksiyon eklenmemiş
+            </div>
+         )}
       </div>
    )
 }

@@ -6,8 +6,9 @@ import { Heading } from '@/components/ui/heading'
 import ImageUpload from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { Plus, Trash, Sparkles, Loader2, Car, Upload } from 'lucide-react'
+import { Plus, Trash, Sparkles, Loader2, Car, Upload, PackagePlus } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
@@ -246,6 +247,22 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
                            )}
                         </div>
                         <span className="text-[10px] text-muted-foreground font-mono">{model.slug}</span>
+                     </div>
+                     <div className="flex gap-1.5 mb-1.5">
+                        {/* Add product for this model */}
+                        <Link
+                           href={`/products/new?carModelId=${model.id}`}
+                           className="flex-1"
+                        >
+                           <Button
+                              size="sm"
+                              variant="secondary"
+                              className="w-full text-xs"
+                           >
+                              <PackagePlus className="h-3 w-3 mr-1" />
+                              Ürün Ekle
+                           </Button>
+                        </Link>
                      </div>
                      <div className="flex gap-1.5">
                         {/* Upload image */}
