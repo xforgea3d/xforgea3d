@@ -7,10 +7,6 @@ import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const ADMIN_USERS: Record<string, string> = {
-   adminvolkan: 'adminvolkan@xforgea3d.com',
-}
-
 export function UserAuthForm({ className }: { className?: string }) {
    const [username, setUsername] = React.useState('')
    const [password, setPassword] = React.useState('')
@@ -28,42 +24,13 @@ export function UserAuthForm({ className }: { className?: string }) {
       setErrorMsg(null)
 
       try {
-         const key = username.toLowerCase().trim()
-         const email = ADMIN_USERS[key] || (key.includes('@') ? key : `${key}@xforgea3d.com`)
-         const isKnownAdmin = key in ADMIN_USERS
+         // Kullanıcı adını sessizce email'e çevir
+         const email = `${username.toLowerCase().trim()}@xforgea3d.com`
 
-         let { data, error } = await supabase.auth.signInWithPassword({ email, password })
-
-         if (error && error.message.includes('Invalid login credentials') && isKnownAdmin) {
-            const { error: signUpError } = await supabase.auth.signUp({
-               email,
-               password,
-               options: { data: { name: 'Admin' } },
-            })
-
-            if (signUpError) {
-               setErrorMsg('Kayıt başarısız: ' + signUpError.message)
-               setIsLoading(false)
-               return
-            }
-
-            await fetch('/api/auth/promote', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ email }),
-            })
-
-            const retry = await supabase.auth.signInWithPassword({ email, password })
-            data = retry.data
-            error = retry.error
-         }
+         const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
          if (error) {
-            if (error.message.includes('Email not confirmed')) {
-               setErrorMsg('E-posta doğrulaması gerekli.')
-            } else {
-               setErrorMsg('Kullanıcı adı veya şifre hatalı.')
-            }
+            setErrorMsg('Kullanıcı adı veya şifre hatalı.')
          } else if (data.session) {
             setSuccess(true)
             setTimeout(() => {
@@ -81,10 +48,10 @@ export function UserAuthForm({ className }: { className?: string }) {
    return (
       <div className={cn('space-y-6', className)}>
          <form onSubmit={onSubmit} className="space-y-5">
-            {/* Username field */}
+            {/* Username */}
             <div className="space-y-2">
                <motion.label
-                  className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/30 block"
+                  className="text-[11px] font-medium uppercase tracking-[0.15em] block"
                   animate={{
                      color: focusedField === 'username' ? 'rgba(249,115,22,0.7)' : 'rgba(255,255,255,0.3)',
                   }}
@@ -92,13 +59,10 @@ export function UserAuthForm({ className }: { className?: string }) {
                >
                   Kullanıcı Adı
                </motion.label>
-               <motion.div
-                  className="relative"
-                  whileTap={{ scale: 0.995 }}
-               >
+               <motion.div className="relative" whileTap={{ scale: 0.995 }}>
                   <input
                      type="text"
-                     placeholder="adminvolkan"
+                     placeholder="Kullanıcı adınız"
                      autoCapitalize="none"
                      autoCorrect="off"
                      autoComplete="username"
@@ -116,7 +80,6 @@ export function UserAuthForm({ className }: { className?: string }) {
                         'disabled:opacity-40 disabled:cursor-not-allowed',
                      )}
                   />
-                  {/* Active indicator */}
                   <AnimatePresence>
                      {focusedField === 'username' && (
                         <motion.div
@@ -131,10 +94,10 @@ export function UserAuthForm({ className }: { className?: string }) {
                </motion.div>
             </div>
 
-            {/* Password field */}
+            {/* Password */}
             <div className="space-y-2">
                <motion.label
-                  className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/30 block"
+                  className="text-[11px] font-medium uppercase tracking-[0.15em] block"
                   animate={{
                      color: focusedField === 'password' ? 'rgba(249,115,22,0.7)' : 'rgba(255,255,255,0.3)',
                   }}
@@ -142,10 +105,7 @@ export function UserAuthForm({ className }: { className?: string }) {
                >
                   Şifre
                </motion.label>
-               <motion.div
-                  className="relative"
-                  whileTap={{ scale: 0.995 }}
-               >
+               <motion.div className="relative" whileTap={{ scale: 0.995 }}>
                   <input
                      type={showPassword ? 'text' : 'password'}
                      placeholder="••••••••"
@@ -186,7 +146,7 @@ export function UserAuthForm({ className }: { className?: string }) {
                </motion.div>
             </div>
 
-            {/* Error message */}
+            {/* Error */}
             <AnimatePresence mode="wait">
                {errorMsg && (
                   <motion.div
@@ -202,7 +162,7 @@ export function UserAuthForm({ className }: { className?: string }) {
                )}
             </AnimatePresence>
 
-            {/* Submit button */}
+            {/* Submit */}
             <motion.button
                type="submit"
                disabled={isLoading || !username || !password || success}
@@ -220,45 +180,26 @@ export function UserAuthForm({ className }: { className?: string }) {
             >
                <AnimatePresence mode="wait">
                   {success ? (
-                     <motion.span
-                        key="success"
-                        className="inline-flex items-center gap-2"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ type: 'spring', stiffness: 300 }}
-                     >
-                        <CheckCircle2 className="h-4 w-4" />
-                        Hoş geldiniz
+                     <motion.span key="ok" className="inline-flex items-center gap-2"
+                        initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 300 }}>
+                        <CheckCircle2 className="h-4 w-4" /> Hoş geldiniz
                      </motion.span>
                   ) : isLoading ? (
-                     <motion.span
-                        key="loading"
-                        className="inline-flex items-center gap-2"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                     >
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Giriş yapılıyor...
+                     <motion.span key="load" className="inline-flex items-center gap-2"
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        <Loader2 className="h-4 w-4 animate-spin" /> Giriş yapılıyor...
                      </motion.span>
                   ) : (
-                     <motion.span
-                        key="idle"
-                        className="inline-flex items-center gap-2"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                     >
-                        Giriş Yap
-                        <ArrowRight className="h-3.5 w-3.5" />
+                     <motion.span key="idle" className="inline-flex items-center gap-2"
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        Giriş Yap <ArrowRight className="h-3.5 w-3.5" />
                      </motion.span>
                   )}
                </AnimatePresence>
-
-               {/* Button glow on hover */}
                <motion.div
                   className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-orange-500/0"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
+                  initial={{ opacity: 0 }} whileHover={{ opacity: 1 }} transition={{ duration: 0.3 }}
                />
             </motion.button>
          </form>

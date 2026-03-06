@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 export default function AuthenticationPage() {
    return (
       <div className="relative min-h-screen bg-black flex items-center justify-center overflow-hidden">
-         {/* Animated background grid */}
+         {/* Grid background */}
          <div className="absolute inset-0 opacity-[0.03]">
             <div
                className="absolute inset-0"
@@ -26,10 +26,7 @@ export default function AuthenticationPage() {
                top: '-10%',
                right: '-10%',
             }}
-            animate={{
-               scale: [1, 1.2, 1],
-               opacity: [0.5, 0.8, 0.5],
-            }}
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
             transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
          />
          <motion.div
@@ -39,30 +36,26 @@ export default function AuthenticationPage() {
                bottom: '-15%',
                left: '-10%',
             }}
-            animate={{
-               scale: [1.2, 1, 1.2],
-               opacity: [0.3, 0.6, 0.3],
-            }}
+            animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.6, 0.3] }}
             transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
          />
 
-         {/* Subtle scan line */}
+         {/* Scan line */}
          <motion.div
             className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/20 to-transparent"
             animate={{ top: ['0%', '100%'] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
          />
 
-         {/* Main content */}
+         {/* Content — centered single column */}
          <div className="relative z-10 w-full max-w-sm mx-auto px-6">
-            {/* Logo + Brand */}
+            {/* Logo */}
             <motion.div
                className="text-center mb-10"
                initial={{ opacity: 0, y: -30 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             >
-               {/* Animated logo mark */}
                <motion.div
                   className="inline-flex items-center justify-center w-16 h-16 rounded-2xl border border-white/[0.06] bg-white/[0.02] mb-6 backdrop-blur-sm"
                   initial={{ scale: 0, rotate: -180 }}
@@ -103,7 +96,6 @@ export default function AuthenticationPage() {
                animate={{ opacity: 1, y: 0, scale: 1 }}
                transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
-               {/* Card glow border */}
                <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-white/[0.08] to-transparent" />
                <div className="relative rounded-2xl bg-white/[0.03] backdrop-blur-xl p-8 border border-white/[0.04]">
                   <UserAuthForm />
@@ -117,7 +109,7 @@ export default function AuthenticationPage() {
                animate={{ opacity: 1 }}
                transition={{ delay: 1.2, duration: 1 }}
             >
-               &copy; 2025 xForgea3D
+               2025 xForgea3D
             </motion.p>
          </div>
       </div>
