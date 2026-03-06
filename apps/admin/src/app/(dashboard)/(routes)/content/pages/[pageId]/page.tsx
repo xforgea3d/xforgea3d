@@ -1,4 +1,4 @@
-export const revalidate = 30
+export const revalidate = 0
 import prisma from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { ContentPageForm } from './components/content-page-form'

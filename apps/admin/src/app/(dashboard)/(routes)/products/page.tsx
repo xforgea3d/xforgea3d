@@ -1,4 +1,4 @@
-export const revalidate = 30
+export const revalidate = 0
 
 import { Button } from '@/components/ui/button'
 import { Heading } from '@/components/ui/heading'

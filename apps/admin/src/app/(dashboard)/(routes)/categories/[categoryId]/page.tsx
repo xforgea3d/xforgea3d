@@ -1,4 +1,4 @@
-export const revalidate = 30
+export const revalidate = 0
 import prisma from '@/lib/prisma'
 
 import { CategoryForm } from './components/category-form'

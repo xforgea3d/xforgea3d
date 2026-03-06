@@ -1,4 +1,4 @@
-export const revalidate = 30
+export const revalidate = 0
 
 import { Button } from '@/components/ui/button'
 import { Heading } from '@/components/ui/heading'
@@ -41,13 +41,15 @@ export default async function CarBrandsPage() {
                >
                   <div className="flex items-center gap-3 mb-3">
                      {brand.logoUrl ? (
-                        <Image
-                           src={brand.logoUrl}
-                           alt={brand.name}
-                           width={40}
-                           height={40}
-                           className="object-contain rounded-lg"
-                        />
+                        <div className="w-10 h-10 rounded-lg bg-white border flex items-center justify-center">
+                           <Image
+                              src={brand.logoUrl}
+                              alt={brand.name}
+                              width={32}
+                              height={32}
+                              className="object-contain"
+                           />
+                        </div>
                      ) : (
                         <div className="w-10 h-10 rounded-lg bg-foreground/10 flex items-center justify-center">
                            <Car className="h-5 w-5 text-muted-foreground" />

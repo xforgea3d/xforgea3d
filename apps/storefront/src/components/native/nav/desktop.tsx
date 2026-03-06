@@ -118,17 +118,17 @@ interface NavItem {
 
 export function MainNav() {
    return (
-      <div className="hidden md:flex gap-4 items-center">
-         <Link href="/" className="flex items-center gap-2">
+      <div className="hidden md:flex gap-2 items-center">
+         <Link href="/" className="flex items-center gap-2 mr-2 flex-shrink-0">
             <Image
                src="/logo.png"
                alt="xForgea3D"
-               width={36}
-               height={36}
+               width={32}
+               height={32}
                className="object-contain"
                priority
             />
-            <span className="font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
+            <span className="font-bold text-base tracking-tight hover:opacity-80 transition-opacity whitespace-nowrap">
                xForgea<span className="text-orange-500">3D</span>
             </span>
          </Link>
@@ -347,14 +347,6 @@ export function NavMenu() {
                      </NavigationMenuLink>
                   </NavigationMenuItem>
 
-                  {/* Blog */}
-                  <NavigationMenuItem>
-                     <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                        <Link href="/blog" prefetch={true}>
-                           <span className="font-normal text-foreground/70">Blog</span>
-                        </Link>
-                     </NavigationMenuLink>
-                  </NavigationMenuItem>
                </>
             )}
          </NavigationMenuList>
@@ -524,17 +516,17 @@ function VehiclePartsDropdown({
                                     className="group flex flex-col rounded-lg border border-transparent p-2.5 transition-all hover:border-border hover:bg-accent"
                                  >
                                     {model.imageUrl ? (
-                                       <div className="relative w-full h-20 rounded-md overflow-hidden mb-2 bg-white/5">
+                                       <div className="relative w-full h-20 rounded-md overflow-hidden mb-2 bg-neutral-100 dark:bg-neutral-800">
                                           <Image
                                              src={model.imageUrl}
                                              alt={model.name}
                                              fill
-                                             className="object-contain p-1 transition-transform duration-500 group-hover:scale-105"
+                                             className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                                              sizes="150px"
                                           />
                                        </div>
                                     ) : (
-                                       <div className="w-full h-20 rounded-md bg-foreground/5 flex items-center justify-center mb-2">
+                                       <div className="w-full h-20 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-2">
                                           <CarIcon className="h-6 w-6 text-muted-foreground/40" />
                                        </div>
                                     )}

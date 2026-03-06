@@ -46,6 +46,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
          if (error) {
             console.error('Google OAuth Error:', error.message)
+            alert('Google ile giriş şu anda aktif değil. Lütfen e-posta/şifre ile giriş yapın.')
          }
       } catch (error) {
          console.error({ error })

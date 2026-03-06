@@ -1,4 +1,4 @@
-export const revalidate = 30
+export const revalidate = 0
 
 import { getGraphRevenue } from '@/actions/get-graph-revenue'
 import { getSalesCount } from '@/actions/get-sales-count'

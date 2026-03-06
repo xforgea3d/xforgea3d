@@ -1,4 +1,4 @@
-export const revalidate = 30
+export const revalidate = 0
 
 import { Heading } from '@/components/ui/heading'
 import { Separator } from '@/components/ui/separator'
