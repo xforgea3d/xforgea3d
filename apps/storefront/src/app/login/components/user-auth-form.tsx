@@ -101,6 +101,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
    )
 }
 
+function setLoggedInCookie() {
+   document.cookie = 'logged-in=true; path=/; max-age=31536000; SameSite=Lax'
+}
+
 function SignInForm({ isLoading, setIsLoading, supabase }) {
    const router = useRouter()
    const searchParams = useSearchParams()
@@ -126,6 +130,7 @@ function SignInForm({ isLoading, setIsLoading, supabase }) {
             setErrorMsg('E-posta veya şifre hatalı.')
             console.error('SignIn Error:', error.message)
          } else if (data.session) {
+            setLoggedInCookie()
             const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'
             window.location.assign(target)
          }
@@ -212,21 +217,25 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
          })
 
          if (error) {
-            setErrorMsg(error.message)
+            if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
+               setErrorMsg('Bu e-posta adresi zaten kullanımda.')
+            } else {
+               setErrorMsg(error.message)
+            }
             console.error('SignUp Error:', error.message)
          } else if (data?.user?.identities?.length === 0) {
             setErrorMsg('Bu e-posta adresi zaten kullanımda.')
          } else if (data.session) {
-            // Auto sign in — show welcome then redirect
+            setLoggedInCookie()
             setSuccessMsg('welcome')
             setTimeout(() => {
                const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'
                window.location.assign(target)
             }, 2000)
          } else {
-            // Session yok ama kayıt başarılı — otomatik giriş dene
             const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
             if (signInData?.session) {
+               setLoggedInCookie()
                setSuccessMsg('welcome')
                setTimeout(() => {
                   const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'

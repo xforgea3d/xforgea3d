@@ -23,9 +23,8 @@ export function UserAuthForm({ className }: { className?: string }) {
 
       try {
          const key = username.toLowerCase().trim()
-
-         if (key !== 'adminvolkan') {
-            setErrorMsg('Yetkisiz kullanıcı.')
+         if (!key) {
+            setErrorMsg('Kullanıcı adı gerekli.')
             setIsLoading(false)
             return
          }

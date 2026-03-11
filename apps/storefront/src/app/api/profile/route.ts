@@ -2,13 +2,14 @@ import prisma from '@/lib/prisma'
 import { verifyCsrfToken } from '@/lib/csrf'
 import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(req: Request) {
    try {
       const userId = req.headers.get('X-USER-ID')
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
-      const profile = await prisma.profile.findUniqueOrThrow({
+      let profile = await prisma.profile.findUnique({
          where: { id: userId },
          include: {
             cart: {
@@ -20,6 +21,31 @@ export async function GET(req: Request) {
             wishlist: true,
          },
       })
+
+      if (!profile) {
+         const supabase = createClient()
+         const { data: { user } } = await supabase.auth.getUser()
+
+         if (!user) return new NextResponse('Unauthorized', { status: 401 })
+
+         profile = await prisma.profile.create({
+            data: {
+               id: userId,
+               email: user.email || '',
+               name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+               role: 'customer',
+            },
+            include: {
+               cart: {
+                  include: {
+                     items: { include: { product: true } },
+                  },
+               },
+               addresses: true,
+               wishlist: true,
+            },
+         })
+      }
 
       return NextResponse.json({
          phone: profile.phone,

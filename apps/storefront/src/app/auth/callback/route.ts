@@ -12,7 +12,9 @@ export async function GET(request: NextRequest) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error) {
-            return NextResponse.redirect(new URL(next, requestUrl.origin))
+            const response = NextResponse.redirect(new URL(next, requestUrl.origin))
+            response.cookies.set('logged-in', 'true', { path: '/', maxAge: 31536000, sameSite: 'lax' })
+            return response
         }
     }
 

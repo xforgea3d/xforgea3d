@@ -6,8 +6,8 @@ BEGIN
   VALUES (
     new.id,
     new.email,
-    new.raw_user_meta_data->>'name', -- Optional map for name
-    'customer', -- Default RoleEnum
+    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'),
+    'customer'
     now()
   );
   RETURN new;
