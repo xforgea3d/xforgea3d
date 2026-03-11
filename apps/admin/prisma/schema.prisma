@@ -1,1 +1,589 @@
-../../storefront/prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id    String @id // This will map 1:1 with auth.users.id (UUID)
+  email String @unique
+  role  RoleEnum @default(customer)
+
+  name     String?
+  phone    String? @unique
+  avatar   String?
+
+  cart     Cart?
+  wishlist Product[] @relation("Wishlist")
+
+  orders         Order[]
+  addresses      Address[]
+  payments       Payment[]
+  notifications  Notification[]
+  productReviews ProductReview[]
+  errors         Error[]
+  files          File[]
+  quoteRequests  QuoteRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum RoleEnum {
+  admin
+  customer
+}
+
+model SiteSettings {
+  id                   Int      @id @default(1)
+  brand_name           String   @default("xForgea3D")
+  slogan               String   @default("Tasarım. Hassasiyet. xForgea3D.")
+  contact_email        String?
+  contact_phone        String?
+  whatsapp             String?
+  address_text         String?
+  instagram_url        String?
+  tiktok_url           String?
+  youtube_url          String?
+  maintenance_enabled  Boolean  @default(false)
+  maintenance_message  String?  @default("Bakım çalışmaları devam ediyor. Lütfen daha sonra tekrar deneyin.")
+
+  updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  user   Profile    @relation(fields: [userId], references: [id])
+  userId String     @id
+  items  CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id             String  @id @default(cuid())
+  cart           Cart    @relation(fields: [cartId], references: [userId])
+  cartId         String
+  product        Product @relation(fields: [productId], references: [id])
+  productId      String
+  count          Int
+  isCustom       Boolean @default(false)
+  customSnapshot Json?
+
+  @@unique([cartId, productId], name: "UniqueCartItem")
+  @@index([cartId])
+  @@index([productId])
+}
+
+model Author {
+  id     String  @id @default(cuid())
+  email  String  @unique
+  phone  String? @unique
+  name   String?
+  avatar String?
+  OTP    String?
+
+  blogs Blog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Brand {
+  id          String  @id @default(cuid())
+  title       String  @unique
+  description String?
+  logo        String?
+
+  products Product[]
+}
+
+enum ProductTypeEnum {
+  READY
+  CUSTOM
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  images      String[]
+  keywords    String[]
+  metadata    Json?
+
+  productType   ProductTypeEnum @default(READY)
+  customOptions Json?           // { colors, sizes, maxTextLength, allowFileUpload, basePriceAddition }
+
+  price    Float @default(100)
+  discount Float @default(0)
+  stock    Int   @default(1)
+
+  isPhysical  Boolean @default(true)
+  isAvailable Boolean @default(true)
+  isFeatured  Boolean @default(false)
+
+  orders         OrderItem[]
+  cartItems      CartItem[]
+  wishlists      Profile[]       @relation("Wishlist")
+  productReviews ProductReview[]
+
+  brand   Brand  @relation(fields: [brandId], references: [id])
+  brandId String
+
+  categories Category[]
+  carModels  CarModel[] @relation("CarModelProducts")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([brandId])
+  @@index([isAvailable, isFeatured])  // homepage featured products query
+  @@index([isAvailable, createdAt])   // newest available products listing
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  title       String  @unique
+  description String?
+  imageUrl    String?
+
+  products Product[]
+  banners  Banner[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductReview {
+  id     String @id @default(cuid())
+  text   String
+  rating Int
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  user      Profile    @relation(fields: [userId], references: [id])
+  userId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, userId], name: "UniqueProductProductReview")
+  @@index([userId])
+  @@index([productId])
+}
+
+model Order {
+  id     String          @id @default(cuid())
+  number Int             @unique @default(autoincrement())
+  status OrderStatusEnum
+
+  total    Float @default(100)
+  shipping Float @default(100)
+  payable  Float @default(100)
+  tax      Float @default(100)
+  discount Float @default(0)
+
+  isPaid      Boolean @default(false)
+  isCompleted Boolean @default(false)
+
+  payments     Payment[]
+  orderItems   OrderItem[]
+  refund       Refund?
+  quoteRequest QuoteRequest?
+
+  discountCode   DiscountCode? @relation(fields: [discountCodeId], references: [id])
+  discountCodeId String?
+  address        Address?      @relation(fields: [addressId], references: [id])
+  addressId      String?
+  user           Profile          @relation(fields: [userId], references: [id])
+  userId         String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([addressId])
+  @@index([discountCodeId])
+  @@index([userId, status])           // admin order tracking filter
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  order          Order   @relation(fields: [orderId], references: [id])
+  orderId        String
+  product        Product @relation(fields: [productId], references: [id])
+  productId      String
+  count          Int
+  price          Float
+  discount       Float
+  isCustom       Boolean @default(false)
+  customSnapshot Json?   // { text, color, size, fileUrl, note }
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+enum OrderStatusEnum {
+  OnayBekleniyor
+  Uretimde
+  Processing
+  Shipped
+  Delivered
+  ReturnProcessing
+  ReturnCompleted
+  Cancelled
+  RefundProcessing
+  RefundCompleted
+  Denied
+}
+
+model Address {
+  id         String @id @default(cuid())
+  country    String @default("IRI")
+  address    String
+  city       String
+  phone      String
+  postalCode String
+
+  user   Profile    @relation(fields: [userId], references: [id])
+  userId String
+  orders Order[]
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Notification {
+  id      String  @id @default(cuid())
+  content String
+  isRead  Boolean @default(false)
+
+  user   Profile   @relation(fields: [userId], references: [id])
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model DiscountCode {
+  id                String   @id @default(cuid())
+  code              String   @unique
+  stock             Int      @default(1)
+  description       String?
+  percent           Int
+  maxDiscountAmount Float    @default(1)
+  startDate         DateTime
+  endDate           DateTime
+
+  order Order[]
+
+  createdAt DateTime @default(now())
+
+  @@index([code, endDate])            // fast discount validation query
+}
+
+model Refund {
+  id     String @id @default(cuid())
+  amount Float
+  reason String
+
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+}
+
+model Payment {
+  id     String            @id @default(cuid())
+  number Int               @unique @default(autoincrement())
+  status PaymentStatusEnum
+
+  refId    String  @unique
+  cardPan  String?
+  cardHash String?
+  fee      Float?
+
+  isSuccessful Boolean @default(false)
+  payable      Float
+
+  provider   PaymentProvider @relation(fields: [providerId], references: [id])
+  providerId String
+  user       Profile            @relation(fields: [userId], references: [id])
+  userId     String
+  order      Order           @relation(fields: [orderId], references: [id])
+  orderId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([providerId])
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+enum PaymentStatusEnum {
+  Processing
+  Paid
+  Failed
+  Denied
+}
+
+model PaymentProvider {
+  id          String  @id @default(cuid())
+  title       String  @unique
+  description String?
+  websiteUrl  String?
+  isActive    Boolean @default(false)
+
+  orders Payment[]
+}
+
+model Error {
+  id        String   @id @default(cuid())
+  message   String
+  stack     String?  @db.Text
+  severity  ErrorSeverity @default(medium)
+  source    ErrorSource   @default(backend)
+  path      String?
+  method    String?
+  statusCode Int?
+  userAgent String?
+  ip        String?
+  metadata  Json?
+  resolved  Boolean  @default(false)
+
+  user      Profile? @relation(fields: [userId], references: [id])
+  userId    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([severity])
+  @@index([source])
+  @@index([createdAt])
+  @@index([resolved])
+}
+
+enum ErrorSeverity {
+  low
+  medium
+  high
+  critical
+}
+
+enum ErrorSource {
+  frontend
+  backend
+  middleware
+  payment
+  external
+}
+
+model File {
+  id String @id @default(cuid())
+
+  url String
+
+  user   Profile   @relation(fields: [userId], references: [id])
+  userId String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Blog {
+  slug        String  @id
+  title       String
+  image       String
+  description String
+  content     String? @db.Text
+
+  categories String[]
+  keywords   String[]
+
+  author   Author @relation(fields: [authorId], references: [id])
+  authorId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+}
+
+model Banner {
+  id String @id @default(cuid())
+
+  label String
+  image String
+
+  categories Category[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Car Brand / Model (Oto Yedek Parça) ──────────────────────
+
+model CarBrand {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  logoUrl   String?
+  sortOrder Int        @default(0)
+  models    CarModel[]
+  quoteRequests QuoteRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CarModel {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String
+  imageUrl  String?
+  yearRange String?
+  brand     CarBrand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brandId   String
+  products  Product[] @relation("CarModelProducts")
+  quoteRequests QuoteRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([slug, brandId])
+  @@index([brandId])
+}
+
+// ── Navbar Items (admin-managed) ──────────────────────────────
+
+model NavMenuItem {
+  id        String  @id @default(cuid())
+  label     String
+  href      String
+  section   String  @default("main")   // main | mobile | footer
+  sortOrder Int     @default(0)
+  isVisible Boolean @default(true)
+  icon      String? // lucide icon name
+  badge     String? // "Yeni" etc.
+  parentId  String? // for sub-items (unused for now)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([section, sortOrder])
+}
+
+// ── CMS Models ────────────────────────────────────────────────
+
+model ContentPage {
+  id                 String   @id @default(cuid())
+  slug               String   @unique
+  title_tr           String
+  body_html_tr       String?  @db.Text
+  is_published       Boolean  @default(false)
+  seo_title_tr       String?
+  seo_description_tr String?
+
+  updatedAt DateTime @updatedAt
+}
+
+model HomepageSection {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  title_tr     String
+  content_json Json?
+  is_enabled   Boolean  @default(true)
+  sort_order   Int      @default(0)
+
+  updatedAt DateTime @updatedAt
+}
+
+enum BlogStatusEnum {
+  draft
+  published
+}
+
+model BlogPost {
+  id                 String         @id @default(cuid())
+  slug               String         @unique
+  title_tr           String
+  excerpt_tr         String?
+  body_html_tr       String?        @db.Text
+  cover_image_url    String?
+  tags               String[]
+  status             BlogStatusEnum @default(draft)
+  published_at       DateTime?
+  seo_title_tr       String?
+  seo_description_tr String?
+
+  updatedAt DateTime @updatedAt
+}
+
+model SeoSettings {
+  id                           Int      @id @default(1)
+  default_title_template_tr    String   @default("%s | xForgea3D")
+  default_meta_description_tr  String?
+  default_og_image_url         String?
+  robots_index                 Boolean  @default(true)
+  robots_follow                Boolean  @default(true)
+
+  updatedAt DateTime @updatedAt
+}
+
+// ── Quote / Part Request System ───────────────────────────────
+
+enum QuoteStatusEnum {
+  Pending
+  Priced
+  Accepted
+  Rejected
+  Completed
+}
+
+model QuoteRequest {
+  id     String          @id @default(cuid())
+  number Int             @unique @default(autoincrement())
+  status QuoteStatusEnum @default(Pending)
+
+  email String
+  name  String?
+  phone String?
+
+  user   Profile? @relation(fields: [userId], references: [id])
+  userId String?
+
+  carBrand   CarBrand? @relation(fields: [carBrandId], references: [id])
+  carBrandId String?
+  carModel   CarModel? @relation(fields: [carModelId], references: [id])
+  carModelId String?
+
+  partDescription String
+  imageUrl        String?
+
+  quotedPrice Float?
+  adminNote   String?
+  respondedAt DateTime?
+
+  order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
