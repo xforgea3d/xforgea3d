@@ -8,16 +8,18 @@ const ALLOWED_TYPES = new Set([
 ])
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
+function getSupabaseClient() {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
         }
-    }
-)
+    )
+}
 
 export async function POST(request: Request) {
     try {
@@ -49,7 +51,7 @@ export async function POST(request: Request) {
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
-        const { data, error } = await supabase.storage
+        const { data, error } = await getSupabaseClient().storage
             .from('ecommerce')
             .upload(filePath, buffer, {
                 contentType: file.type,
@@ -61,7 +63,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
         }
 
-        const { data: { publicUrl } } = supabase.storage
+        const { data: { publicUrl } } = getSupabaseClient().storage
             .from('ecommerce')
             .getPublicUrl(filePath)
 

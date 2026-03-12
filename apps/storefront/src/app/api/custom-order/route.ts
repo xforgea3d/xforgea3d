@@ -4,10 +4,12 @@ import { logError, extractRequestContext } from '@/lib/error-logger'
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'crypto'
 
-const supabase = createClient(
-   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function getSupabaseClient() {
+   return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+   )
+}
 
 /**
  * POST /api/custom-order
@@ -45,7 +47,7 @@ export async function POST(req: Request) {
          const buffer = Buffer.from(await svgFile.arrayBuffer())
          const filename = `custom-orders/${randomUUID()}-${svgFile.name.replace(/[^a-z0-9.-]/gi, '_')}`
 
-         const { error: uploadError } = await supabase.storage
+         const { error: uploadError } = await getSupabaseClient().storage
             .from('ecommerce')
             .upload(filename, buffer, {
                contentType: svgFile.type || 'image/svg+xml',
@@ -53,7 +55,7 @@ export async function POST(req: Request) {
             })
 
          if (!uploadError) {
-            const { data: urlData } = supabase.storage.from('ecommerce').getPublicUrl(filename)
+            const { data: urlData } = getSupabaseClient().storage.from('ecommerce').getPublicUrl(filename)
             svgUrl = urlData.publicUrl
          }
       }

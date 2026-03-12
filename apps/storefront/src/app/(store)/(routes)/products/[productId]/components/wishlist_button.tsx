@@ -12,7 +12,7 @@ export default function WishlistButton({ product }) {
    const { authenticated } = useAuthenticated()
    const csrfToken = useCsrf()
 
-   const [wishlist, setWishlist] = useState(null)
+   const [wishlist, setWishlist] = useState<any[] | null>(null)
    const [fetchingWishlist, setFetchingWishlist] = useState(true)
 
    useEffect(() => {

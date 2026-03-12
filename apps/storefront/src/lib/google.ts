@@ -19,7 +19,7 @@ export function getGoogleURL() {
       ].join(' '),
    }
 
-   const qs = new URLSearchParams(options)
+   const qs = new URLSearchParams(options as Record<string, string>)
 
    return `${rootUrl}?${qs.toString()}`
 }

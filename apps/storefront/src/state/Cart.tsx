@@ -3,11 +3,16 @@ import { isVariableValid } from '@/lib/utils'
 import { useUserContext } from '@/state/User'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
-const CartContext = createContext({
+const CartContext = createContext<{
+   cart: any
+   loading: boolean
+   refreshCart: () => void
+   dispatchCart: (object: any) => void
+}>({
    cart: null,
    loading: true,
    refreshCart: () => {},
-   dispatchCart: (object) => {},
+   dispatchCart: () => {},
 })
 
 export const useCartContext = () => {
@@ -15,9 +20,9 @@ export const useCartContext = () => {
 }
 
 export const CartContextProvider = ({ children }) => {
-   const { refreshUser, user } = useUserContext()
+   const { refreshUser, user } = useUserContext() as { refreshUser: () => Promise<void>; user: any }
 
-   const [cart, setCart] = useState(null)
+   const [cart, setCart] = useState<any>(null)
    const [loading, setLoading] = useState(true)
 
    const dispatchCart = async (cart) => {
@@ -29,8 +34,8 @@ export const CartContextProvider = ({ children }) => {
       setLoading(true)
 
       if (isVariableValid(user)) {
-         setCart(user?.cart)
-         writeLocalCart(user?.cart)
+         setCart((user as any)?.cart)
+         writeLocalCart((user as any)?.cart)
       }
       if (!isVariableValid(user)) setCart(getLocalCart())
 
@@ -39,8 +44,8 @@ export const CartContextProvider = ({ children }) => {
 
    useEffect(() => {
       if (isVariableValid(user)) {
-         setCart(user?.cart)
-         writeLocalCart(user?.cart)
+         setCart((user as any)?.cart)
+         writeLocalCart((user as any)?.cart)
       }
       if (!isVariableValid(getLocalCart())) writeLocalCart({ items: [] })
       if (!isVariableValid(user)) setCart(getLocalCart())

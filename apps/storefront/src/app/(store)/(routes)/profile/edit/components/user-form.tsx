@@ -40,9 +40,11 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
    const toastMessage = 'User updated.'
    const action = 'Save changes'
 
-   const defaultValues = initialData
+   const defaultValues: UserFormValues = initialData
       ? {
-           ...initialData,
+           name: initialData.name ?? '---',
+           phone: initialData.phone ?? '---',
+           email: initialData.email ?? '---',
         }
       : {
            name: '---',

@@ -43,10 +43,19 @@ export function ContentPageForm({ initialData }: { initialData: ContentPage | nu
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialData ?? {
-            slug: '', title_tr: '', body_html_tr: '', is_published: false,
-            seo_title_tr: '', seo_description_tr: '',
-        },
+        defaultValues: initialData
+            ? {
+                slug: initialData.slug,
+                title_tr: initialData.title_tr,
+                is_published: initialData.is_published,
+                body_html_tr: initialData.body_html_tr ?? undefined,
+                seo_title_tr: initialData.seo_title_tr ?? undefined,
+                seo_description_tr: initialData.seo_description_tr ?? undefined,
+            }
+            : {
+                slug: '', title_tr: '', body_html_tr: '', is_published: false,
+                seo_title_tr: '', seo_description_tr: '',
+            },
     })
 
     const onSubmit = async (data: FormValues) => {

@@ -38,7 +38,7 @@ export function Receipt() {
    }, [cart?.items])
 
    return (
-      <Card className={loading && 'animate-pulse'}>
+      <Card className={loading ? 'animate-pulse' : undefined}>
          <CardHeader className="p-4 pb-0">
             <h2 className="font-bold tracking-tight">Sipariş Özeti</h2>
          </CardHeader>
@@ -71,7 +71,7 @@ export function Receipt() {
             >
                <Button
                   disabled={
-                     !isVariableValid(cart?.items) || cart['items'].length === 0
+                     !isVariableValid(cart?.items) || (cart as any)?.items?.length === 0
                   }
                   className="w-full"
                >

@@ -2,7 +2,11 @@ import { useAuthenticated } from '@/hooks/useAuthentication'
 import { isVariableValid } from '@/lib/utils'
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 
-const UserContext = createContext({
+const UserContext = createContext<{
+   user: any
+   loading: boolean
+   refreshUser: () => Promise<void>
+}>({
    user: null,
    loading: true,
    refreshUser: async () => { },

@@ -54,10 +54,17 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
         resolver: zodResolver(formSchema),
         defaultValues: initialData
             ? {
-                ...initialData,
+                slug: initialData.slug,
+                title_tr: initialData.title_tr,
+                status: initialData.status,
+                excerpt_tr: initialData.excerpt_tr ?? undefined,
+                body_html_tr: initialData.body_html_tr ?? undefined,
+                cover_image_url: initialData.cover_image_url ?? undefined,
                 tags: initialData.tags?.join(', ') ?? '',
+                seo_title_tr: initialData.seo_title_tr ?? undefined,
+                seo_description_tr: initialData.seo_description_tr ?? undefined,
             }
-            : { slug: '', title_tr: '', excerpt_tr: '', body_html_tr: '', cover_image_url: '', tags: '', status: 'draft', seo_title_tr: '', seo_description_tr: '' },
+            : { slug: '', title_tr: '', excerpt_tr: '', body_html_tr: '', cover_image_url: '', tags: '', status: 'draft' as const, seo_title_tr: '', seo_description_tr: '' },
     })
 
     const onSubmit = async (data: FormValues) => {

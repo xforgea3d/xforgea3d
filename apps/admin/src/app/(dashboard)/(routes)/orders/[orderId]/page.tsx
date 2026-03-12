@@ -199,7 +199,7 @@ const ProductPage = async ({ params }: { params: { orderId: string } }) => {
                               <p className="text-sm font-light text-foreground/70">
                                  Mevcut durum:{' '}
                                  <span className="font-semibold text-foreground">
-                                    {STATUS_LABELS[order?.status] ?? order?.status}
+                                    {STATUS_LABELS[order?.status as keyof typeof STATUS_LABELS] ?? order?.status}
                                  </span>
                               </p>
                            </div>

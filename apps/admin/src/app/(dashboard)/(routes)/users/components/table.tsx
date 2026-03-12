@@ -40,7 +40,7 @@ export const columns: ColumnDef<UserColumn>[] = [
          <Link href={`/orders?userId=${row.original.id}`}>
             <Badge className="items-center flex gap-1 w-min">
                <LinkIcon className="h-3" />
-               <p className="shrink-0">{cell.getValue().toString()} Sipariş</p>
+               <p className="shrink-0">{(cell.getValue() as number).toString()} Sipariş</p>
             </Badge>
          </Link>
       ),

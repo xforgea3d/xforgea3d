@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import config from '@/config/site'
 import { Metadata } from 'next'
 import Link from 'next/link'

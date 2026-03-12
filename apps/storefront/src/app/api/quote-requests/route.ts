@@ -10,10 +10,12 @@ const ALLOWED_TYPES = new Set([
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-const supabase = createClient(
-   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function getSupabaseClient() {
+   return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+   )
+}
 
 /**
  * POST /api/quote-requests — PUBLIC (no auth required)
@@ -64,7 +66,7 @@ export async function POST(req: Request) {
          const buffer = Buffer.from(await imageFile.arrayBuffer())
          const filename = `quote-requests/${randomUUID()}-${imageFile.name.replace(/[^a-z0-9.-]/gi, '_')}`
 
-         const { error: uploadError } = await supabase.storage
+         const { error: uploadError } = await getSupabaseClient().storage
             .from('ecommerce')
             .upload(filename, buffer, {
                contentType: imageFile.type,
@@ -72,7 +74,7 @@ export async function POST(req: Request) {
             })
 
          if (!uploadError) {
-            const { data: urlData } = supabase.storage.from('ecommerce').getPublicUrl(filename)
+            const { data: urlData } = getSupabaseClient().storage.from('ecommerce').getPublicUrl(filename)
             imageUrl = urlData.publicUrl
          }
       }

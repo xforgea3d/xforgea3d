@@ -36,7 +36,7 @@ export function SortBy({ initialData }) {
    const [value, setValue] = React.useState('featured')
 
    useEffect(() => {
-      if (isVariableValid(initialData)) setValue(initialData)
+      if (isVariableValid(initialData)) setValue(String(initialData))
    }, [initialData])
 
    return (

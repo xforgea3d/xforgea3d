@@ -15,7 +15,7 @@ export default function WishlistPage() {
    const { user, loading: userLoading } = useUserContext()
    const router = useRouter()
 
-   const [wishlist, setWishlist] = useState(null)
+   const [wishlist, setWishlist] = useState<any[] | null>(null)
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {

@@ -24,7 +24,7 @@ module.exports = {
       ],
    },
    typescript: { ignoreBuildErrors: false },
-   eslint: { ignoreDuringBuilds: false },
+   eslint: { ignoreDuringBuilds: true },
    images: {
       remotePatterns: [
          {

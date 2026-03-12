@@ -4,7 +4,7 @@ import { validateBoolean } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 
 export function useAuthenticated() {
-   const [authenticated, setAuthenticated] = useState(null)
+   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
 
    useEffect(() => {
       try {

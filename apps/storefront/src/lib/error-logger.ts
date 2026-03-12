@@ -31,7 +31,7 @@ export async function logError(opts: LogErrorOptions): Promise<void> {
             userAgent: opts.userAgent?.slice(0, 500) || null,
             ip: opts.ip?.slice(0, 45) || null,
             userId: opts.userId || null,
-            metadata: opts.metadata || null,
+            metadata: (opts.metadata || undefined) as any,
          },
       })
    } catch (e) {
