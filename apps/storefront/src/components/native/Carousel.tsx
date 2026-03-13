@@ -105,9 +105,14 @@ export default function Carousel({ images }: { images: string[] }) {
       setLightboxOpen(true)
    }
 
-   if (!images?.length) return null
+   // Filter out empty / placeholder URLs that are known to be broken
+   const validImages = (images ?? []).filter(
+      (src) => typeof src === 'string' && src.length > 1
+   )
 
-   const currentSrc = images[selectedIndex]
+   if (!validImages.length) return null
+
+   const currentSrc = validImages[selectedIndex] ?? validImages[0]
 
    return (
       <>
@@ -115,7 +120,7 @@ export default function Carousel({ images }: { images: string[] }) {
          <div className="relative group" ref={containerRef}>
             <div className="overflow-hidden rounded-xl" ref={emblaRef}>
                <div className="flex touch-pan-y">
-                  {images.map((src, i) => (
+                  {validImages.map((src, i) => (
                      <div
                         key={i}
                         className="relative flex-[0_0_100%] h-[420px] bg-neutral-100 dark:bg-neutral-900 select-none"
@@ -126,6 +131,7 @@ export default function Carousel({ images }: { images: string[] }) {
                            alt={`Product image ${i + 1}`}
                            loading={i === 0 ? 'eager' : 'lazy'}
                            draggable={false}
+                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                         />
                      </div>
                   ))}
@@ -138,7 +144,7 @@ export default function Carousel({ images }: { images: string[] }) {
             </div>
 
             {/* ── Prev / Next arrows ────────────────────────────────── */}
-            {images.length > 1 && (
+            {validImages.length > 1 && (
                <>
                   <button
                      onClick={() => emblaApi?.scrollPrev()}
@@ -166,9 +172,9 @@ export default function Carousel({ images }: { images: string[] }) {
          </div>
 
          {/* ── Thumbnail strip ─────────────────────────────────────── */}
-         {images.length > 1 && (
+         {validImages.length > 1 && (
             <div className="flex gap-2 mt-3 overflow-x-auto pb-1 justify-center">
-               {images.map((src, i) => (
+               {validImages.map((src, i) => (
                   <button
                      key={i}
                      onClick={() => emblaApi?.scrollTo(i)}
@@ -179,16 +185,16 @@ export default function Carousel({ images }: { images: string[] }) {
                            : 'border-transparent opacity-50 hover:opacity-80'
                      )}
                   >
-                     <img src={src} className="absolute inset-0 h-full w-full object-cover" alt="" />
+                     <img src={src} className="absolute inset-0 h-full w-full object-cover" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                   </button>
                ))}
             </div>
          )}
 
          {/* ── Dot indicators (mobile only) ────────────────────────── */}
-         {images.length > 1 && (
+         {validImages.length > 1 && (
             <div className="flex md:hidden justify-center gap-2 py-2">
-               {images.map((_, i) => (
+               {validImages.map((_, i) => (
                   <button
                      key={i}
                      onClick={() => emblaApi?.scrollTo(i)}
@@ -207,7 +213,7 @@ export default function Carousel({ images }: { images: string[] }) {
          {/* ── Lightbox — lazy mounted on first click ──────────────── */}
          {lightboxMounted && (
             <ProductLightbox
-               images={images}
+               images={validImages}
                initialIndex={selectedIndex}
                open={lightboxOpen}
                onClose={() => setLightboxOpen(false)}

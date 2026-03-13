@@ -1,4 +1,5 @@
 import { ImageSkeleton } from '@/components/native/icons'
+import SafeImage from '@/components/native/SafeImage'
 import { ProductWithIncludes } from '@/types/prisma'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -54,8 +55,9 @@ export const Product = ({
                {/* Image container */}
                <div className="relative h-56 sm:h-64 w-full flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                   {product?.images?.[0] ? (
-                     <img
+                     <SafeImage
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                        fallbackClassName="absolute inset-0 flex h-full w-full items-center justify-center bg-neutral-100 dark:bg-neutral-800"
                         src={product.images[0]}
                         alt={product.title}
                         loading={priority ? 'eager' : 'lazy'}

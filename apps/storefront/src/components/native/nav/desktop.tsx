@@ -527,7 +527,7 @@ function VehiclePartsDropdown({
                                              <img
                                                 src={model.imageUrl}
                                                 alt={model.name}
-                                                className="absolute inset-0 h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+                                                className="absolute inset-0 h-full w-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                                                 loading="lazy"
                                              />
                                           </div>
