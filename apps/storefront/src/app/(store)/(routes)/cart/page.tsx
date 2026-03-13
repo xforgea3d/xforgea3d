@@ -1,7 +1,6 @@
 'use client'
 
 import { Heading } from '@/components/native/heading'
-import { CartContextProvider } from '@/state/Cart'
 
 import { CartGrid } from './components/grid'
 

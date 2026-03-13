@@ -12,9 +12,36 @@ export async function GET(
 
       const product = await prisma.product.findUnique({
          where: { id: params.productId },
-         include: {
-            categories: true,
-            brand: true,
+         select: {
+            id: true,
+            title: true,
+            description: true,
+            images: true,
+            price: true,
+            discount: true,
+            stock: true,
+            isAvailable: true,
+            isFeatured: true,
+            productType: true,
+            customOptions: true,
+            keywords: true,
+            brand: { select: { id: true, title: true, logo: true } },
+            categories: { select: { id: true, title: true } },
+            productReviews: {
+               select: {
+                  id: true,
+                  text: true,
+                  rating: true,
+                  createdAt: true,
+               },
+            },
+            carModels: {
+               select: {
+                  id: true,
+                  name: true,
+               },
+            },
+            createdAt: true,
          },
       })
 

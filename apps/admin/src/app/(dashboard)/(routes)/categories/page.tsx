@@ -9,13 +9,18 @@ import Link from 'next/link'
 import { CategoriesClient, CategoryColumn } from './components/table'
 
 export default async function CategoriesPage() {
-   const categories = await prisma.category.findMany({
-      select: {
-         id: true,
-         title: true,
-         _count: { select: { products: true } },
-      },
-   })
+   let categories: any[] = []
+   try {
+      categories = await prisma.category.findMany({
+         select: {
+            id: true,
+            title: true,
+            _count: { select: { products: true } },
+         },
+      })
+   } catch (error) {
+      console.warn('[CategoriesPage] Failed to fetch categories:', error)
+   }
 
    const formattedCategories: CategoryColumn[] = categories.map((category) => ({
       id: category.id,

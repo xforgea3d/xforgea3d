@@ -25,6 +25,7 @@ export async function PATCH(
         })
 
         revalidatePath('/payments')
+        revalidatePath('/', 'layout')
 
         try {
             const { revalidateStorefront } = await import('@/lib/revalidate-storefront')
