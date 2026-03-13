@@ -7,25 +7,25 @@ interface CarModelImageProps {
    alt: string
    className?: string
    containerClassName?: string
-   /** Upper threshold: pixels with R,G,B all above this become fully transparent. Default 230. */
-   whiteThreshold?: number
-   /** Lower threshold: pixels between this and whiteThreshold get proportionally reduced alpha. Default 200. */
+   /** Upper threshold: pixels with R,G,B all below this become fully transparent. Default 25. */
+   blackThreshold?: number
+   /** Upper threshold: pixels between blackThreshold and this get proportionally reduced alpha. Default 55. */
    gradientThreshold?: number
 }
 
 /**
- * Renders a car model image with white background pixels removed via canvas processing.
- * Pixels near-white (above whiteThreshold) become transparent.
- * Pixels between gradientThreshold and whiteThreshold get smooth alpha falloff.
- * The result is displayed on a black background container.
+ * Renders a car model image with black background pixels removed via canvas processing.
+ * Pixels near-black (below blackThreshold) become transparent.
+ * Pixels between blackThreshold and gradientThreshold get smooth alpha falloff.
+ * The result is displayed on a white background container.
  */
 export default function CarModelImage({
    src,
    alt,
    className = '',
    containerClassName = '',
-   whiteThreshold = 230,
-   gradientThreshold = 200,
+   blackThreshold = 25,
+   gradientThreshold = 55,
 }: CarModelImageProps) {
    const [processedSrc, setProcessedSrc] = useState<string | null>(null)
    const [failed, setFailed] = useState(false)
@@ -57,27 +57,27 @@ export default function CarModelImage({
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
             const data = imageData.data
             const len = data.length
-            const range = whiteThreshold - gradientThreshold
+            const range = gradientThreshold - blackThreshold
 
             for (let i = 0; i < len; i += 4) {
                const r = data[i]
                const g = data[i + 1]
                const b = data[i + 2]
 
-               if (r > whiteThreshold && g > whiteThreshold && b > whiteThreshold) {
-                  // Fully white region -> transparent
+               if (r < blackThreshold && g < blackThreshold && b < blackThreshold) {
+                  // Fully black region -> transparent
                   data[i + 3] = 0
                } else if (
-                  r > gradientThreshold &&
-                  g > gradientThreshold &&
-                  b > gradientThreshold &&
+                  r < gradientThreshold &&
+                  g < gradientThreshold &&
+                  b < gradientThreshold &&
                   range > 0
                ) {
                   // Transition zone: smooth alpha falloff
-                  // Use the minimum channel to determine how "white" this pixel is
-                  const minChannel = Math.min(r, g, b)
-                  const t = (minChannel - gradientThreshold) / range
-                  // t goes from 0 (at gradientThreshold) to 1 (at whiteThreshold)
+                  // Use the maximum channel to determine how "black" this pixel is
+                  const maxChannel = Math.max(r, g, b)
+                  const t = (gradientThreshold - maxChannel) / range
+                  // t goes from 0 (at gradientThreshold) to 1 (at blackThreshold)
                   // We want alpha to go from full (255) to 0
                   const newAlpha = Math.round((1 - t) * data[i + 3])
                   data[i + 3] = newAlpha
@@ -97,7 +97,7 @@ export default function CarModelImage({
       }
 
       img.src = src
-   }, [src, whiteThreshold, gradientThreshold])
+   }, [src, blackThreshold, gradientThreshold])
 
    useEffect(() => {
       setProcessedSrc(null)
@@ -108,7 +108,7 @@ export default function CarModelImage({
    // Loading skeleton
    if (!processedSrc && !failed) {
       return (
-         <div className={`bg-black animate-pulse ${containerClassName}`}>
+         <div className={`bg-white animate-pulse ${containerClassName}`}>
             <div className="w-full h-full" />
          </div>
       )
@@ -117,7 +117,7 @@ export default function CarModelImage({
    // Fallback: show original image if canvas processing failed
    if (failed) {
       return (
-         <div className={`bg-black ${containerClassName}`}>
+         <div className={`bg-white ${containerClassName}`}>
             <img
                src={src}
                alt={alt}
@@ -128,9 +128,9 @@ export default function CarModelImage({
       )
    }
 
-   // Success: show processed image with transparent whites on black bg
+   // Success: show processed image with transparent blacks on white bg
    return (
-      <div className={`bg-black ${containerClassName}`}>
+      <div className={`bg-white ${containerClassName}`}>
          <img
             src={processedSrc!}
             alt={alt}

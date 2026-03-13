@@ -138,8 +138,8 @@ export default async function Index() {
                                     containerClassName="relative w-full aspect-[16/10] rounded-lg overflow-hidden mb-3"
                                  />
                               ) : (
-                                 <div className="w-full aspect-[16/10] rounded-lg bg-black flex items-center justify-center mb-3">
-                                    <Car className="h-8 w-8 text-white/20" />
+                                 <div className="w-full aspect-[16/10] rounded-lg bg-white flex items-center justify-center mb-3">
+                                    <Car className="h-8 w-8 text-black/20" />
                                  </div>
                               )}
                               {/* Brand logo */}
@@ -171,6 +171,7 @@ export default async function Index() {
          )}
 
          {/* ── 4. YENİ KOLEKSİYON ──────────────────────────────── */}
+         {banners.length > 0 && (
          <section className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem] py-12 bg-background">
             <div className="mb-6">
                <h2 className="text-3xl font-bold tracking-tight">Yeni Koleksiyon</h2>
@@ -180,6 +181,7 @@ export default async function Index() {
             </div>
             <Carousel images={banners.map((obj) => obj.image)} />
          </section>
+         )}
 
          {/* ── 5. KİŞİYE ÖZEL CTA ─────────────────────────────── */}
          <section className="py-12 bg-gradient-to-br from-orange-500/5 via-amber-500/5 to-orange-600/5 dark:from-orange-500/10 dark:via-amber-500/5 dark:to-orange-600/10">

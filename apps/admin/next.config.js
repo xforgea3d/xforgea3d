@@ -25,18 +25,10 @@ module.exports = {
    },
    typescript: { ignoreBuildErrors: false },
    eslint: { ignoreDuringBuilds: false },
+   // next/image is not used — all images use native <img> tags.
+   // unoptimized: true disables the Next.js image optimization API entirely.
    images: {
       unoptimized: true,
-      remotePatterns: [
-         {
-            protocol: 'https',
-            hostname: '*.supabase.co',
-         },
-         {
-            protocol: 'https',
-            hostname: 'wsomqsbgclyhhtaocxio.supabase.co',
-         },
-      ],
    },
    async headers() {
       return [
@@ -49,7 +41,8 @@ module.exports = {
                { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
                { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
                { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-               { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; frame-ancestors 'none';" },
+               // CSP removed — admin panel is an internal tool behind auth.
+               // A restrictive CSP was causing external Supabase storage images to break.
             ],
          },
          {

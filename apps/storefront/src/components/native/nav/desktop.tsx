@@ -531,8 +531,8 @@ function VehiclePartsDropdown({
                                              containerClassName="relative w-full aspect-[16/10] rounded-lg overflow-hidden mb-2"
                                           />
                                        ) : (
-                                          <div className="w-full aspect-[16/10] rounded-lg bg-black flex items-center justify-center mb-2">
-                                             <CarIcon className="h-6 w-6 text-white/20" />
+                                          <div className="w-full aspect-[16/10] rounded-lg bg-white flex items-center justify-center mb-2">
+                                             <CarIcon className="h-6 w-6 text-black/20" />
                                           </div>
                                        )}
                                        <span className="text-xs font-semibold">{model.name}</span>

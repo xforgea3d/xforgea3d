@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import Autoplay from 'embla-carousel-autoplay'
 import useEmblaCarousel from 'embla-carousel-react'
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { SearchIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { SearchIcon, ChevronLeftIcon, ChevronRightIcon, ImageOffIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const ProductLightbox = dynamic(() => import('./ProductLightbox'), { ssr: false })
@@ -110,7 +110,14 @@ export default function Carousel({ images }: { images: string[] }) {
       (src) => typeof src === 'string' && src.length > 1
    )
 
-   if (!validImages.length) return null
+   if (!validImages.length) {
+      return (
+         <div className="flex flex-col items-center justify-center h-[280px] rounded-xl border border-dashed border-border bg-neutral-50 dark:bg-neutral-900/50">
+            <ImageOffIcon className="h-10 w-10 text-muted-foreground/40 mb-3" />
+            <p className="text-sm text-muted-foreground">Henüz görsel eklenmedi.</p>
+         </div>
+      )
+   }
 
    const currentSrc = validImages[selectedIndex] ?? validImages[0]
 
@@ -131,8 +138,23 @@ export default function Carousel({ images }: { images: string[] }) {
                            alt={`Product image ${i + 1}`}
                            loading={i === 0 ? 'eager' : 'lazy'}
                            draggable={false}
-                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                           onError={(e) => {
+                              const img = e.target as HTMLImageElement
+                              img.style.display = 'none'
+                              // Show fallback sibling
+                              const fallback = img.parentElement?.querySelector('[data-img-fallback]') as HTMLElement | null
+                              if (fallback) fallback.style.display = 'flex'
+                           }}
                         />
+                        {/* Fallback shown when image fails to load */}
+                        <div
+                           data-img-fallback
+                           className="absolute inset-0 items-center justify-center flex-col gap-2"
+                           style={{ display: 'none' }}
+                        >
+                           <ImageOffIcon className="h-8 w-8 text-muted-foreground/30" />
+                           <span className="text-xs text-muted-foreground/50">Gorsel yuklenemedi</span>
+                        </div>
                      </div>
                   ))}
                </div>

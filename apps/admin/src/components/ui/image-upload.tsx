@@ -90,6 +90,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                      className="absolute inset-0 w-full h-full object-cover"
                      alt="Image"
                      src={url}
+                     onError={(e) => {
+                        console.error('[ImageUpload] Failed to load image:', url)
+                        ;(e.target as HTMLImageElement).style.border = '2px solid red'
+                     }}
                   />
                </div>
             ))}
