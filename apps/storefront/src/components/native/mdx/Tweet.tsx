@@ -1,6 +1,5 @@
 import { VerifiedAccount } from '@/components/native/icons'
 import { format } from 'date-fns'
-import Image from 'next/image'
 
 /**
  * Supports plain text, images, quote tweets.
@@ -39,7 +38,7 @@ export default function Tweet({
                target="_blank"
                rel="noreferrer"
             >
-               <Image
+               <img
                   alt={author.username}
                   height={48}
                   width={48}
@@ -98,7 +97,7 @@ export default function Tweet({
                }
             >
                {media.map((m) => (
-                  <Image
+                  <img
                      key={m.media_key}
                      alt={text}
                      height={m.height}

@@ -6,7 +6,6 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/s
 import Config from '@/config/site'
 import { cn } from '@/lib/utils'
 import { ViewIcon, CarIcon, ChevronRight } from 'lucide-react'
-import Image from 'next/image'
 import Link, { LinkProps } from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
@@ -80,7 +79,7 @@ export function MobileNav() {
                onOpenChange={setOpen}
             >
                <div className="relative z-20 flex items-center text-lg font-medium">
-                  <Image
+                  <img
                      src="/logo.png"
                      alt="xForgea3D"
                      width={24}
@@ -116,7 +115,7 @@ export function MobileNav() {
                                        >
                                           {brand.logoUrl ? (
                                              <div className="w-7 h-7 flex items-center justify-center bg-white rounded-md border border-border/40 shadow-sm">
-                                                <Image src={brand.logoUrl} alt={brand.name} width={18} height={18} className="object-contain" />
+                                                <img src={brand.logoUrl} alt={brand.name} width={18} height={18} className="object-contain" />
                                              </div>
                                           ) : (
                                              <div className="w-7 h-7 rounded-md bg-foreground/10 flex items-center justify-center text-[10px] font-bold">

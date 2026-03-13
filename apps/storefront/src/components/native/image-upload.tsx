@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button'
 import { ImagePlus, Trash, Loader2 } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { v4 as uuidv4 } from 'uuid'
@@ -85,10 +84,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                         <Trash className="h-4" />
                      </Button>
                   </div>
-                  <Image
-                     fill
-                     sizes="(min-width: 1000px) 30vw, 50vw"
-                     className="object-cover"
+                  <img
+                     className="absolute inset-0 h-full w-full object-cover"
                      alt="Image"
                      src={url}
                   />

@@ -16,7 +16,6 @@ import { useCsrf } from '@/hooks/useCsrf'
 import { getCountInCart, getLocalCart, writeLocalCart } from '@/lib/cart'
 import { useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, X } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -228,13 +227,11 @@ export const Item = ({ cartItem }) => {
          <CardHeader className="p-0 md:hidden">
             <div className="relative h-32 w-full">
                <Link href={`/products/${product?.id}`}>
-                  <Image
-                     className="rounded-t-lg"
+                  <img
+                     className="absolute inset-0 h-full w-full rounded-t-lg object-cover"
                      src={product?.images[0]}
                      alt="product image"
-                     fill
-                     sizes="(min-width: 1000px) 30vw, 50vw"
-                     style={{ objectFit: 'cover' }}
+                     loading="lazy"
                   />
                </Link>
             </div>
@@ -242,12 +239,11 @@ export const Item = ({ cartItem }) => {
          <CardContent className="grid grid-cols-6 gap-4 p-3">
             <div className="relative w-full col-span-2 hidden md:inline-flex">
                <Link href={`/products/${product?.id}`}>
-                  <Image
-                     className="rounded-lg"
+                  <img
+                     className="absolute inset-0 h-full w-full rounded-lg object-cover"
                      src={product?.images[0]}
                      alt="item image"
-                     fill
-                     style={{ objectFit: 'cover' }}
+                     loading="lazy"
                   />
                </Link>
             </div>

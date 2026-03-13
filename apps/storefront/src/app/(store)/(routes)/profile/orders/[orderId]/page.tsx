@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader } from '@/components/ui/loader'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { Loader2, MapPin, Package, CreditCard } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 const statusMap: Record<string, { label: string; color: string }> = {
@@ -83,7 +82,7 @@ export default function OrderDetailPage({ params }: { params: { orderId: string 
                         <div key={item.id} className="flex items-center gap-4 py-2">
                            {item.product?.images?.[0] && (
                               <div className="relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden border">
-                                 <Image src={item.product.images[0]} alt={item.product.title} fill className="object-cover" sizes="64px" />
+                                 <img src={item.product.images[0]} alt={item.product.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                               </div>
                            )}
                            <div className="flex-1 min-w-0">

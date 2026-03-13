@@ -21,7 +21,6 @@ import {
    ArrowRight,
 } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
 
@@ -127,24 +126,23 @@ export default async function Index() {
                            >
                               {/* Model image preview */}
                               {firstModelImage ? (
-                                 <div className="relative w-full h-24 rounded-lg overflow-hidden mb-3 bg-black">
-                                    <Image
+                                 <div className="relative w-full aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-black">
+                                    <img
                                        src={firstModelImage}
                                        alt={`${brand.name} model`}
-                                       fill
-                                       className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
-                                       sizes="200px"
+                                       className="absolute inset-0 h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+                                       loading="lazy"
                                     />
                                  </div>
                               ) : (
-                                 <div className="w-full h-24 rounded-lg bg-black flex items-center justify-center mb-3">
+                                 <div className="w-full aspect-[16/10] rounded-lg bg-black flex items-center justify-center mb-3">
                                     <Car className="h-8 w-8 text-white/20" />
                                  </div>
                               )}
                               {/* Brand logo */}
                               {brand.logoUrl ? (
                                  <div className="w-10 h-10 flex items-center justify-center bg-white rounded-lg border border-border/50 shadow-sm mb-2 group-hover:scale-110 transition-transform">
-                                    <Image
+                                    <img
                                        src={brand.logoUrl}
                                        alt={brand.name}
                                        width={28}

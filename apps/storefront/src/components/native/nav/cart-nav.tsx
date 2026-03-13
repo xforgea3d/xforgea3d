@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCartContext } from '@/state/Cart'
 import { ShoppingBasketIcon } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
@@ -97,11 +96,10 @@ export function CartNav() {
                             <div key={`${item.productId}-${index}`} className="flex gap-3 items-center">
                                 <div className="relative h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
                                     {item.product?.images?.[0] ? (
-                                        <Image
+                                        <img
                                             src={item.product.images[0]}
                                             alt={item.product?.title || 'Ürün'}
-                                            fill
-                                            className="object-cover"
+                                            className="absolute inset-0 h-full w-full object-cover"
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-neutral-200" />

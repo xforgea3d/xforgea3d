@@ -4,7 +4,6 @@ import prisma from '@/lib/prisma'
 import { sanitizeHtml } from '@/lib/sanitize'
 import { BlogPostJsonLd } from '@/app/json-ld'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 const formatTR = (d: Date) => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)
@@ -64,7 +63,7 @@ export default async function BlogPostPage({ params }: Props) {
 
          {post.cover_image_url && (
             <div className="relative w-full h-64 md:h-80 rounded-xl overflow-hidden mb-8">
-               <Image src={post.cover_image_url} alt={post.title_tr} fill className="object-cover" />
+               <img src={post.cover_image_url} alt={post.title_tr} className="absolute inset-0 h-full w-full object-cover" loading="eager" />
             </div>
          )}
          <div className="flex flex-wrap gap-2 mb-4">

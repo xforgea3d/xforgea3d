@@ -24,21 +24,10 @@ module.exports = {
     },
     typescript: { ignoreBuildErrors: false },
     eslint: { ignoreDuringBuilds: false },
+    // next/image is no longer used — all images use native <img> tags
+    // to avoid remotePatterns issues with Supabase storage URLs.
     images: {
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: '*.supabase.co',
-            },
-            {
-                protocol: 'https',
-                hostname: 'wsomqsbgclyhhtaocxio.supabase.co',
-            },
-        ],
-        formats: ['image/avif', 'image/webp'],
-        minimumCacheTTL: 2592000,
-        deviceSizes: [640, 750, 828, 1080, 1200],
-        imageSizes: [16, 32, 48, 64, 96, 128, 256],
+        unoptimized: true,
     },
     async headers() {
         return [

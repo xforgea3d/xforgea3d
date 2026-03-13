@@ -2,7 +2,6 @@
 
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ZoomInIcon, ZoomOutIcon, RotateCcwIcon, XIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { useEffect, useState, useRef } from 'react'
 
@@ -107,13 +106,10 @@ export default function ProductLightbox({
                             className="relative w-[85vw] h-[75vh] max-w-5xl transition-transform duration-200 ease-out"
                             style={{ transform: `scale(${scale})` }}
                         >
-                            <Image
+                            <img
                                 src={images[currentIndex]}
-                                fill
-                                className="object-contain pointer-events-none select-none"
+                                className="absolute inset-0 h-full w-full object-contain pointer-events-none select-none"
                                 alt={`Product image ${currentIndex + 1}`}
-                                quality={95}
-                                priority
                                 draggable={false}
                             />
                         </div>
@@ -154,7 +150,7 @@ export default function ProductLightbox({
                                                 : "border-transparent opacity-40 hover:opacity-70"
                                         )}
                                     >
-                                        <Image src={img} fill className="object-cover" alt="" />
+                                        <img src={img} className="absolute inset-0 h-full w-full object-cover" alt="" />
                                     </button>
                                 ))}
                             </div>

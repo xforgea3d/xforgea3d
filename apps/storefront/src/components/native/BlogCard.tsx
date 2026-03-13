@@ -7,7 +7,6 @@ import {
    CardHeader,
    CardTitle,
 } from '@/components/ui/card'
-import Image from 'next/image'
 import Link from 'next/link'
 
 export function BlogPostGrid({ blogs }) {
@@ -38,13 +37,11 @@ export function BlogPostCard({ post }) {
          <Card className="h-full">
             <CardHeader className="p-0">
                <div className="relative h-60 w-full">
-                  <Image
-                     className="rounded-t-lg"
+                  <img
+                     className="absolute inset-0 h-full w-full rounded-t-lg object-cover"
                      src={image}
                      alt="product image"
-                     fill
-                     sizes="(min-width: 1000px) 30vw, 50vw"
-                     style={{ objectFit: 'cover' }}
+                     loading="lazy"
                   />
                </div>
             </CardHeader>

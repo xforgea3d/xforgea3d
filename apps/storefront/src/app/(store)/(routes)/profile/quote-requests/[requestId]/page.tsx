@@ -6,7 +6,6 @@ import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 
 const statusLabels: Record<string, { label: string; color: string }> = {
@@ -137,11 +136,11 @@ export default function QuoteRequestDetailPage({
                      <div>
                         <span className="text-muted-foreground">Görsel:</span>
                         <div className="relative w-full h-48 rounded-lg overflow-hidden mt-1 bg-muted">
-                           <Image
+                           <img
                               src={data.imageUrl}
                               alt="Parça görseli"
-                              fill
-                              className="object-contain"
+                              className="absolute inset-0 h-full w-full object-contain"
+                              loading="lazy"
                            />
                         </div>
                      </div>

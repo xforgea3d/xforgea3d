@@ -3,7 +3,6 @@
 import { cn } from '@/lib/utils'
 import Autoplay from 'embla-carousel-autoplay'
 import useEmblaCarousel from 'embla-carousel-react'
-import Image from 'next/image'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { SearchIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
@@ -121,13 +120,11 @@ export default function Carousel({ images }: { images: string[] }) {
                         key={i}
                         className="relative flex-[0_0_100%] h-[420px] bg-neutral-100 dark:bg-neutral-900 select-none"
                      >
-                        <Image
+                        <img
                            src={src}
-                           fill
-                           className="object-contain pointer-events-none"
+                           className="absolute inset-0 h-full w-full object-contain pointer-events-none"
                            alt={`Product image ${i + 1}`}
-                           priority={i === 0}
-                           sizes="(max-width: 1024px) 100vw, 50vw"
+                           loading={i === 0 ? 'eager' : 'lazy'}
                            draggable={false}
                         />
                      </div>
@@ -182,7 +179,7 @@ export default function Carousel({ images }: { images: string[] }) {
                            : 'border-transparent opacity-50 hover:opacity-80'
                      )}
                   >
-                     <Image src={src} fill className="object-cover" alt="" />
+                     <img src={src} className="absolute inset-0 h-full w-full object-cover" alt="" />
                   </button>
                ))}
             </div>

@@ -1,6 +1,5 @@
 import { ImageSkeleton } from '@/components/native/icons'
 import { ProductWithIncludes } from '@/types/prisma'
-import Image from 'next/image'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { QuickAddButton } from '@/components/native/QuickAddButton'
@@ -55,13 +54,11 @@ export const Product = ({
                {/* Image container */}
                <div className="relative h-56 sm:h-64 w-full flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                   {product?.images?.[0] ? (
-                     <Image
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                     <img
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                         src={product.images[0]}
                         alt={product.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                        priority={priority}
+                        loading={priority ? 'eager' : 'lazy'}
                      />
                   ) : (
                      <div className="flex h-full w-full items-center justify-center">

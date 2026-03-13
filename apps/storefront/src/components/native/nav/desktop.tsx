@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/navigation-menu'
 import config from '@/config/site'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
 import Link from 'next/link'
 import { forwardRef, useState, useEffect } from 'react'
 import { PackageOpenIcon, SparklesIcon, CarIcon, MessageSquareQuoteIcon } from 'lucide-react'
@@ -73,13 +72,12 @@ export function MainNav() {
    return (
       <div className="hidden md:flex gap-2 items-center">
          <Link href="/" className="flex items-center gap-2 mr-2 flex-shrink-0">
-            <Image
+            <img
                src="/logo.png"
                alt="xForgea3D"
                width={32}
                height={32}
                className="object-contain"
-               priority
             />
             <span className="font-bold text-base tracking-tight hover:opacity-80 transition-opacity whitespace-nowrap">
                xForgea<span className="text-orange-500">3D</span>
@@ -371,13 +369,11 @@ function CategoriesDropdown({
                   prefetch={true}
                >
                   <div className="absolute inset-0">
-                     <Image
+                     <img
                         key={activeCatImg}
                         src={activeCatImg}
                         alt={activeCatTitle}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        sizes="200px"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                   </div>
@@ -464,7 +460,7 @@ function VehiclePartsDropdown({
                         >
                            {brand.logoUrl ? (
                               <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-white rounded-lg border border-border/50 shadow-sm">
-                                 <Image
+                                 <img
                                     src={brand.logoUrl}
                                     alt={brand.name}
                                     width={28}
@@ -503,7 +499,7 @@ function VehiclePartsDropdown({
                         <div className="flex items-center gap-2 mb-4">
                            {activeBrand.logoUrl && (
                               <div className="w-8 h-8 flex items-center justify-center bg-white rounded-lg border border-border/50">
-                                 <Image
+                                 <img
                                     src={activeBrand.logoUrl}
                                     alt={activeBrand.name}
                                     width={22}
@@ -527,17 +523,16 @@ function VehiclePartsDropdown({
                                        className="group flex flex-col rounded-xl border border-transparent p-2 transition-all hover:border-border hover:bg-accent"
                                     >
                                        {model.imageUrl ? (
-                                          <div className="relative w-full h-24 rounded-lg overflow-hidden mb-2 bg-black">
-                                             <Image
+                                          <div className="relative w-full aspect-[16/10] rounded-lg overflow-hidden mb-2 bg-black">
+                                             <img
                                                 src={model.imageUrl}
                                                 alt={model.name}
-                                                fill
-                                                className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
-                                                sizes="160px"
+                                                className="absolute inset-0 h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+                                                loading="lazy"
                                              />
                                           </div>
                                        ) : (
-                                          <div className="w-full h-24 rounded-lg bg-black flex items-center justify-center mb-2">
+                                          <div className="w-full aspect-[16/10] rounded-lg bg-black flex items-center justify-center mb-2">
                                              <CarIcon className="h-6 w-6 text-white/20" />
                                           </div>
                                        )}
@@ -568,12 +563,10 @@ function CollectionsDropdown({ collections }: { collections: DbCollection[] }) {
    return (
       <div className="p-4 w-[480px] md:w-[560px]">
          <div className="relative w-full h-28 rounded-xl overflow-hidden mb-3">
-            <Image
+            <img
                src="/nav-bg.png"
                alt="Koleksiyonlar"
-               fill
-               className="object-cover object-top"
-               sizes="560px"
+               className="absolute inset-0 h-full w-full object-cover object-top"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
             <div className="absolute inset-0 flex items-center px-5">

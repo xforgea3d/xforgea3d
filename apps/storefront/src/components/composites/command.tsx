@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input'
 import { Loader2, PackageIcon, SearchIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
-import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 interface CommandMenuProps {
@@ -123,11 +122,10 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
                         >
                            <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border bg-muted">
                               {product.images?.[0] ? (
-                                 <Image
+                                 <img
                                     src={product.images[0]}
                                     alt={product.title}
-                                    fill
-                                    className="object-cover"
+                                    className="absolute inset-0 h-full w-full object-cover"
                                  />
                               ) : (
                                  <PackageIcon className="h-4 w-4 absolute m-auto inset-0 text-muted-foreground" />
