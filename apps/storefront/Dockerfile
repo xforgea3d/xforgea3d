@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Stage 2: Run the application
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 # Set environment variables
 ENV NODE_ENV=production

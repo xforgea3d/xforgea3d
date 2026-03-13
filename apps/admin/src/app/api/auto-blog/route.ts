@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
 // ── Gemini API config ────────────────────────────────────────
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_GEMINI_API_KEY
 const GEMINI_MODEL = 'gemini-2.0-flash'
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`
 
@@ -114,7 +114,7 @@ export async function GET(req: NextRequest) {
    }
 
    if (!GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY not set' }, { status: 500 })
+      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 500 })
    }
 
    const type = req.nextUrl.searchParams.get('type') ?? '3d'
@@ -196,11 +196,14 @@ KURALLAR:
       // Step 4: Trigger revalidation on storefront (best-effort)
       try {
          const storefrontUrl = process.env.STOREFRONT_URL ?? 'https://xforgea3d.com'
-         await fetch(`${storefrontUrl}/api/revalidate?path=/blog&secret=${envSecret ?? ''}`, {
+         await fetch(`${storefrontUrl}/api/revalidate?path=/blog`, {
             method: 'POST',
-         }).catch(() => {})
-      } catch {
-         // Revalidation is best-effort
+            headers: {
+               'Authorization': `Bearer ${envSecret ?? ''}`,
+            },
+         }).catch((err) => console.error('[AUTO-BLOG] Revalidation failed:', err.message))
+      } catch (e) {
+         console.error('[AUTO-BLOG] Revalidation error:', (e as Error).message)
       }
 
       return NextResponse.json({

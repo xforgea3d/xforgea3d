@@ -29,8 +29,15 @@ async function revalidateWithRetry(path: string): Promise<void> {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
             const res = await fetch(
-                `${STOREFRONT_URL}/api/revalidate?secret=${REVALIDATION_SECRET}&path=${encodeURIComponent(path)}`,
-                { method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(5000) }
+                `${STOREFRONT_URL}/api/revalidate?path=${encodeURIComponent(path)}`,
+                {
+                    method: 'POST',
+                    cache: 'no-store',
+                    signal: AbortSignal.timeout(5000),
+                    headers: {
+                        'Authorization': `Bearer ${REVALIDATION_SECRET}`,
+                    },
+                }
             )
             if (res.ok) return
             console.error(`[STOREFRONT_REVALIDATE] HTTP ${res.status} for "${path}" (attempt ${attempt + 1})`)

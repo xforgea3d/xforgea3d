@@ -4,7 +4,10 @@ import { NextResponse } from 'next/server'
 export async function POST(req: Request) {
     try {
         const { searchParams } = new URL(req.url)
-        const secret = searchParams.get('secret')
+        // Prefer Authorization header; fall back to query param for backward compatibility
+        const secret =
+            req.headers.get('authorization')?.replace('Bearer ', '') ||
+            searchParams.get('secret')
         const path = searchParams.get('path')
 
         // Simple secret check to prevent unauthorized cache purging
