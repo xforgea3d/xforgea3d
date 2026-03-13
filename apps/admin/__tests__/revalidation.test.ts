@@ -185,7 +185,8 @@ describe('revalidateAllStorefront', () => {
 
       await mod.revalidateAllStorefront()
 
-      // ALL_STOREFRONT_PATHS has 9 paths
+      // ALL_STOREFRONT_PATHS has 9 paths, plus an extra revalidateWithRetry('/', 'layout')
+      // call for the root layout tree = 10 total calls
       const expectedPaths = [
          '/',
          '/products',
@@ -198,7 +199,7 @@ describe('revalidateAllStorefront', () => {
          '/api/maintenance-status',
       ]
 
-      expect(mockFetch).toHaveBeenCalledTimes(expectedPaths.length)
+      expect(mockFetch).toHaveBeenCalledTimes(expectedPaths.length + 1)
 
       const calledPaths = mockFetch.mock.calls.map((c: any) => {
          const url = new URL(c[0])

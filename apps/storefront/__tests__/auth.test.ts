@@ -230,7 +230,7 @@ describe('Auth Logout Route', () => {
       expect(mockSignOut).toHaveBeenCalled()
    })
 
-   it('should redirect to /login after logout', async () => {
+   it('should return JSON success response after logout', async () => {
       const { GET } = await import('@storefront/app/api/auth/logout/route')
 
       const url = new URL('https://xforgea3d.com/api/auth/logout')
@@ -239,8 +239,8 @@ describe('Auth Logout Route', () => {
 
       const response = await GET(request)
 
-      const redirectUrl = (response as any)._redirectUrl || response.headers.get('location') || ''
-      expect(redirectUrl).toContain('/login')
+      const body = await response.json()
+      expect(body.success).toBe(true)
    })
 
    it('should clear logged-in cookie on logout', async () => {

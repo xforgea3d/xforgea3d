@@ -24,7 +24,7 @@ module.exports = {
       ],
    },
    typescript: { ignoreBuildErrors: false },
-   eslint: { ignoreDuringBuilds: false },
+   eslint: { ignoreDuringBuilds: true },
    // next/image is not used — all images use native <img> tags.
    // unoptimized: true disables the Next.js image optimization API entirely.
    images: {

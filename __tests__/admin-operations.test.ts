@@ -215,7 +215,8 @@ describe('Security Headers Config — Admin', () => {
       expect(headerKeys).toContain('Referrer-Policy')
       expect(headerKeys).toContain('Permissions-Policy')
       expect(headerKeys).toContain('Strict-Transport-Security')
-      expect(headerKeys).toContain('Content-Security-Policy')
+      // CSP was removed — admin panel is an internal tool behind auth,
+      // and a restrictive CSP was breaking external Supabase storage images.
    })
 })
 
@@ -245,9 +246,9 @@ describe('Build Config Integrity', () => {
 
    it('storefront has image optimization configured', () => {
       const config = require('../apps/storefront/next.config.js')
-      expect(config.images.formats).toContain('image/avif')
-      expect(config.images.formats).toContain('image/webp')
-      expect(config.images.minimumCacheTTL).toBeGreaterThan(0)
+      // next/image is no longer used — all images use native <img> tags.
+      // unoptimized: true disables the Next.js image optimization API entirely.
+      expect(config.images.unoptimized).toBe(true)
    })
 
    it('storefront has redirect from /product to /products', async () => {
@@ -259,13 +260,13 @@ describe('Build Config Integrity', () => {
       expect(productRedirect.permanent).toBe(true)
    })
 
-   it('both apps have remote image patterns for supabase', () => {
+   it('both apps use unoptimized images (no remotePatterns needed)', () => {
       const storefrontConfig = require('../apps/storefront/next.config.js')
       const adminConfig = require('../apps/admin/next.config.js')
-      const sfPatterns = storefrontConfig.images.remotePatterns
-      const adminPatterns = adminConfig.images.remotePatterns
-      expect(sfPatterns.some((p: any) => p.hostname?.includes('supabase'))).toBe(true)
-      expect(adminPatterns.some((p: any) => p.hostname?.includes('supabase'))).toBe(true)
+      // Both apps switched to native <img> tags with unoptimized: true,
+      // so remotePatterns configuration is no longer required.
+      expect(storefrontConfig.images.unoptimized).toBe(true)
+      expect(adminConfig.images.unoptimized).toBe(true)
    })
 })
 
