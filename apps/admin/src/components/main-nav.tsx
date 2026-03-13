@@ -2,7 +2,6 @@
 
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
    LayoutDashboard,
@@ -76,13 +75,13 @@ export function MainNav({
          {...props}
       >
          <Link href="/" className="flex items-center gap-2 mr-4 flex-shrink-0">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
                src="/logo.png"
                alt="xForgea3D"
                width={28}
                height={28}
                className="object-contain"
-               priority
             />
             <span className="font-bold text-sm hidden xl:block">xForgea3D</span>
          </Link>

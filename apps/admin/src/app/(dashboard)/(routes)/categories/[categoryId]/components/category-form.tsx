@@ -30,7 +30,6 @@ import { toast } from 'react-hot-toast'
 import * as z from 'zod'
 import { Textarea } from '@/components/ui/textarea'
 import { BotIcon, ImageIcon } from 'lucide-react'
-import Image from 'next/image'
 
 const formSchema = z.object({
    title: z.string().min(2),
@@ -253,11 +252,11 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
 
                   {form.watch('imageUrl') && (
                      <div className="relative w-full h-[200px] rounded-lg overflow-hidden border">
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                            src={form.watch('imageUrl')!}
                            alt="Category Preview"
-                           fill
-                           className="object-cover"
+                           className="w-full h-full object-cover"
                         />
                      </div>
                   )}

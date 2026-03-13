@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button'
 import { ImagePlus, Trash, Loader2 } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 
@@ -86,10 +85,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                         <Trash className="h-4" />
                      </Button>
                   </div>
-                  <Image
-                     fill
-                     sizes="(min-width: 1000px) 30vw, 50vw"
-                     className="object-cover"
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                     className="absolute inset-0 w-full h-full object-cover"
                      alt="Image"
                      src={url}
                   />

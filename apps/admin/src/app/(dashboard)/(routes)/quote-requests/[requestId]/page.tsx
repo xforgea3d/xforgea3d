@@ -4,7 +4,6 @@ import { Heading } from '@/components/ui/heading'
 import { Separator } from '@/components/ui/separator'
 import prisma from '@/lib/prisma'
 import { format } from 'date-fns'
-import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
@@ -102,11 +101,11 @@ export default async function QuoteRequestDetailPage({
                   <div className="rounded-lg border p-4 space-y-2">
                      <h3 className="font-semibold text-sm">Görsel</h3>
                      <div className="relative w-full h-48 rounded-lg overflow-hidden">
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                            src={quoteRequest.imageUrl}
                            alt="Parça görseli"
-                           fill
-                           className="object-contain"
+                           className="w-full h-full object-contain"
                         />
                      </div>
                   </div>
