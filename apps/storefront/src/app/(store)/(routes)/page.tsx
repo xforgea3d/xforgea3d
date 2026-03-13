@@ -58,10 +58,10 @@ export default async function Index() {
             take: 8,
             orderBy: { createdAt: 'desc' },
          }),
-         prisma.blog.findMany({
-            include: { author: true },
+         prisma.blogPost.findMany({
+            where: { status: 'published' },
             take: 3,
-            orderBy: { createdAt: 'desc' },
+            orderBy: { published_at: 'desc' },
          }),
          prisma.banner.findMany({
             orderBy: { createdAt: 'desc' },

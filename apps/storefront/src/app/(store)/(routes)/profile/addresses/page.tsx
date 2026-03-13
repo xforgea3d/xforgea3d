@@ -7,6 +7,7 @@ import { PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+import { toast } from 'react-hot-toast'
 import type { AddressColumn } from './components/table'
 import { AddressTable } from './components/table'
 
@@ -21,6 +22,7 @@ export default function AddressesPage() {
             setAddresses(json)
          } catch (error) {
             console.error({ error })
+            toast.error('Adresler yüklenirken bir hata oluştu.')
          }
       }
 

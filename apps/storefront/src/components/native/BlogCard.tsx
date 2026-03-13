@@ -2,10 +2,7 @@ import { ImageSkeleton } from '@/components/native/icons'
 import {
    Card,
    CardContent,
-   CardDescription,
-   CardFooter,
    CardHeader,
-   CardTitle,
 } from '@/components/ui/card'
 import Link from 'next/link'
 
@@ -30,29 +27,34 @@ export function BlogPostSkeletonGrid() {
 }
 
 export function BlogPostCard({ post }) {
-   const { title, description, image, slug, createdAt, author } = post
+   const title = post.title_tr ?? post.title
+   const image = post.cover_image_url ?? post.image
+   const slug = post.slug
+   const excerpt = post.excerpt_tr ?? post.description
 
    return (
       <Link href={`/blog/${slug}`}>
          <Card className="h-full">
             <CardHeader className="p-0">
                <div className="relative h-60 w-full">
-                  <img
-                     className="absolute inset-0 h-full w-full rounded-t-lg object-cover"
-                     src={image}
-                     alt="product image"
-                     loading="lazy"
-                  />
+                  {image ? (
+                     <img
+                        className="absolute inset-0 h-full w-full rounded-t-lg object-cover"
+                        src={image}
+                        alt={title ?? 'blog post'}
+                        loading="lazy"
+                     />
+                  ) : (
+                     <div className="absolute inset-0 h-full w-full rounded-t-lg bg-neutral-200 dark:bg-neutral-700" />
+                  )}
                </div>
             </CardHeader>
             <CardContent className="grid gap-4 p-4">
-               <h5 className="">{title}</h5>
+               <h5>{title}</h5>
+               {excerpt && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">{excerpt}</p>
+               )}
             </CardContent>
-            <CardFooter>
-               <p className="block text-sm text-neutral-700 dark:text-neutral-400">
-                  <span>{author?.name}</span>
-               </p>
-            </CardFooter>
          </Card>
       </Link>
    )

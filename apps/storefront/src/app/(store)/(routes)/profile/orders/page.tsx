@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Loader } from '@/components/ui/loader'
 import { useEffect, useState } from 'react'
 
+import { toast } from 'react-hot-toast'
 import type { OrderColumn } from './components/table'
 import { OrdersTable } from './components/table'
 
@@ -18,6 +19,7 @@ export default function UserPage() {
             setOrders(json)
          } catch (error) {
             console.error({ error })
+            toast.error('Siparişler yüklenirken bir hata oluştu.')
          }
       }
 

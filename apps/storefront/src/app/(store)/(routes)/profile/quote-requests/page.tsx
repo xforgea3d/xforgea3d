@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader } from '@/components/ui/loader'
 import { useEffect, useState } from 'react'
+import { toast } from 'react-hot-toast'
 import Link from 'next/link'
 
 const statusLabels: Record<string, { label: string; color: string }> = {
@@ -24,6 +25,7 @@ export default function QuoteRequestsPage() {
             setRequests(json)
          } catch (error) {
             console.error(error)
+            toast.error('Talepler yüklenirken bir hata oluştu.')
             setRequests([])
          }
       }

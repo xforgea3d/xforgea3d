@@ -52,7 +52,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ initialData }) => {
 
    const [loading, setLoading] = useState(false)
 
-   const toastMessage = 'Payment updated.'
+   const toastMessage = 'Ödeme güncellendi.'
    const action = 'Kaydet'
 
    const defaultValues = initialData
@@ -95,7 +95,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ initialData }) => {
          toast.success(toastMessage)
          router.push(`/payments`)
       } catch (error: any) {
-         toast.error('Something went wrong.')
+         toast.error('Bir hata oluştu.')
       } finally {
          setLoading(false)
       }

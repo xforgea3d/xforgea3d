@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Loader } from '@/components/ui/loader'
 import { useEffect, useState } from 'react'
 
+import { toast } from 'react-hot-toast'
 import { UserForm } from './components/user-form'
 
 export default function UserPage() {
@@ -17,6 +18,7 @@ export default function UserPage() {
             setUser(json)
          } catch (error) {
             console.error({ error })
+            toast.error('Profil bilgileri yüklenirken bir hata oluştu.')
          }
       }
 

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Banner, Category } from '@prisma/client'
+import { Category } from '@prisma/client'
 import { Trash } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -41,12 +41,10 @@ type CategoryFormValues = z.infer<typeof formSchema>
 
 interface CategoryFormProps {
    initialData: Category | null
-   banners: Banner[]
 }
 
 export const CategoryForm: React.FC<CategoryFormProps> = ({
    initialData,
-   banners,
 }) => {
    const params = useParams()
    const router = useRouter()
