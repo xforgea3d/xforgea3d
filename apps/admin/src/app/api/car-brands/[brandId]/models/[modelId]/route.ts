@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import prisma from '@/lib/prisma'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function PATCH(
    req: Request,
@@ -22,7 +22,7 @@ export async function PATCH(
       })
 
       revalidatePath('/', 'layout')
-      await revalidateStorefront(['/', '/products', '/car-brands'])
+      await revalidateAllStorefront()
 
       return NextResponse.json(model)
    } catch (error) {
@@ -40,7 +40,7 @@ export async function DELETE(
          where: { id: params.modelId },
       })
       revalidatePath('/', 'layout')
-      await revalidateStorefront(['/', '/products', '/car-brands'])
+      await revalidateAllStorefront()
 
       return NextResponse.json({ ok: true })
    } catch (error) {

@@ -48,12 +48,12 @@ export default async function ProductsPage() {
       <div className="block space-y-4 my-6">
          <div className="flex items-center justify-between">
             <Heading
-               title={`Products (${products.length})`}
-               description="Manage products for your store"
+               title={`Ürünler (${products.length})`}
+               description="Mağazanızdaki ürünleri yönetin."
             />
             <Link href="/products/new">
                <Button>
-                  <Plus className="mr-2 h-4" /> Add New
+                  <Plus className="mr-2 h-4" /> Yeni Ekle
                </Button>
             </Link>
          </div>

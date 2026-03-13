@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function PATCH(
    req: Request,
@@ -23,7 +23,7 @@ export async function PATCH(
          },
       })
 
-      await revalidateStorefront(['/', '/products'])
+      await revalidateAllStorefront()
 
       return NextResponse.json(item)
    } catch (error) {
@@ -41,7 +41,7 @@ export async function DELETE(
          where: { id: params.itemId },
       })
 
-      await revalidateStorefront(['/', '/products'])
+      await revalidateAllStorefront()
 
       return NextResponse.json({ ok: true })
    } catch (error) {

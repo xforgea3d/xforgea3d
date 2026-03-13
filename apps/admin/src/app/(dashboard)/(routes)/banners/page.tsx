@@ -1,5 +1,6 @@
 export const revalidate = 0
 import { format } from 'date-fns'
+import { tr } from 'date-fns/locale'
 
 import prisma from '@/lib/prisma'
 
@@ -21,19 +22,19 @@ export default async function BannersPage() {
    const formattedBanners: BannersColumn[] = banners.map((item) => ({
       id: item.id,
       label: item.label,
-      createdAt: format(item.createdAt, 'MMMM do, yyyy'),
+      createdAt: format(item.createdAt, 'd MMMM yyyy', { locale: tr }),
    }))
 
    return (
       <div className="block space-y-4 my-6">
          <div className="flex items-center justify-between">
             <Heading
-               title={`Banners (${banners.length})`}
-               description="Manage banners for your store"
+               title={`Bannerlar (${banners.length})`}
+               description="Ana sayfa banner görsellerini yönetin."
             />
             <Link href="/banners/new">
                <Button>
-                  <Plus className="mr-2 h-4" /> Add New
+                  <Plus className="mr-2 h-4" /> Yeni Ekle
                </Button>
             </Link>
          </div>

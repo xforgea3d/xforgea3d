@@ -140,6 +140,7 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
                               onRemove={() => field.onChange('')}
                            />
                         </FormControl>
+                        <p className="text-xs text-muted-foreground">Önerilen boyut: 1920×600px (geniş banner formatı)</p>
                         <FormMessage />
                      </FormItem>
                   )}

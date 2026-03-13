@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function PATCH(req: Request) {
     try {
@@ -23,7 +23,7 @@ export async function PATCH(req: Request) {
 
         // Bust admin cache and storefront (site settings affect all pages)
         revalidatePath('/', 'layout')
-        await revalidateStorefront(['/', '/products'])
+        await revalidateAllStorefront()
 
         return NextResponse.json(settings)
     } catch (error) {

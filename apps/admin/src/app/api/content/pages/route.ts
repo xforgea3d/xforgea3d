@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function GET(req: Request) {
     try {
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         }
 
         const page = await prisma.contentPage.create({ data: data as any })
-        await revalidateStorefront([`/${data.slug}`, '/'])
+        await revalidateAllStorefront()
         return NextResponse.json(page, { status: 201 })
     } catch (error) {
         console.error('[PAGES_POST]', error)

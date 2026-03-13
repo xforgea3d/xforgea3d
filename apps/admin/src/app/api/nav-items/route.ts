@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function GET() {
    try {
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
          },
       })
 
-      await revalidateStorefront(['/', '/products'])
+      await revalidateAllStorefront()
 
       return NextResponse.json(item)
    } catch (error) {
@@ -63,7 +63,7 @@ export async function PUT(req: Request) {
          )
       )
 
-      await revalidateStorefront(['/', '/products'])
+      await revalidateAllStorefront()
 
       return NextResponse.json({ ok: true })
    } catch (error) {

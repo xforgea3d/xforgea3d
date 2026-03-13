@@ -61,3 +61,29 @@ export async function revalidateStorefront(paths: string[]): Promise<void> {
 
     await Promise.allSettled(paths.map((path) => revalidateWithRetry(path)))
 }
+
+/**
+ * All storefront paths that should be revalidated after any admin mutation
+ * that affects publicly visible data (navbar, products, categories, etc.).
+ */
+const ALL_STOREFRONT_PATHS = [
+    '/',
+    '/products',
+    '/api/categories',
+    '/api/car-brands',
+    '/api/collections',
+    '/api/nav-items',
+    '/api/products',
+    '/api/search',
+    '/api/maintenance-status',
+]
+
+/**
+ * Convenience function: revalidates ALL common storefront paths including
+ * API routes used by the navbar and other client-side components.
+ *
+ * Use this from any admin mutation that changes data visible on the storefront.
+ */
+export async function revalidateAllStorefront(): Promise<void> {
+    return revalidateStorefront(ALL_STOREFRONT_PATHS)
+}

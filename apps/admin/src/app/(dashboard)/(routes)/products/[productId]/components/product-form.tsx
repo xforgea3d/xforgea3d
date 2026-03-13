@@ -26,10 +26,9 @@ import {
 import { Separator } from '@/components/ui/separator'
 import type { ProductWithIncludes } from '@/types/prisma'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Category, CarModel } from '@prisma/client'
-import { Trash, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { Category } from '@prisma/client'
+import { Trash } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
@@ -45,32 +44,25 @@ const formSchema = z.object({
    categoryId: z.string().min(1),
    productType: z.string().default('READY'),
    customOptions: z.string().optional(),
-   carModelIds: z.string().array().optional(),
    isFeatured: z.boolean().default(false).optional(),
    isAvailable: z.boolean().default(false).optional(),
 })
 
 type ProductFormValues = z.infer<typeof formSchema>
 
-type CarModelWithBrand = CarModel & { brand: { name: string } }
-
 interface ProductFormProps {
    initialData: ProductWithIncludes | null
    categories: Category[]
    brands: { id: string; title: string }[]
-   carModels?: CarModelWithBrand[]
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
    initialData,
    categories,
    brands,
-   carModels = [],
 }) => {
    const params = useParams()
    const router = useRouter()
-   const searchParams = useSearchParams()
-   const prefilledCarModelId = searchParams.get('carModelId')
 
    const [open, setOpen] = useState(false)
    const [loading, setLoading] = useState(false)
@@ -91,7 +83,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          customOptions: (initialData as any)?.customOptions
             ? JSON.stringify((initialData as any).customOptions, null, 2)
             : '',
-         carModelIds: (initialData as any)?.carModels?.map((m: any) => m.id) ?? [],
       }
       : {
          title: '',
@@ -103,7 +94,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          categoryId: '',
          productType: 'READY',
          customOptions: '',
-         carModelIds: prefilledCarModelId ? [prefilledCarModelId] : [],
          isFeatured: false,
          isAvailable: false,
       }
@@ -201,7 +191,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   name="images"
                   render={({ field }) => (
                      <FormItem>
-                        <FormLabel>Görseller</FormLabel>
+                        <FormLabel>Görseller*</FormLabel>
                         <FormControl>
                            <ImageUpload
                               value={field.value}
@@ -218,6 +208,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                               }
                            />
                         </FormControl>
+                        <p className="text-xs text-muted-foreground">Önerilen boyut: 800×800px (kare format)</p>
                         <FormMessage />
                      </FormItem>
                   )}
@@ -228,7 +219,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="title"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Ürün Adı</FormLabel>
+                           <FormLabel>Ürün Adı*</FormLabel>
                            <FormControl>
                               <Input
                                  disabled={loading}
@@ -245,7 +236,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="price"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Fiyat</FormLabel>
+                           <FormLabel>Fiyat*</FormLabel>
                            <FormControl>
                               <Input
                                  type="number"
@@ -263,7 +254,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="discount"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>İndirim</FormLabel>
+                           <FormLabel>İndirim (opsiyonel)</FormLabel>
                            <FormControl>
                               <Input
                                  type="number"
@@ -281,7 +272,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="stock"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Stok</FormLabel>
+                           <FormLabel>Stok (opsiyonel)</FormLabel>
                            <FormControl>
                               <Input
                                  type="number"
@@ -300,7 +291,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="productType"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Ürün Tipi</FormLabel>
+                           <FormLabel>Ürün Tipi (opsiyonel)</FormLabel>
                            <Select disabled={loading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
                                  <SelectTrigger>
@@ -345,7 +336,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="brandId"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Koleksiyon</FormLabel>
+                           <FormLabel>Koleksiyon*</FormLabel>
                            <Select disabled={loading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
                                  <SelectTrigger>
@@ -371,7 +362,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                      name="categoryId"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Kategori</FormLabel>
+                           <FormLabel>Kategori*</FormLabel>
                            <Select disabled={loading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
                                  <SelectTrigger>
@@ -390,63 +381,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                         </FormItem>
                      )}
                   />
-
-                  {/* Araç Modelleri */}
-                  {carModels.length > 0 && (
-                     <div className="col-span-1 md:col-span-3">
-                        <FormField
-                           control={form.control}
-                           name="carModelIds"
-                           render={({ field }) => (
-                              <FormItem>
-                                 <FormLabel>Uyumlu Araç Modelleri</FormLabel>
-                                 <FormDescription>Bu ürünün hangi araç modellerine uygun olduğunu seçin.</FormDescription>
-                                 <div className="flex flex-wrap gap-1.5 mb-2">
-                                    {(field.value || []).map((id: string) => {
-                                       const model = carModels.find(m => m.id === id)
-                                       if (!model) return null
-                                       return (
-                                          <Badge key={id} variant="secondary" className="gap-1">
-                                             {model.brand.name} {model.name}
-                                             <button
-                                                type="button"
-                                                onClick={() => field.onChange(field.value?.filter((v: string) => v !== id))}
-                                             >
-                                                <X className="h-3 w-3" />
-                                             </button>
-                                          </Badge>
-                                       )
-                                    })}
-                                 </div>
-                                 <Select
-                                    disabled={loading}
-                                    onValueChange={(val) => {
-                                       if (!field.value?.includes(val)) {
-                                          field.onChange([...(field.value || []), val])
-                                       }
-                                    }}
-                                 >
-                                    <FormControl>
-                                       <SelectTrigger>
-                                          <SelectValue placeholder="Araç modeli ekle..." />
-                                       </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                       {carModels
-                                          .filter(m => !field.value?.includes(m.id))
-                                          .map(m => (
-                                             <SelectItem key={m.id} value={m.id}>
-                                                {m.brand.name} — {m.name} {m.yearRange ? `(${m.yearRange})` : ''}
-                                             </SelectItem>
-                                          ))}
-                                    </SelectContent>
-                                 </Select>
-                                 <FormMessage />
-                              </FormItem>
-                           )}
-                        />
-                     </div>
-                  )}
 
                   {/* isFeatured */}
                   <FormField

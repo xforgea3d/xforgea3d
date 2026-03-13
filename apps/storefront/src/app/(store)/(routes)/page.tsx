@@ -6,7 +6,7 @@ import {
 } from '@/components/native/BlogCard'
 import Carousel from '@/components/native/Carousel'
 import Hero from '@/components/native/Hero'
-import { ProductGrid, ProductSkeletonGrid } from '@/components/native/Product'
+import { ProductSkeletonGrid } from '@/components/native/Product'
 import prisma from '@/lib/prisma'
 import { isVariableValid } from '@/lib/utils'
 import {
@@ -26,6 +26,11 @@ import dynamic from 'next/dynamic'
 
 const CarModelImage = dynamic(
    () => import('@/components/native/CarModelImage'),
+   { ssr: false }
+)
+
+const FeaturedProductsCarousel = dynamic(
+   () => import('@/components/native/FeaturedProductsCarousel'),
    { ssr: false }
 )
 
@@ -92,7 +97,7 @@ export default async function Index() {
                </p>
             </div>
             {isVariableValid(featuredProducts) ? (
-               <ProductGrid products={featuredProducts} />
+               <FeaturedProductsCarousel products={featuredProducts} />
             ) : (
                <ProductSkeletonGrid />
             )}

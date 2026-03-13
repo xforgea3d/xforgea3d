@@ -32,12 +32,12 @@ export default async function CategoriesPage() {
       <div className="my-6 block space-y-4">
          <div className="flex items-center justify-between">
             <Heading
-               title={`Categories (${categories.length})`}
-               description="Manage categories for your store"
+               title={`Kategoriler (${categories.length})`}
+               description="Mağazanızdaki kategorileri yönetin."
             />
             <Link href="/categories/new">
                <Button>
-                  <Plus className="mr-2 h-4" /> Add New
+                  <Plus className="mr-2 h-4" /> Yeni Ekle
                </Button>
             </Link>
          </div>

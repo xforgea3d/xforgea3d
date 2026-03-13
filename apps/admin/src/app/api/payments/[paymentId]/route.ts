@@ -28,8 +28,8 @@ export async function PATCH(
         revalidatePath('/', 'layout')
 
         try {
-            const { revalidateStorefront } = await import('@/lib/revalidate-storefront')
-            await revalidateStorefront(['/account'])
+            const { revalidateAllStorefront } = await import('@/lib/revalidate-storefront')
+            await revalidateAllStorefront()
         } catch (e) { }
 
         return NextResponse.json(payment)

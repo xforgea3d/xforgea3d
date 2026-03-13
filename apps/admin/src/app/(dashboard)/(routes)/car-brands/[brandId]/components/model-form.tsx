@@ -278,6 +278,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
                         onChange={(url) => setNewImageUrl(url)}
                         onRemove={() => setNewImageUrl('')}
                      />
+                     <p className="text-xs text-muted-foreground">Önerilen boyut: 600×400px (3:2 en-boy oranı)</p>
                   </div>
                </div>
                <DialogFooter className="gap-2">

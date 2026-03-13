@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function GET(_: Request, { params }: { params: { pageId: string } }) {
     try {
@@ -27,7 +27,7 @@ export async function PATCH(req: Request, { params }: { params: { pageId: string
         // Support legacy field name
         if (body.title && !body.title_tr) data.title_tr = body.title
         const page = await prisma.contentPage.update({ where: { id: params.pageId }, data })
-        await revalidateStorefront([`/page/${page.slug}`, '/'])
+        await revalidateAllStorefront()
         return NextResponse.json(page)
     } catch (error) {
         console.error('[PAGE_PATCH]', error)
@@ -39,7 +39,7 @@ export async function DELETE(_: Request, { params }: { params: { pageId: string 
     try {
         const page = await prisma.contentPage.findUnique({ where: { id: params.pageId } })
         await prisma.contentPage.delete({ where: { id: params.pageId } })
-        if (page?.slug) await revalidateStorefront([`/page/${page.slug}`, '/'])
+        if (page?.slug) await revalidateAllStorefront()
         return NextResponse.json({ ok: true })
     } catch (error) {
         console.error('[PAGE_DELETE]', error)

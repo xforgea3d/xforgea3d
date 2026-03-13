@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function GET(req: Request) {
     try {
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         }
 
         const post = await prisma.blogPost.create({ data: data as any })
-        await revalidateStorefront(['/blog', '/'])
+        await revalidateAllStorefront()
         return NextResponse.json(post, { status: 201 })
     } catch (error) {
         console.error('[BLOG_POST]', error)

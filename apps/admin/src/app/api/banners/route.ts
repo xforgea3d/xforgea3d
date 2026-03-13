@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function POST(req: Request) {
     try {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         })
 
         revalidatePath('/', 'layout')
-        await revalidateStorefront(['/', '/products'])
+        await revalidateAllStorefront()
 
         return NextResponse.json(banner)
     } catch (error) {

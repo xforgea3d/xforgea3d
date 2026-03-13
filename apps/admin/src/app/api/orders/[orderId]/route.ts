@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function PATCH(
     req: Request,
@@ -28,7 +28,7 @@ export async function PATCH(
         })
 
         revalidatePath('/orders')
-        await revalidateStorefront(['/account', '/'])
+        await revalidateAllStorefront()
 
         return NextResponse.json(order)
     } catch (error) {

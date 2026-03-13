@@ -3,6 +3,7 @@ import { Heading } from '@/components/ui/heading'
 import { Separator } from '@/components/ui/separator'
 import prisma from '@/lib/prisma'
 import { format } from 'date-fns'
+import { tr } from 'date-fns/locale'
 
 import { SortBy } from './components/options'
 import type { OrderColumn } from './components/table'
@@ -68,18 +69,18 @@ export default async function OrdersPage({ searchParams }) {
 
    const formattedOrders: OrderColumn[] = orders.map((order) => ({
       id: order.id,
-      number: `Order #${order.number}`,
+      number: `Sipariş #${order.number}`,
       date: order.createdAt.toUTCString(),
-      payable: '$' + order.payable.toString(),
+      payable: '₺' + order.payable.toString(),
       isPaid: order.isPaid,
-      createdAt: format(order.createdAt, 'MMMM do, yyyy'),
+      createdAt: format(order.createdAt, 'd MMMM yyyy', { locale: tr }),
    }))
 
    return (
       <div className="block space-y-4 my-6">
          <Heading
-            title={`Orders (${orders.length})`}
-            description="Manage orders for your store"
+            title={`Siparişler (${orders.length})`}
+            description="Mağazanızdaki siparişleri yönetin."
          />
          <Separator />
          <div className="grid grid-cols-4 gap-2">

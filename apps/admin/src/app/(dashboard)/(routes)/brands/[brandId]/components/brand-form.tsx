@@ -182,6 +182,7 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
                                  onRemove={() => field.onChange('')}
                               />
                            </FormControl>
+                           <p className="text-xs text-muted-foreground">Önerilen boyut: 400×400px (kare logo formatı)</p>
                            <FormMessage />
                         </FormItem>
                      )}

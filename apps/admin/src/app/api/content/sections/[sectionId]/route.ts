@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function PATCH(req: Request, { params }: { params: { sectionId: string } }) {
     try {
@@ -14,7 +14,7 @@ export async function PATCH(req: Request, { params }: { params: { sectionId: str
             where: { id: params.sectionId },
             data,
         })
-        await revalidateStorefront(['/'])
+        await revalidateAllStorefront()
         return NextResponse.json(section)
     } catch (error) {
         console.error('[SECTION_PATCH]', error)
@@ -25,7 +25,7 @@ export async function PATCH(req: Request, { params }: { params: { sectionId: str
 export async function DELETE(_: Request, { params }: { params: { sectionId: string } }) {
     try {
         await prisma.homepageSection.delete({ where: { id: params.sectionId } })
-        await revalidateStorefront(['/'])
+        await revalidateAllStorefront()
         return NextResponse.json({ ok: true })
     } catch (error) {
         console.error('[SECTION_DELETE]', error)

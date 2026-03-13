@@ -1,6 +1,8 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // Cached edge-compatible maintenance status check
 // The middleware fetches this endpoint (revalidated every 60s)
 export async function GET() {

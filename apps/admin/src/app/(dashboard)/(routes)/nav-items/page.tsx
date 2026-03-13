@@ -229,7 +229,7 @@ export default function NavItemsPage() {
             <div className="flex items-center justify-between">
                <Heading
                   title={`Navbar Yönetimi (${items.length})`}
-                  description="Mağaza navigasyonunu tek yerden yönetin. Değişiklikler anında frontend'e yansır."
+                  description="Mağaza menü öğelerini tek yerden yönetin."
                />
                <Button onClick={() => setShowAdd(!showAdd)}>
                   <Plus className="mr-2 h-4" /> Yeni Öğe

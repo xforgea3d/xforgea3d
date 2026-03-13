@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 import { sendMail } from '@persepolis/mail'
 import { render } from '@react-email/render'
 import { revalidatePath } from 'next/cache'
@@ -120,7 +120,7 @@ export async function PATCH(
       }
 
       revalidatePath('/quote-requests')
-      await revalidateStorefront(['/profile/quote-requests'])
+      await revalidateAllStorefront()
 
       return NextResponse.json(quoteRequest)
    } catch (error) {

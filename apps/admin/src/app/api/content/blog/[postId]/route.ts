@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
-import { revalidateStorefront } from '@/lib/revalidate-storefront'
+import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
 export async function GET(_: Request, { params }: { params: { postId: string } }) {
     try {
@@ -32,7 +32,7 @@ export async function PATCH(req: Request, { params }: { params: { postId: string
             data.status = body.is_published ? 'published' : 'draft'
         }
         const post = await prisma.blogPost.update({ where: { id: params.postId }, data })
-        await revalidateStorefront(['/blog', `/blog/${post.slug ?? params.postId}`, '/'])
+        await revalidateAllStorefront()
         return NextResponse.json(post)
     } catch (error) {
         console.error('[BLOG_POST_PATCH]', error)
@@ -43,7 +43,7 @@ export async function PATCH(req: Request, { params }: { params: { postId: string
 export async function DELETE(_: Request, { params }: { params: { postId: string } }) {
     try {
         await prisma.blogPost.delete({ where: { id: params.postId } })
-        await revalidateStorefront(['/blog', '/'])
+        await revalidateAllStorefront()
         return NextResponse.json({ ok: true })
     } catch (error) {
         console.error('[BLOG_POST_DELETE]', error)

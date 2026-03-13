@@ -65,12 +65,12 @@ export function SortBy({ initialData }) {
          }}
       >
          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Sort By" />
+            <SelectValue placeholder="Sırala" />
          </SelectTrigger>
          <SelectContent>
-            <SelectItem value="featured">Featured</SelectItem>
-            <SelectItem value="most_expensive">Most Expensive</SelectItem>
-            <SelectItem value="least_expensive">Least Expensive</SelectItem>
+            <SelectItem value="featured">Öne Çıkan</SelectItem>
+            <SelectItem value="most_expensive">En Yüksek Tutar</SelectItem>
+            <SelectItem value="least_expensive">En Düşük Tutar</SelectItem>
          </SelectContent>
       </Select>
    )
@@ -103,14 +103,14 @@ export function CategoriesCombobox({ categories, initialCategory }) {
                aria-expanded={open}
                className="w-full justify-between"
             >
-               {value ? getCategoryTitle() : 'Select category...'}
+               {value ? getCategoryTitle() : 'Kategori seçin...'}
                <ChevronsUpDown className="ml-2 h-4 shrink-0 opacity-50" />
             </Button>
          </PopoverTrigger>
          <PopoverContent className="w-full p-0">
             <Command>
-               <CommandInput placeholder="Search category..." />
-               <CommandEmpty>No category found.</CommandEmpty>
+               <CommandInput placeholder="Kategori ara..." />
+               <CommandEmpty>Kategori bulunamadı.</CommandEmpty>
                <CommandGroup>
                   {categories.map((category) => (
                      <CommandItem
@@ -185,14 +185,14 @@ export function BrandCombobox({ brands, initialBrand }) {
                aria-expanded={open}
                className="w-full justify-between"
             >
-               {value ? getBrandTitle() : 'Select brand...'}
+               {value ? getBrandTitle() : 'Koleksiyon seçin...'}
                <ChevronsUpDown className="ml-2 h-4 shrink-0 opacity-50" />
             </Button>
          </PopoverTrigger>
          <PopoverContent className="w-full p-0">
             <Command>
-               <CommandInput placeholder="Search brand..." />
-               <CommandEmpty>No brand found.</CommandEmpty>
+               <CommandInput placeholder="Koleksiyon ara..." />
+               <CommandEmpty>Koleksiyon bulunamadı.</CommandEmpty>
                <CommandGroup>
                   {brands.map((brand) => (
                      <CommandItem
@@ -277,7 +277,7 @@ export function AvailableToggle({ initialData }) {
                }}
                id="available"
             />
-            <Label htmlFor="available">Only Available</Label>
+            <Label htmlFor="available">Sadece Mevcut</Label>
          </div>
       </div>
    )
