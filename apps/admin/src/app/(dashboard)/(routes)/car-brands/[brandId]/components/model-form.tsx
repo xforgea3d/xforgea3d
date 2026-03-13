@@ -2,7 +2,6 @@
 
 import { AlertModal } from '@/components/modals/alert-modal'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import {
    Dialog,
    DialogContent,
@@ -23,10 +22,7 @@ import {
    Car,
    Upload,
    Pencil,
-   PackagePlus,
 } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
@@ -350,12 +346,9 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
 
          {/* Header with Add button */}
          <div className="flex items-center justify-between">
-            <div>
-               <h3 className="text-lg font-semibold">Modeller</h3>
-               <p className="text-sm text-muted-foreground">
-                  {brandName} markasına ait {models.length} model
-               </p>
-            </div>
+            <p className="text-sm text-muted-foreground">
+               {brandName} markasına ait {models.length} model
+            </p>
             <Button onClick={() => setAddOpen(true)} className="gap-2">
                <Plus className="h-4 w-4" />
                Yeni Model Ekle
@@ -378,28 +371,29 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
                </Button>
             </div>
          ) : (
-            /* Model cards grid */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            /* Model list */
+            <div className="space-y-2">
                {models.map(model => (
-                  <Card key={model.id} className="group overflow-hidden">
-                     {/* Image area */}
-                     <div className="relative h-44 bg-black flex items-center justify-center">
+                  <div
+                     key={model.id}
+                     className="group flex items-center gap-4 rounded-lg border bg-card p-3 hover:border-orange-500/40 transition-colors"
+                  >
+                     {/* Model image */}
+                     <div className="relative w-28 h-20 bg-black rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                         {model.imageUrl ? (
-                           <Image
+                           // eslint-disable-next-line @next/next/no-img-element
+                           <img
                               src={model.imageUrl}
                               alt={model.name}
-                              fill
-                              className="object-contain p-3"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              className="w-full h-full object-contain p-2"
                            />
                         ) : (
-                           <Car className="h-14 w-14 text-white/10" />
+                           <Car className="h-8 w-8 text-white/15" />
                         )}
 
-                        {/* Image action overlay */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                           {/* Upload */}
-                           <label>
+                        {/* Upload / AI overlay */}
+                        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+                           <label className="cursor-pointer">
                               <input
                                  type="file"
                                  accept="image/*"
@@ -411,97 +405,73 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
                                  }}
                                  disabled={uploadingId === model.id}
                               />
-                              <Button
-                                 size="sm"
-                                 variant="secondary"
-                                 className="text-xs pointer-events-none"
-                                 disabled={uploadingId === model.id}
-                              >
+                              <span className="inline-flex items-center justify-center h-7 w-7 rounded bg-white/20 hover:bg-white/30 transition-colors">
                                  {uploadingId === model.id ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    <Loader2 className="h-3.5 w-3.5 text-white animate-spin" />
                                  ) : (
-                                    <Upload className="h-3.5 w-3.5" />
+                                    <Upload className="h-3.5 w-3.5 text-white" />
                                  )}
-                              </Button>
+                              </span>
                            </label>
-
-                           {/* AI Generate */}
-                           <Button
-                              size="sm"
-                              variant="secondary"
-                              className="text-xs gap-1.5"
+                           <button
+                              className="inline-flex items-center justify-center h-7 w-7 rounded bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-50"
                               disabled={generatingId === model.id}
                               onClick={() => handleGenerateImage(model)}
                            >
                               {generatingId === model.id ? (
-                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                 <Loader2 className="h-3.5 w-3.5 text-white animate-spin" />
                               ) : (
-                                 <Sparkles className="h-3.5 w-3.5" />
+                                 <Sparkles className="h-3.5 w-3.5 text-white" />
                               )}
-                              AI
-                           </Button>
+                           </button>
                         </div>
 
-                        {/* Loading overlay for AI generation */}
+                        {/* AI generating overlay */}
                         {generatingId === model.id && (
-                           <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
-                              <Loader2 className="h-6 w-6 text-orange-500 animate-spin" />
-                              <span className="text-xs text-white/70">AI görsel oluşturuluyor...</span>
+                           <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-1">
+                              <Loader2 className="h-5 w-5 text-orange-500 animate-spin" />
+                              <span className="text-[10px] text-white/70">AI...</span>
                            </div>
                         )}
                      </div>
 
-                     {/* Info */}
-                     <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-2">
-                           <div className="min-w-0">
-                              <h4 className="font-semibold text-sm truncate">{model.name}</h4>
-                              <div className="flex items-center gap-2 mt-1">
-                                 {model.yearRange && (
-                                    <Badge variant="secondary" className="text-[11px]">
-                                       {model.yearRange}
-                                    </Badge>
-                                 )}
-                                 <span className="text-[10px] text-muted-foreground font-mono">
-                                    {model.slug}
-                                 </span>
-                              </div>
-                           </div>
-
-                           {/* Action buttons */}
-                           <div className="flex items-center gap-1 shrink-0">
-                              <Link href={`/products/new?carModelId=${model.id}`}>
-                                 <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 text-muted-foreground hover:text-orange-600"
-                                    title="Ürün Ekle"
-                                 >
-                                    <PackagePlus className="h-3.5 w-3.5" />
-                                 </Button>
-                              </Link>
-                              <Button
-                                 size="icon"
-                                 variant="ghost"
-                                 className="h-7 w-7 text-muted-foreground hover:text-blue-600"
-                                 onClick={() => openEditDialog(model)}
-                                 title="Düzenle"
-                              >
-                                 <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                 size="icon"
-                                 variant="ghost"
-                                 className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                 onClick={() => { setDeleteTarget(model.id); setDeleteOpen(true) }}
-                                 title="Sil"
-                              >
-                                 <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                           </div>
+                     {/* Model info */}
+                     <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm">{model.name}</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                           {model.yearRange && (
+                              <Badge variant="secondary" className="text-[11px]">
+                                 {model.yearRange}
+                              </Badge>
+                           )}
+                           <span className="text-[10px] text-muted-foreground font-mono">
+                              {model.slug}
+                           </span>
                         </div>
-                     </CardContent>
-                  </Card>
+                     </div>
+
+                     {/* Actions */}
+                     <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                           size="icon"
+                           variant="ghost"
+                           className="h-8 w-8 text-muted-foreground hover:text-blue-600"
+                           onClick={() => openEditDialog(model)}
+                           title="Düzenle"
+                        >
+                           <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                           size="icon"
+                           variant="ghost"
+                           className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                           onClick={() => { setDeleteTarget(model.id); setDeleteOpen(true) }}
+                           title="Sil"
+                        >
+                           <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                     </div>
+                  </div>
                ))}
             </div>
          )}

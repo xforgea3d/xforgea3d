@@ -2,7 +2,6 @@
 
 import { AlertModal } from '@/components/modals/alert-modal'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import {
    Form,
    FormControl,
@@ -15,7 +14,6 @@ import ImageUpload from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Trash2, Save, Loader2 } from 'lucide-react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -88,7 +86,7 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
          })
          if (!res.ok) throw new Error(await res.text())
          router.refresh()
-         router.push('/car-brands')
+         if (!initialData) router.push('/car-brands')
          toast.success(initialData ? 'Marka güncellendi.' : 'Marka oluşturuldu.')
       } catch (e: any) {
          toast.error('Hata: ' + (e?.message || 'Bilinmeyen'))
@@ -128,32 +126,88 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
          <AlertModal isOpen={open} onClose={() => setOpen(false)} onConfirm={onDelete} loading={loading} />
 
          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-               {/* Logo Card */}
-               <Card>
-                  <CardHeader>
-                     <CardTitle className="text-base">Logo</CardTitle>
-                     <CardDescription>Marka logosu yükleyin (opsiyonel)</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                     <div className="flex items-start gap-6">
-                        {/* Logo Preview */}
-                        {logoUrl && (
-                           <div className="relative w-20 h-20 bg-white rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden shrink-0">
-                              <Image
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+               <div className="rounded-lg border bg-card p-4">
+                  <div className="flex items-start gap-5">
+                     {/* Logo preview / upload */}
+                     <div className="shrink-0">
+                        {logoUrl ? (
+                           <div className="w-16 h-16 rounded-xl bg-white border-2 flex items-center justify-center overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
                                  src={logoUrl}
                                  alt="Logo"
-                                 width={64}
-                                 height={64}
-                                 className="object-contain"
+                                 className="w-12 h-12 object-contain"
                               />
                            </div>
+                        ) : (
+                           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-600/20 border-2 border-dashed flex items-center justify-center">
+                              <span className="text-xl font-bold text-orange-600">
+                                 {form.watch('name')?.charAt(0)?.toUpperCase() || '?'}
+                              </span>
+                           </div>
                         )}
+                     </div>
+
+                     {/* Fields inline */}
+                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                        <FormField
+                           control={form.control}
+                           name="name"
+                           render={({ field }) => (
+                              <FormItem>
+                                 <FormLabel className="text-xs">Marka Adı</FormLabel>
+                                 <FormControl>
+                                    <Input
+                                       disabled={loading}
+                                       placeholder="BMW"
+                                       {...field}
+                                       onChange={handleNameChange}
+                                       className="h-9"
+                                    />
+                                 </FormControl>
+                                 <FormMessage />
+                              </FormItem>
+                           )}
+                        />
+                        <FormField
+                           control={form.control}
+                           name="slug"
+                           render={({ field }) => (
+                              <FormItem>
+                                 <FormLabel className="text-xs">Slug</FormLabel>
+                                 <FormControl>
+                                    <Input
+                                       disabled={loading}
+                                       placeholder="bmw"
+                                       {...field}
+                                       className="h-9 font-mono text-sm"
+                                    />
+                                 </FormControl>
+                                 <FormMessage />
+                              </FormItem>
+                           )}
+                        />
+                        <FormField
+                           control={form.control}
+                           name="sortOrder"
+                           render={({ field }) => (
+                              <FormItem>
+                                 <FormLabel className="text-xs">Sıralama</FormLabel>
+                                 <FormControl>
+                                    <Input type="number" disabled={loading} placeholder="0" {...field} className="h-9" />
+                                 </FormControl>
+                                 <FormMessage />
+                              </FormItem>
+                           )}
+                        />
+
+                        {/* Logo upload inline */}
                         <FormField
                            control={form.control}
                            name="logoUrl"
                            render={({ field }) => (
-                              <FormItem className="flex-1">
+                              <FormItem>
                                  <FormControl>
                                     <ImageUpload
                                        value={field.value ? [field.value] : []}
@@ -167,101 +221,28 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
                            )}
                         />
                      </div>
-                  </CardContent>
-               </Card>
+                  </div>
 
-               {/* Brand Details Card */}
-               <Card>
-                  <CardHeader>
-                     <CardTitle className="text-base">Marka Bilgileri</CardTitle>
-                     <CardDescription>Marka adı ve slug bilgilerini girin</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <FormField
-                           control={form.control}
-                           name="name"
-                           render={({ field }) => (
-                              <FormItem>
-                                 <FormLabel>Marka Adı</FormLabel>
-                                 <FormControl>
-                                    <Input
-                                       disabled={loading}
-                                       placeholder="BMW"
-                                       {...field}
-                                       onChange={handleNameChange}
-                                    />
-                                 </FormControl>
-                                 <FormMessage />
-                              </FormItem>
-                           )}
-                        />
-                        <FormField
-                           control={form.control}
-                           name="slug"
-                           render={({ field }) => (
-                              <FormItem>
-                                 <FormLabel>Slug</FormLabel>
-                                 <FormControl>
-                                    <Input
-                                       disabled={loading}
-                                       placeholder="bmw"
-                                       {...field}
-                                       className="font-mono text-sm"
-                                    />
-                                 </FormControl>
-                                 <FormMessage />
-                              </FormItem>
-                           )}
-                        />
-                        <FormField
-                           control={form.control}
-                           name="sortOrder"
-                           render={({ field }) => (
-                              <FormItem>
-                                 <FormLabel>Sıralama</FormLabel>
-                                 <FormControl>
-                                    <Input type="number" disabled={loading} placeholder="0" {...field} />
-                                 </FormControl>
-                                 <FormMessage />
-                              </FormItem>
-                           )}
-                        />
-                     </div>
-                  </CardContent>
-               </Card>
-
-               {/* Action Buttons */}
-               <div className="flex items-center gap-3">
-                  <Button disabled={loading} type="submit" className="gap-2">
-                     {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                     ) : (
-                        <Save className="h-4 w-4" />
-                     )}
-                     Kaydet
-                  </Button>
-                  <Button
-                     type="button"
-                     variant="outline"
-                     disabled={loading}
-                     onClick={() => router.push('/car-brands')}
-                  >
-                     İptal
-                  </Button>
-                  {initialData && (
-                     <Button
-                        type="button"
-                        disabled={loading}
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setOpen(true)}
-                        className="ml-auto gap-2"
-                     >
-                        <Trash2 className="h-4 w-4" />
-                        Sil
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 mt-4 pt-3 border-t">
+                     <Button disabled={loading} type="submit" size="sm" className="gap-2">
+                        {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                        Kaydet
                      </Button>
-                  )}
+                     {initialData && (
+                        <Button
+                           type="button"
+                           disabled={loading}
+                           variant="destructive"
+                           size="sm"
+                           onClick={() => setOpen(true)}
+                           className="ml-auto gap-2"
+                        >
+                           <Trash2 className="h-3.5 w-3.5" />
+                           Markayı Sil
+                        </Button>
+                     )}
+                  </div>
                </div>
             </form>
          </Form>

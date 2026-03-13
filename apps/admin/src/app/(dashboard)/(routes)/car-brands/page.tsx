@@ -8,7 +8,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import prisma from '@/lib/prisma'
 import { Plus, Car } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { BrandDeleteButton } from './brand-delete-button'
 
 export default async function CarBrandsPage() {
@@ -59,12 +58,11 @@ export default async function CarBrandsPage() {
                            {/* Logo / Initial */}
                            {brand.logoUrl ? (
                               <div className="w-14 h-14 rounded-xl bg-white border flex items-center justify-center shrink-0 overflow-hidden">
-                                 <Image
+                                 {/* eslint-disable-next-line @next/next/no-img-element */}
+                                 <img
                                     src={brand.logoUrl}
                                     alt={brand.name}
-                                    width={44}
-                                    height={44}
-                                    className="object-contain"
+                                    className="w-11 h-11 object-contain"
                                  />
                               </div>
                            ) : (
