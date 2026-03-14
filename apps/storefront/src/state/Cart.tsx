@@ -1,7 +1,7 @@
 import { getLocalCart, writeLocalCart } from '@/lib/cart'
 import { isVariableValid } from '@/lib/utils'
 import { useUserContext } from '@/state/User'
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 const CartContext = createContext<{
    cart: any
@@ -25,12 +25,12 @@ export const CartContextProvider = ({ children }) => {
    const [cart, setCart] = useState<any>(null)
    const [loading, setLoading] = useState(true)
 
-   const dispatchCart = async (cart) => {
-      setCart(cart)
-      writeLocalCart(cart)
-   }
+   const dispatchCart = useCallback((newCart: any) => {
+      setCart(newCart)
+      writeLocalCart(newCart)
+   }, [])
 
-   const refreshCart = async () => {
+   const refreshCart = useCallback(() => {
       setLoading(true)
 
       if (isVariableValid(user)) {
@@ -40,7 +40,7 @@ export const CartContextProvider = ({ children }) => {
       if (!isVariableValid(user)) setCart(getLocalCart())
 
       setLoading(false)
-   }
+   }, [user])
 
    useEffect(() => {
       if (isVariableValid(user)) {
@@ -53,10 +53,13 @@ export const CartContextProvider = ({ children }) => {
       setLoading(false)
    }, [user])
 
+   const value = useMemo(
+      () => ({ cart, loading, refreshCart, dispatchCart }),
+      [cart, loading, refreshCart, dispatchCart]
+   )
+
    return (
-      <CartContext.Provider
-         value={{ cart, loading, refreshCart, dispatchCart }}
-      >
+      <CartContext.Provider value={value}>
          {children}
       </CartContext.Provider>
    )

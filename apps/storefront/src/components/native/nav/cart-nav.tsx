@@ -254,8 +254,8 @@ export function CartNav() {
                     {items.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                             <ShoppingBag className="h-10 w-10 mb-3 opacity-30" />
-                            <p className="text-sm font-medium">Sepetiniz bos</p>
-                            <p className="text-xs mt-1">Alisverise baslayin!</p>
+                            <p className="text-sm font-medium">Sepetiniz boş</p>
+                            <p className="text-xs mt-1">Alışverişe başlayın!</p>
                         </div>
                     ) : (
                         items.map((item, index) => {
@@ -409,7 +409,7 @@ export function CartNav() {
                             className="w-full text-xs h-8"
                             asChild
                         >
-                            <Link href="/products">Urunleri Kesfet</Link>
+                            <Link href="/products">Ürünleri Keşfet</Link>
                         </Button>
                     </div>
                 )}

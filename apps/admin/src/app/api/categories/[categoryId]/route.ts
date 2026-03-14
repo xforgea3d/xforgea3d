@@ -58,10 +58,11 @@ export async function PATCH(
    try {
       const body = await req.json()
 
-      const { title, description, bannerId, imageUrl } = body
+      const { title, description, bannerId, imageUrl, isVisible } = body
 
-      if (!title) {
-         return new NextResponse('Name is required', { status: 400 })
+      // Allow partial updates (e.g. toggling isVisible only)
+      if (!title && isVisible === undefined) {
+         return new NextResponse('At least one field is required', { status: 400 })
       }
 
       const updatedCategory = await prisma.category.update({
@@ -69,9 +70,10 @@ export async function PATCH(
             id: params.categoryId,
          },
          data: {
-            title,
-            description,
-            imageUrl,
+            ...(title !== undefined && { title }),
+            ...(description !== undefined && { description }),
+            ...(imageUrl !== undefined && { imageUrl }),
+            ...(isVisible !== undefined && { isVisible }),
             ...(bannerId && {
                banners: {
                   connect: { id: bannerId },

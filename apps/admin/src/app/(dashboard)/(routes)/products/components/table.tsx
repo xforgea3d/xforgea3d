@@ -2,11 +2,12 @@
 
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
+import { Input } from '@/components/ui/input'
 import { ColumnDef } from '@tanstack/react-table'
-import { CheckIcon, EditIcon, ImageIcon, Trash2Icon, XIcon } from 'lucide-react'
+import { CheckIcon, EditIcon, ImageIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { AlertModal } from '@/components/modals/alert-modal'
 
@@ -18,6 +19,46 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
    const router = useRouter()
    const [deleteId, setDeleteId] = useState<string | null>(null)
    const [loading, setLoading] = useState(false)
+
+   // Filter states
+   const [search, setSearch] = useState('')
+   const [categoryFilter, setCategoryFilter] = useState('')
+   const [brandFilter, setBrandFilter] = useState('')
+   const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'active' | 'passive'>('all')
+
+   // Extract unique categories and brands
+   const categories = useMemo(() => {
+      const unique = [...new Set(data.map((p) => p.category))].filter(Boolean).sort()
+      return unique
+   }, [data])
+
+   const brands = useMemo(() => {
+      const unique = [...new Set(data.map((p) => p.brand))].filter((b) => b && b !== '-').sort()
+      return unique
+   }, [data])
+
+   // Filtered data
+   const filteredData = useMemo(() => {
+      return data.filter((item) => {
+         // Search filter
+         if (search && !item.title.toLowerCase().includes(search.toLowerCase())) {
+            return false
+         }
+         // Category filter
+         if (categoryFilter && item.category !== categoryFilter) {
+            return false
+         }
+         // Brand filter
+         if (brandFilter && item.brand !== brandFilter) {
+            return false
+         }
+         // Availability filter
+         if (availabilityFilter === 'active' && !item.isAvailable) return false
+         if (availabilityFilter === 'passive' && item.isAvailable) return false
+
+         return true
+      })
+   }, [data, search, categoryFilter, brandFilter, availabilityFilter])
 
    const onDelete = async () => {
       if (!deleteId) return
@@ -118,7 +159,84 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
             onConfirm={onDelete}
             loading={loading}
          />
-         <DataTable searchKey="title" columns={columns} data={data} />
+
+         {/* Filter Controls */}
+         <div className="flex flex-wrap items-center gap-3 mb-4">
+            {/* Search */}
+            <div className="relative flex-1 min-w-[250px] max-w-md">
+               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+               <Input
+                  placeholder="Ürün ara..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
+               />
+            </div>
+
+            {/* Category Filter */}
+            <select
+               value={categoryFilter}
+               onChange={(e) => setCategoryFilter(e.target.value)}
+               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            >
+               <option value="">Tüm Kategoriler</option>
+               {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                     {cat}
+                  </option>
+               ))}
+            </select>
+
+            {/* Brand Filter */}
+            <select
+               value={brandFilter}
+               onChange={(e) => setBrandFilter(e.target.value)}
+               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            >
+               <option value="">Tüm Koleksiyonlar</option>
+               {brands.map((brand) => (
+                  <option key={brand} value={brand}>
+                     {brand}
+                  </option>
+               ))}
+            </select>
+
+            {/* Availability Filter */}
+            <div className="flex items-center rounded-md border border-input overflow-hidden">
+               <button
+                  onClick={() => setAvailabilityFilter('all')}
+                  className={`px-3 py-2 text-sm transition-colors ${
+                     availabilityFilter === 'all'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background hover:bg-muted'
+                  }`}
+               >
+                  Tümü
+               </button>
+               <button
+                  onClick={() => setAvailabilityFilter('active')}
+                  className={`px-3 py-2 text-sm transition-colors border-l border-input ${
+                     availabilityFilter === 'active'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-background hover:bg-muted'
+                  }`}
+               >
+                  Aktif
+               </button>
+               <button
+                  onClick={() => setAvailabilityFilter('passive')}
+                  className={`px-3 py-2 text-sm transition-colors border-l border-input ${
+                     availabilityFilter === 'passive'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-background hover:bg-muted'
+                  }`}
+               >
+                  Pasif
+               </button>
+            </div>
+         </div>
+
+         <DataTable columns={columns} data={filteredData} />
       </>
    )
 }

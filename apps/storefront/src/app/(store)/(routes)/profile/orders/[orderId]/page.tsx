@@ -3,11 +3,11 @@
 import { Heading } from '@/components/native/heading'
 import { Separator } from '@/components/native/separator'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader } from '@/components/ui/loader'
 import { useAuthenticated } from '@/hooks/useAuthentication'
-import { Loader2, MapPin, Package, CreditCard } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { AlertCircle, Loader2, MapPin, Package, CreditCard } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 
 const statusMap: Record<string, { label: string; color: string }> = {
    OnayBekleniyor: { label: 'Onay Bekliyor', color: 'bg-yellow-100 text-yellow-800' },
@@ -23,25 +23,47 @@ export default function OrderDetailPage({ params }: { params: { orderId: string 
    const { authenticated } = useAuthenticated()
    const [order, setOrder] = useState<any>(null)
    const [loading, setLoading] = useState(true)
+   const [error, setError] = useState(false)
+
+   const fetchOrder = useCallback(async () => {
+      setLoading(true)
+      setError(false)
+      try {
+         const res = await fetch(`/api/orders/${params.orderId}`)
+         if (!res.ok) throw new Error('Failed to fetch order')
+         setOrder(await res.json())
+      } catch (err) {
+         console.error(err)
+         setError(true)
+      } finally {
+         setLoading(false)
+      }
+   }, [params.orderId])
 
    useEffect(() => {
-      async function getOrder() {
-         try {
-            const res = await fetch(`/api/orders/${params.orderId}`)
-            if (res.ok) setOrder(await res.json())
-         } catch (err) {
-            console.error(err)
-         } finally {
-            setLoading(false)
-         }
-      }
-      if (authenticated) getOrder()
-   }, [authenticated, params.orderId])
+      if (authenticated) fetchOrder()
+   }, [authenticated, fetchOrder])
 
    if (loading) {
       return (
          <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+         </div>
+      )
+   }
+
+   if (error) {
+      return (
+         <div className="py-8">
+            <Card>
+               <CardContent className="py-8 flex flex-col items-center gap-4 text-center">
+                  <AlertCircle className="h-10 w-10 text-destructive opacity-60" />
+                  <p className="text-muted-foreground">Bir hata oluştu</p>
+                  <Button variant="outline" onClick={fetchOrder}>
+                     Tekrar Dene
+                  </Button>
+               </CardContent>
+            </Card>
          </div>
       )
    }

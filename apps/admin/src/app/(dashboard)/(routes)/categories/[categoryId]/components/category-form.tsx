@@ -23,7 +23,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Category } from '@prisma/client'
-import { Trash } from 'lucide-react'
+import { Loader2, Trash } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -193,7 +193,8 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                   />
                </div>
                <Button disabled={loading} className="ml-auto" type="submit">
-                  {action}
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {loading ? 'Kaydediliyor...' : action}
                </Button>
             </form>
          </Form>

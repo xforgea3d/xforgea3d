@@ -15,6 +15,7 @@ export default async function CategoriesPage() {
          select: {
             id: true,
             title: true,
+            isVisible: true,
             _count: { select: { products: true } },
          },
       })
@@ -26,6 +27,7 @@ export default async function CategoriesPage() {
       id: category.id,
       title: category.title,
       products: category._count.products,
+      isVisible: category.isVisible ?? true,
    }))
 
    return (

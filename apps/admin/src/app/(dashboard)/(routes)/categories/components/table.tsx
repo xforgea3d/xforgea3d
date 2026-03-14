@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { ColumnDef } from '@tanstack/react-table'
-import { EditIcon, Trash2Icon } from 'lucide-react'
+import { EditIcon, EyeIcon, EyeOffIcon, Loader2Icon, Trash2Icon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -14,6 +14,7 @@ export type CategoryColumn = {
    id: string
    title: string
    products: number
+   isVisible: boolean
 }
 
 interface CategoriesClientProps {
@@ -24,6 +25,7 @@ export const CategoriesClient: React.FC<CategoriesClientProps> = ({ data }) => {
    const router = useRouter()
    const [deleteId, setDeleteId] = useState<string | null>(null)
    const [loading, setLoading] = useState(false)
+   const [togglingId, setTogglingId] = useState<string | null>(null)
 
    const onDelete = async () => {
       if (!deleteId) return
@@ -41,6 +43,24 @@ export const CategoriesClient: React.FC<CategoriesClientProps> = ({ data }) => {
       }
    }
 
+   const onToggleVisibility = async (id: string, currentValue: boolean) => {
+      try {
+         setTogglingId(id)
+         const res = await fetch(`/api/categories/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isVisible: !currentValue }),
+         })
+         if (!res.ok) throw new Error('Güncelleme başarısız')
+         toast.success(currentValue ? 'Kategori gizlendi.' : 'Kategori görünür yapıldı.')
+         router.refresh()
+      } catch {
+         toast.error('Görünürlük güncellenemedi.')
+      } finally {
+         setTogglingId(null)
+      }
+   }
+
    const columns: ColumnDef<CategoryColumn>[] = [
       {
          accessorKey: 'title',
@@ -49,6 +69,35 @@ export const CategoriesClient: React.FC<CategoriesClientProps> = ({ data }) => {
       {
          accessorKey: 'products',
          header: 'Ürün Sayısı',
+      },
+      {
+         accessorKey: 'isVisible',
+         header: 'Durum',
+         cell: ({ row }) => {
+            const isVisible = row.original.isVisible
+            const isToggling = togglingId === row.original.id
+
+            return (
+               <button
+                  onClick={() => onToggleVisibility(row.original.id, isVisible)}
+                  disabled={isToggling}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                     isVisible
+                        ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
+                        : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+                  } ${isToggling ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+               >
+                  {isToggling ? (
+                     <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
+                  ) : isVisible ? (
+                     <EyeIcon className="h-3.5 w-3.5" />
+                  ) : (
+                     <EyeOffIcon className="h-3.5 w-3.5" />
+                  )}
+                  {isVisible ? 'Görünür' : 'Gizli'}
+               </button>
+            )
+         },
       },
       {
          id: 'actions',

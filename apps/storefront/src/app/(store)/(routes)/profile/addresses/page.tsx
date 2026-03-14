@@ -3,9 +3,9 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader } from '@/components/ui/loader'
-import { PlusIcon } from 'lucide-react'
+import { AlertCircle, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { toast } from 'react-hot-toast'
 import type { AddressColumn } from './components/table'
@@ -13,21 +13,29 @@ import { AddressTable } from './components/table'
 
 export default function AddressesPage() {
    const [addresses, setAddresses] = useState(null)
+   const [loading, setLoading] = useState(true)
+   const [error, setError] = useState(false)
+
+   const fetchAddresses = useCallback(async () => {
+      setLoading(true)
+      setError(false)
+      try {
+         const response = await fetch(`/api/addresses`)
+         if (!response.ok) throw new Error('Failed to fetch addresses')
+         const json = await response.json()
+         setAddresses(json)
+      } catch (err) {
+         console.error({ err })
+         setError(true)
+         toast.error('Adresler yüklenirken bir hata oluştu.')
+      } finally {
+         setLoading(false)
+      }
+   }, [])
 
    useEffect(() => {
-      async function getAddresses() {
-         try {
-            const response = await fetch(`/api/addresses`)
-            const json = await response.json()
-            setAddresses(json)
-         } catch (error) {
-            console.error({ error })
-            toast.error('Adresler yüklenirken bir hata oluştu.')
-         }
-      }
-
-      getAddresses()
-   }, [])
+      fetchAddresses()
+   }, [fetchAddresses])
 
    return (
       <div className="flex-col">
@@ -40,9 +48,7 @@ export default function AddressesPage() {
                   </Button>
                </Link>
             </div>
-            {addresses ? (
-               <AddressSection addresses={addresses} />
-            ) : (
+            {loading ? (
                <Card>
                   <CardContent>
                      <div className="h-[20vh]">
@@ -52,7 +58,19 @@ export default function AddressesPage() {
                      </div>
                   </CardContent>
                </Card>
-            )}
+            ) : error ? (
+               <Card>
+                  <CardContent className="py-8 flex flex-col items-center gap-4 text-center">
+                     <AlertCircle className="h-10 w-10 text-destructive opacity-60" />
+                     <p className="text-muted-foreground">Bir hata oluştu</p>
+                     <Button variant="outline" onClick={fetchAddresses}>
+                        Tekrar Dene
+                     </Button>
+                  </CardContent>
+               </Card>
+            ) : addresses ? (
+               <AddressSection addresses={addresses} />
+            ) : null}
          </div>
       </div>
    )

@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input'
 interface DataTableProps<TData, TValue> {
    columns: ColumnDef<TData, TValue>[]
    data: TData[]
-   searchKey: string
+   searchKey?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -48,6 +48,18 @@ export function DataTable<TData, TValue>({
 
    return (
       <div>
+         {searchKey && (
+            <div className="flex items-center py-4">
+               <Input
+                  placeholder="Ara..."
+                  value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
+                  onChange={(event) =>
+                     table.getColumn(searchKey)?.setFilterValue(event.target.value)
+                  }
+                  className="max-w-sm"
+               />
+            </div>
+         )}
          <div className="rounded-md border">
             <Table>
                <TableHeader>
