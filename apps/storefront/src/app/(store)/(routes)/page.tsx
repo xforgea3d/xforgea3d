@@ -44,36 +44,51 @@ const AnimatedCounter = nextDynamic(
    { ssr: false }
 )
 
+/**
+ * Fetch homepage data with a timeout to prevent long-running DB queries
+ * from causing React error #419 (Suspense boundary failure during SSR).
+ */
+async function fetchHomeData() {
+   const TIMEOUT_MS = 5000
+   const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Homepage DB query timeout')), TIMEOUT_MS)
+   )
+
+   const query = Promise.all([
+      prisma.product.findMany({
+         where: { isAvailable: true, isFeatured: true },
+         select: {
+            id: true, title: true, price: true, discount: true,
+            images: true, isAvailable: true, stock: true, isFeatured: true,
+            brand: { select: { id: true, title: true } },
+            categories: { select: { id: true, title: true } },
+         },
+         take: 8,
+         orderBy: { createdAt: 'desc' },
+      }),
+      prisma.banner.findMany({
+         orderBy: { createdAt: 'desc' },
+         take: 6,
+      }),
+      prisma.carBrand.findMany({
+         orderBy: { sortOrder: 'asc' },
+         take: 10,
+         include: {
+            _count: { select: { models: true } },
+            models: { take: 1, select: { imageUrl: true } },
+         },
+      }),
+   ])
+
+   return Promise.race([query, timeout])
+}
+
 export default async function Index() {
    let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = []
    try {
-      ;[featuredProducts, banners, carBrands] = await Promise.all([
-         prisma.product.findMany({
-            where: { isAvailable: true, isFeatured: true },
-            select: {
-               id: true, title: true, price: true, discount: true,
-               images: true, isAvailable: true, stock: true, isFeatured: true,
-               brand: { select: { id: true, title: true } },
-               categories: { select: { id: true, title: true } },
-            },
-            take: 8,
-            orderBy: { createdAt: 'desc' },
-         }),
-         prisma.banner.findMany({
-            orderBy: { createdAt: 'desc' },
-            take: 6,
-         }),
-         prisma.carBrand.findMany({
-            orderBy: { sortOrder: 'asc' },
-            take: 10,
-            include: {
-               _count: { select: { models: true } },
-               models: { take: 1, select: { imageUrl: true } },
-            },
-         }),
-      ])
+      ;[featuredProducts, banners, carBrands] = await fetchHomeData()
    } catch (e) {
-      console.warn('[home] DB unavailable during build, rendering empty state')
+      console.warn('[home] DB unavailable or timed out, rendering empty state:', (e as Error)?.message)
    }
 
    return (

@@ -1,3 +1,5 @@
+'use client'
+
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { isVariableValid } from '@/lib/utils'
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react'

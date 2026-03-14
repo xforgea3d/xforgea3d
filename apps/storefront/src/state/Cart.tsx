@@ -1,3 +1,5 @@
+'use client'
+
 import { getLocalCart, writeLocalCart } from '@/lib/cart'
 import { isVariableValid } from '@/lib/utils'
 import { useUserContext } from '@/state/User'
