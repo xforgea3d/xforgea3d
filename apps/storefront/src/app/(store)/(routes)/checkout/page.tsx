@@ -528,7 +528,10 @@ export default function CheckoutPage() {
                         <span>{costs.payable} TL</span>
                      </div>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="flex flex-col gap-3">
+                     <p className="text-xs text-muted-foreground text-center w-full">
+                        🛡️ 14 Gün İade Garantisi | 🔒 Güvenli Ödeme
+                     </p>
                      <Button
                         className="w-full"
                         size="lg"

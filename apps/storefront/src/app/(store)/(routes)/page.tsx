@@ -258,6 +258,37 @@ export default async function Index() {
             </div>
          </section>
 
+         {/* ── 5.5 PARA İADE GARANTİSİ ────────────────────────── */}
+         <section className="py-12 bg-gradient-to-r from-green-500/5 via-emerald-500/5 to-green-500/5 dark:from-green-500/10 dark:via-emerald-500/5 dark:to-green-500/10">
+            <div className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem]">
+               <div className="flex flex-col items-center text-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-green-600 dark:text-green-400">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <path d="m9 12 2 2 4-4" />
+                     </svg>
+                  </div>
+                  <h2 className="text-3xl font-bold tracking-tight">14 Gün Koşulsuz İade Garantisi</h2>
+                  <p className="text-muted-foreground max-w-lg">
+                     Ürünlerimizden memnun kalmazsanız, teslimat tarihinden itibaren 14 gün içinde koşulsuz iade edebilirsiniz. Paranız güvende.
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-4 mt-2">
+                     <span className="inline-flex items-center gap-2 rounded-full border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 px-4 py-2 text-sm font-medium text-green-700 dark:text-green-300">
+                        <Truck className="h-4 w-4" />
+                        Ücretsiz İade Kargo
+                     </span>
+                     <span className="inline-flex items-center gap-2 rounded-full border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 px-4 py-2 text-sm font-medium text-green-700 dark:text-green-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                        Hızlı Para İadesi
+                     </span>
+                  </div>
+                  <Link href="/policies/iade-kosullari" className="mt-2 text-sm text-green-600 dark:text-green-400 hover:underline font-medium">
+                     İade koşullarını inceleyin →
+                  </Link>
+               </div>
+            </div>
+         </section>
+
          {/* ── 6. KİŞİYE ÖZEL CTA ─────────────────────────────── */}
          <section className="py-12 bg-gradient-to-br from-orange-500/5 via-amber-500/5 to-orange-600/5 dark:from-orange-500/10 dark:via-amber-500/5 dark:to-orange-600/10">
             <div className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem]">
