@@ -214,7 +214,7 @@ export const OrderColumns: ColumnDef<OrderColumn>[] = getOrderColumns(async () =
 export const OrdersClient: React.FC<OrdersClientProps> = ({ data }) => {
    const router = useRouter()
    const [search, setSearch] = useState('')
-   const [activeTab, setActiveTab] = useState<TabKey>('tumu')
+   const [activeTab, setActiveTab] = useState<TabKey>('yeni')
    const [dateFrom, setDateFrom] = useState('')
    const [dateTo, setDateTo] = useState('')
 

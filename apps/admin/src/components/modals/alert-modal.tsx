@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
+import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface AlertModalProps {
@@ -43,7 +44,14 @@ export const AlertModal: React.FC<AlertModalProps> = ({
                variant="destructive"
                onClick={onConfirm}
             >
-               Devam Et
+               {loading ? (
+                  <>
+                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                     İşleniyor...
+                  </>
+               ) : (
+                  'Devam Et'
+               )}
             </Button>
          </div>
       </Modal>
