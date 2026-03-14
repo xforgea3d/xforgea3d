@@ -39,10 +39,15 @@ const UserPage = async ({ params }: { params: { userId: string } }) => {
 
       const formattedOrders: OrderColumn[] = orders.map((order) => ({
          id: order.id,
-         number: `Order #${order.number}`,
+         number: `Sipariş #${order.number}`,
          date: order.createdAt.toUTCString(),
-         payable: '$' + order.payable.toString(),
+         payable: order.payable.toFixed(2) + ' ₺',
          isPaid: order.isPaid,
+         status: (order as any).status || 'OnayBekleniyor',
+         statusLabel: '',
+         trackingNumber: (order as any).trackingNumber || null,
+         shippingCompany: (order as any).shippingCompany || null,
+         itemCount: (order as any).items?.length || 0,
          createdAt: format(order.createdAt, 'MMMM do, yyyy'),
       }))
 

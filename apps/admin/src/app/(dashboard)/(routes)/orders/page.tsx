@@ -5,53 +5,33 @@ import prisma from '@/lib/prisma'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
 
-import { SortBy } from './components/options'
 import type { OrderColumn } from './components/table'
-import { OrderTable } from './components/table'
+import { OrdersClient } from './components/table'
 
-export default async function OrdersPage({ searchParams }) {
-   const {
-      userId,
-      sort,
-      isPaid,
-      brand,
-      category,
-      page = 1,
-      minPayable,
-      maxPayable,
-   } = searchParams ?? null
+// Turkish labels for statuses used in the table
+const STATUS_LABELS: Record<string, string> = {
+   OnayBekleniyor: 'Onay Bekleniyor',
+   Hazirlaniyor: 'Hazırlanıyor',
+   Uretimde: 'Üretimde',
+   Processing: 'İşlemde',
+   KargoyaVerildi: 'Kargoya Verildi',
+   Shipped: 'Kargoya Verildi',
+   TeslimEdildi: 'Teslim Edildi',
+   Delivered: 'Teslim Edildi',
+   IptalEdildi: 'İptal Edildi',
+   Cancelled: 'İptal Edildi',
+   IadeEdildi: 'İade Edildi',
+   ReturnProcessing: 'İade İşlemde',
+   ReturnCompleted: 'İade Tamamlandı',
+   RefundProcessing: 'Para İadesi İşlemde',
+   RefundCompleted: 'Para İadesi Tamamlandı',
+   Denied: 'Reddedildi',
+}
 
-   const orderBy = getOrderBy(sort)
-
+export default async function OrdersPage() {
    let orders: any[] = []
    try {
       orders = await prisma.order.findMany({
-         where: {
-            userId,
-            isPaid,
-            orderItems: {
-               some: {
-                  product: {
-                     brand: {
-                        title: {
-                           contains: brand,
-                        },
-                     },
-                     categories: {
-                        some: {
-                           title: {
-                              contains: category,
-                           },
-                        },
-                     },
-                  },
-               },
-            },
-            payable: {
-               gte: minPayable,
-               lte: maxPayable,
-            },
-         },
          include: {
             orderItems: {
                include: {
@@ -59,9 +39,7 @@ export default async function OrdersPage({ searchParams }) {
                },
             },
          },
-         skip: (page - 1) * 12,
-         take: 12,
-         orderBy,
+         orderBy: { createdAt: 'desc' },
       })
    } catch (error) {
       console.warn('[OrdersPage] Failed to fetch orders:', error)
@@ -70,10 +48,15 @@ export default async function OrdersPage({ searchParams }) {
    const formattedOrders: OrderColumn[] = orders.map((order) => ({
       id: order.id,
       number: `Sipariş #${order.number}`,
+      status: order.status,
+      statusLabel: STATUS_LABELS[order.status] ?? order.status,
       date: order.createdAt.toUTCString(),
       payable: '₺' + order.payable.toString(),
       isPaid: order.isPaid,
+      trackingNumber: order.trackingNumber ?? null,
+      shippingCompany: order.shippingCompany ?? null,
       createdAt: format(order.createdAt, 'd MMMM yyyy', { locale: tr }),
+      itemCount: order.orderItems?.length ?? 0,
    }))
 
    return (
@@ -83,35 +66,7 @@ export default async function OrdersPage({ searchParams }) {
             description="Mağazanızdaki siparişleri yönetin."
          />
          <Separator />
-         <div className="grid grid-cols-4 gap-2">
-            <SortBy initialData={'highest_payable'} />
-         </div>
-         <OrderTable data={formattedOrders} />{' '}
+         <OrdersClient data={formattedOrders} />
       </div>
    )
-}
-
-function getOrderBy(sort) {
-   let orderBy
-
-   switch (sort) {
-      case 'highest_payable':
-         orderBy = {
-            payable: 'desc',
-         }
-         break
-      case 'lowest_payable':
-         orderBy = {
-            payable: 'asc',
-         }
-         break
-
-      default:
-         orderBy = {
-            createdAt: 'desc',
-         }
-         break
-   }
-
-   return orderBy
 }

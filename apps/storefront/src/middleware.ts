@@ -135,6 +135,7 @@ export const config = {
    matcher: [
       '/profile/:path*',
       '/checkout/:path*',
+      '/payment/:path*',
       '/api/:path*',
    ],
 }

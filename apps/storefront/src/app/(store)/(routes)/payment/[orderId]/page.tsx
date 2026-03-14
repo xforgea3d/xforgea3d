@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const metadata: Metadata = {
-   title: 'Odeme',
+   title: 'Ödeme',
    robots: { index: false, follow: false },
 }
 
@@ -45,15 +45,15 @@ export default async function PaymentPage({ params, searchParams }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                </svg>
             </div>
-            <h1 className="text-2xl font-bold">Odeme Tamamlandi</h1>
+            <h1 className="text-2xl font-bold">Ödeme Tamamlandı</h1>
             <p className="text-muted-foreground">
-               Siparis #{order.number} icin odemeniz basariyla alindi.
+               Sipariş #{order.number} için ödemeniz başarıyla alındı.
             </p>
             <Link
                href="/profile"
                className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
             >
-               Siparislerime Git
+               Siparişlerime Git
             </Link>
          </div>
       )
@@ -72,9 +72,9 @@ export default async function PaymentPage({ params, searchParams }: Props) {
       <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
          {/* Header */}
          <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight">Odeme</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Ödeme</h1>
             <p className="text-muted-foreground">
-               Siparis #{order.number}
+               Sipariş #{order.number}
             </p>
          </div>
 
@@ -82,14 +82,14 @@ export default async function PaymentPage({ params, searchParams }: Props) {
          {hasError && (
             <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950 p-4">
                <p className="text-sm text-red-800 dark:text-red-200">
-                  Odeme islemi basarisiz oldu. Lutfen tekrar deneyin veya farkli bir kart kullanin.
+                  Ödeme işlemi başarısız oldu. Lütfen tekrar deneyin veya farklı bir kart kullanın.
                </p>
             </div>
          )}
 
          {/* Order Summary */}
          <div className="rounded-xl border p-6 space-y-4">
-            <h2 className="font-semibold text-lg">Siparis Ozeti</h2>
+            <h2 className="font-semibold text-lg">Sipariş Özeti</h2>
 
             <div className="divide-y">
                {order.orderItems.map((item) => (
@@ -123,7 +123,7 @@ export default async function PaymentPage({ params, searchParams }: Props) {
                </div>
                {order.discount > 0 && (
                   <div className="flex justify-between text-sm">
-                     <span className="text-muted-foreground">Indirim</span>
+                     <span className="text-muted-foreground">İndirim</span>
                      <span className="text-green-600">-{order.discount.toFixed(2)} TL</span>
                   </div>
                )}
@@ -159,9 +159,9 @@ export default async function PaymentPage({ params, searchParams }: Props) {
          <div className="rounded-xl border p-6 space-y-4">
             {hasPaymentKeys ? (
                <>
-                  <h2 className="font-semibold text-lg">Kredi/Banka Karti ile Ode</h2>
+                  <h2 className="font-semibold text-lg">Kredi/Banka Kartı ile Öde</h2>
                   <p className="text-sm text-muted-foreground">
-                     Guevenli odeme sayfasina yoenlendirileceksiniz. Kart bilgileriniz sitemizde saklanmaz.
+                     Güvenli ödeme sayfasına yönlendirileceksiniz. Kart bilgileriniz sitemizde saklanmaz.
                   </p>
                   <PaymentButton orderId={order.id} amount={order.payable} />
                </>
@@ -173,13 +173,13 @@ export default async function PaymentPage({ params, searchParams }: Props) {
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                      </div>
-                     <h2 className="font-semibold text-lg">Odeme Altyapisi Yakinda Aktif Olacak</h2>
+                     <h2 className="font-semibold text-lg">Ödeme Altyapısı Yakında Aktif Olacak</h2>
                      <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                        Online odeme altyapimiz su anda hazirlanmaktadir. Siparislerinizi olusturabilir,
-                        odeme aktif oldugunda kolayca tamamlayabilirsiniz.
+                        Online ödeme altyapımız şu anda hazırlanmaktadır. Siparişlerinizi oluşturabilir,
+                        ödeme aktif olduğunda kolayca tamamlayabilirsiniz.
                      </p>
                      <p className="text-sm text-muted-foreground">
-                        Sorulariniz icin bize WhatsApp veya e-posta ile ulasabilirsiniz.
+                        Sorularınız için bize WhatsApp veya e-posta ile ulaşabilirsiniz.
                      </p>
                   </div>
 
@@ -187,7 +187,7 @@ export default async function PaymentPage({ params, searchParams }: Props) {
                   {process.env.NODE_ENV === 'development' && (
                      <div className="border-t pt-4">
                         <p className="text-xs text-muted-foreground mb-2 text-center">
-                           Gelistirici Modu: Test odemesi yapabilirsiniz
+                           Geliştirici Modu: Test ödemesi yapabilirsiniz
                         </p>
                         <PaymentButton orderId={order.id} amount={order.payable} isTest />
                      </div>
@@ -202,7 +202,7 @@ export default async function PaymentPage({ params, searchParams }: Props) {
                href="/profile"
                className="text-sm underline underline-offset-4 text-muted-foreground hover:text-foreground"
             >
-               ← Siparislerime Don
+               ← Siparişlerime Dön
             </Link>
          </div>
       </div>

@@ -39,7 +39,14 @@ export async function GET(
          },
       })
 
-      return NextResponse.json(order)
+      // Ensure trackingNumber and shippingCompany are in the response
+      const response = {
+         ...order,
+         trackingNumber: order.trackingNumber ?? null,
+         shippingCompany: order.shippingCompany ?? null,
+      }
+
+      return NextResponse.json(response)
    } catch (error) {
       console.error('[ORDER_GET]', error)
       return new NextResponse('Internal error', { status: 500 })

@@ -192,6 +192,9 @@ model Order {
   isPaid      Boolean @default(false)
   isCompleted Boolean @default(false)
 
+  trackingNumber  String?
+  shippingCompany String?
+
   payments     Payment[]
   orderItems   OrderItem[]
   refund       Refund?

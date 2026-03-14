@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { useAuthenticated } from '@/hooks/useAuthentication'
+import { useUserContext } from '@/state/User'
 
 interface BrandOption {
    id: string
@@ -13,6 +15,8 @@ interface BrandOption {
 
 export function QuoteRequestForm({ brands }: { brands: BrandOption[] }) {
    const router = useRouter()
+   const { authenticated } = useAuthenticated()
+   const { user } = useUserContext()
    const [loading, setLoading] = useState(false)
    const [success, setSuccess] = useState(false)
    const [error, setError] = useState('')
@@ -24,6 +28,34 @@ export function QuoteRequestForm({ brands }: { brands: BrandOption[] }) {
    const [phone, setPhone] = useState('')
    const [partDescription, setPartDescription] = useState('')
    const [image, setImage] = useState<File | null>(null)
+
+   const [emailFromProfile, setEmailFromProfile] = useState(false)
+   const [nameFromProfile, setNameFromProfile] = useState(false)
+   const [autoFilled, setAutoFilled] = useState(false)
+
+   // Auto-fill from user profile when authenticated
+   useEffect(() => {
+      if (!authenticated || !user) return
+
+      let didAutoFill = false
+
+      if (user.email && !email) {
+         setEmail(user.email)
+         setEmailFromProfile(true)
+         didAutoFill = true
+      }
+      if (user.name && !name) {
+         setName(user.name)
+         setNameFromProfile(true)
+         didAutoFill = true
+      }
+      if (user.phone && !phone) {
+         setPhone(user.phone)
+         didAutoFill = true
+      }
+
+      if (didAutoFill) setAutoFilled(true)
+   }, [authenticated, user]) // eslint-disable-line react-hooks/exhaustive-deps
 
    const selectedBrand = brands.find((b) => b.id === selectedBrandId)
    const models = selectedBrand?.models || []
@@ -120,6 +152,12 @@ export function QuoteRequestForm({ brands }: { brands: BrandOption[] }) {
             </div>
          )}
 
+         {autoFilled && (
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-700">
+               Profil bilgileriniz otomatik dolduruldu
+            </div>
+         )}
+
          {/* E-posta */}
          <div className="space-y-1.5">
             <label className="text-sm font-medium">
@@ -130,8 +168,9 @@ export function QuoteRequestForm({ brands }: { brands: BrandOption[] }) {
                value={email}
                onChange={(e) => setEmail(e.target.value)}
                required
+               readOnly={emailFromProfile}
                placeholder="ornek@email.com"
-               className="w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40"
+               className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 ${emailFromProfile ? 'bg-muted cursor-not-allowed' : ''}`}
             />
          </div>
 
@@ -143,8 +182,9 @@ export function QuoteRequestForm({ brands }: { brands: BrandOption[] }) {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  readOnly={nameFromProfile}
                   placeholder="Ad Soyad"
-                  className="w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40"
+                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40 ${nameFromProfile ? 'bg-muted cursor-not-allowed' : ''}`}
                />
             </div>
             <div className="space-y-1.5">

@@ -19,6 +19,7 @@ import {
    CreditCard,
    Users,
    Bug,
+   Ticket,
 } from 'lucide-react'
 
 const navGroups = [
@@ -43,6 +44,7 @@ const navGroups = [
       items: [
          { href: '/orders', label: 'Siparişler', icon: ShoppingCart },
          { href: '/payments', label: 'Ödemeler', icon: CreditCard },
+         { href: '/discount-codes', label: 'Kuponlar', icon: Ticket },
          { href: '/users', label: 'Kullanıcılar', icon: Users },
       ],
    },

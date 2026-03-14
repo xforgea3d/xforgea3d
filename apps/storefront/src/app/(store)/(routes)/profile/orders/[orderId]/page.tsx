@@ -340,6 +340,43 @@ export default function OrderDetailPage({ params }: { params: { orderId: string 
                   </CardContent>
                </Card>
 
+               {/* Kargo Takip */}
+               {order.trackingNumber && (
+                  <Card className="border-purple-200 dark:border-purple-800/50">
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                           <Truck className="h-5 w-5" /> Kargo Takip
+                        </CardTitle>
+                     </CardHeader>
+                     <CardContent className="space-y-3">
+                        {order.shippingCompany && (
+                           <div>
+                              <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-0.5">Kargo Firması</p>
+                              <p className="font-medium text-sm">{order.shippingCompany}</p>
+                           </div>
+                        )}
+                        <div>
+                           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Takip Numarası</p>
+                           <div className="flex items-center gap-2">
+                              <code className="bg-muted px-2 py-1 rounded text-sm font-mono flex-1 truncate">
+                                 {order.trackingNumber}
+                              </code>
+                              <button
+                                 onClick={() => {
+                                    navigator.clipboard.writeText(order.trackingNumber)
+                                    toast.success('Takip numarası kopyalandı!')
+                                 }}
+                                 className="inline-flex items-center justify-center h-8 w-8 rounded-md border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                 title="Takip numarasını kopyala"
+                              >
+                                 <Copy className="h-4 w-4" />
+                              </button>
+                           </div>
+                        </div>
+                     </CardContent>
+                  </Card>
+               )}
+
                {order.address && (
                   <Card>
                      <CardHeader>

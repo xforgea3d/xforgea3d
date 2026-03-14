@@ -15,12 +15,24 @@ export default async function PaymentsPage() {
             status: true,
             payable: true,
             isSuccessful: true,
+            refId: true,
+            cardPan: true,
             createdAt: true,
+            order: {
+               select: {
+                  number: true,
+               },
+            },
+            user: {
+               select: {
+                  email: true,
+               },
+            },
          },
          orderBy: {
-            updatedAt: 'desc',
+            createdAt: 'desc',
          },
-         take: 100,
+         take: 200,
       })
    } catch (error) {
       console.warn('[PaymentsPage] Failed to fetch payments:', error)
@@ -28,12 +40,15 @@ export default async function PaymentsPage() {
 
    const formattedPayments: PaymentColumn[] = payments.map((payment) => ({
       id: payment.id,
-      number: 'Ödeme #' + payment.number.toString(),
+      number: 'Odeme #' + payment.number.toString(),
       status: payment.status,
-      date: payment.createdAt.toUTCString(),
-      payable: payment.payable.toFixed(2) + ' ₺',
+      refId: payment.refId,
+      cardPan: payment.cardPan || '-',
+      orderNumber: 'Siparis #' + payment.order.number.toString(),
+      userEmail: payment.user.email,
+      payable: payment.payable.toFixed(2) + ' TL',
       isSuccessful: payment.isSuccessful,
-      createdAt: format(payment.createdAt, 'MMMM do, yyyy'),
+      createdAt: format(payment.createdAt, 'dd.MM.yyyy HH:mm'),
    }))
 
    return <PaymentClient data={formattedPayments} />

@@ -3,9 +3,15 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
    try {
-      const [pendingOrders, pendingQuotes, unreadErrors] = await Promise.all([
+      const [pendingOrders, shippedWithoutTracking, pendingQuotes, unreadErrors] = await Promise.all([
          prisma.order.count({
             where: { status: 'OnayBekleniyor' },
+         }),
+         prisma.order.count({
+            where: {
+               status: 'Shipped',
+               trackingNumber: null,
+            },
          }),
          prisma.quoteRequest.count({
             where: { status: 'Pending' },
@@ -16,7 +22,7 @@ export async function GET() {
       ])
 
       return NextResponse.json({
-         orders: pendingOrders,
+         orders: pendingOrders + shippedWithoutTracking,
          quotes: pendingQuotes,
          errors: unreadErrors,
       })

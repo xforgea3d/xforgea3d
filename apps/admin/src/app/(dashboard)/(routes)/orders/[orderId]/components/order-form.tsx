@@ -22,10 +22,11 @@ import {
 import type { OrderWithIncludes } from '@/types/prisma'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import * as z from 'zod'
+import { AlertCircle } from 'lucide-react'
 
 const ORDER_STATUSES = [
    { value: 'OnayBekleniyor', label: 'Onay Bekleniyor' },
@@ -41,6 +42,15 @@ const ORDER_STATUSES = [
    { value: 'Denied', label: 'Reddedildi' },
 ]
 
+const SHIPPING_COMPANIES = [
+   'Yurtiçi Kargo',
+   'Aras Kargo',
+   'MNG Kargo',
+   'PTT Kargo',
+   'Sürat Kargo',
+   'Trendyol Express',
+]
+
 const formSchema = z.object({
    status: z.string().min(1),
    shipping: z.coerce.number().min(0),
@@ -48,6 +58,8 @@ const formSchema = z.object({
    discount: z.coerce.number().min(0),
    isPaid: z.boolean().default(false).optional(),
    isCompleted: z.boolean().default(false).optional(),
+   trackingNumber: z.string().optional().nullable(),
+   shippingCompany: z.string().optional().nullable(),
 })
 
 type OrderFormValues = z.infer<typeof formSchema>
@@ -60,18 +72,43 @@ export const OrderForm: React.FC<OrderFormProps> = ({ initialData }) => {
    const params = useParams()
    const router = useRouter()
    const [loading, setLoading] = useState(false)
+   const [showTrackingWarning, setShowTrackingWarning] = useState(false)
 
    const defaultValues = initialData
-      ? { ...initialData }
-      : { status: 'Processing', shipping: 0, payable: 0, discount: 0, isPaid: false, isCompleted: false }
+      ? {
+           ...initialData,
+           trackingNumber: (initialData as any).trackingNumber ?? '',
+           shippingCompany: (initialData as any).shippingCompany ?? '',
+        }
+      : {
+           status: 'Processing',
+           shipping: 0,
+           payable: 0,
+           discount: 0,
+           isPaid: false,
+           isCompleted: false,
+           trackingNumber: '',
+           shippingCompany: '',
+        }
 
    const form = useForm<OrderFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues,
    })
 
+   const watchedStatus = form.watch('status')
+   const watchedTracking = form.watch('trackingNumber')
+
+   // Show warning when status is set to Shipped but no tracking number
+   useEffect(() => {
+      const isShipped = watchedStatus === 'Shipped' || watchedStatus === 'KargoyaVerildi'
+      const noTracking = !watchedTracking || watchedTracking.trim() === ''
+      setShowTrackingWarning(isShipped && noTracking)
+   }, [watchedStatus, watchedTracking])
+
    const onSubmit = async (data: OrderFormValues) => {
       try {
+         setLoading(true)
          const res = await fetch(`/api/orders/${params.orderId}`, {
             method: 'PATCH',
             body: JSON.stringify(data),
@@ -84,6 +121,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({ initialData }) => {
       } catch {
          toast.error('Değişiklik kaydedilemedi.')
          router.refresh()
+      } finally {
+         setLoading(false)
       }
    }
 
@@ -114,6 +153,64 @@ export const OrderForm: React.FC<OrderFormProps> = ({ initialData }) => {
                   </FormItem>
                )}
             />
+
+            {/* Tracking Warning */}
+            {showTrackingWarning && (
+               <div className="flex items-center gap-2 rounded-md border border-orange-400/50 bg-orange-50 dark:bg-orange-950/20 p-3 text-sm text-orange-700 dark:text-orange-400">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <span>Kargo durumuna geçtiniz. Lütfen kargo takip numarasını girin.</span>
+               </div>
+            )}
+
+            {/* Tracking Number & Shipping Company */}
+            <div className="grid grid-cols-2 gap-4">
+               <FormField
+                  control={form.control}
+                  name="trackingNumber"
+                  render={({ field }) => (
+                     <FormItem>
+                        <FormLabel>Kargo Takip Numarası</FormLabel>
+                        <FormControl>
+                           <Input
+                              disabled={loading}
+                              placeholder="Takip numarasını girin"
+                              {...field}
+                              value={field.value ?? ''}
+                           />
+                        </FormControl>
+                        <FormMessage />
+                     </FormItem>
+                  )}
+               />
+
+               <FormField
+                  control={form.control}
+                  name="shippingCompany"
+                  render={({ field }) => (
+                     <FormItem>
+                        <FormLabel>Kargo Firması</FormLabel>
+                        <Select
+                           disabled={loading}
+                           onValueChange={field.onChange}
+                           value={field.value ?? ''}
+                           defaultValue={field.value ?? ''}
+                        >
+                           <FormControl>
+                              <SelectTrigger>
+                                 <SelectValue placeholder="Kargo firması seçin" />
+                              </SelectTrigger>
+                           </FormControl>
+                           <SelectContent>
+                              {SHIPPING_COMPANIES.map((company) => (
+                                 <SelectItem key={company} value={company}>{company}</SelectItem>
+                              ))}
+                           </SelectContent>
+                        </Select>
+                        <FormMessage />
+                     </FormItem>
+                  )}
+               />
+            </div>
 
             <div className="grid grid-cols-3 gap-4">
                {/* Shipping */}

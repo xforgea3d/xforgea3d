@@ -17,6 +17,11 @@ const CommandMenu = dynamic(
    { ssr: false }
 )
 
+const NotificationBell = dynamic(
+   () => import('@/components/native/nav/notification-bell').then(m => ({ default: m.NotificationBell })),
+   { ssr: false }
+)
+
 export default function Header() {
    const { authenticated } = useAuthenticated()
    const [searchOpen, setSearchOpen] = useState(false)
@@ -38,6 +43,7 @@ export default function Header() {
                </Button>
                <CommandMenu open={searchOpen} onOpenChange={setSearchOpen} />
                <CartNav />
+               {authenticated && <NotificationBell />}
                <ThemeToggle />
                <div className="flex-shrink-0">
                   {authenticated ? <UserNav /> : <LoginButton />}

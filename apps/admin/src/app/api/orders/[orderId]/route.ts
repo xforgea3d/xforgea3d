@@ -13,7 +13,7 @@ export async function PATCH(
         }
 
         const body = await req.json()
-        const { status, shipping, payable, discount, isPaid, isCompleted } = body
+        const { status, shipping, payable, discount, isPaid, isCompleted, trackingNumber, shippingCompany } = body
 
         const order = await prisma.order.update({
             where: { id: params.orderId },
@@ -24,6 +24,8 @@ export async function PATCH(
                 ...(discount !== undefined && { discount }),
                 ...(isPaid !== undefined && { isPaid }),
                 ...(isCompleted !== undefined && { isCompleted }),
+                ...(trackingNumber !== undefined && { trackingNumber: trackingNumber || null }),
+                ...(shippingCompany !== undefined && { shippingCompany: shippingCompany || null }),
             },
         })
 

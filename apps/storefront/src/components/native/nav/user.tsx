@@ -12,6 +12,7 @@ import {
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+   BellIcon,
    CreditCardIcon,
    HeartIcon,
    ListOrderedIcon,
@@ -77,6 +78,12 @@ export function UserNav() {
                   <Link href="/profile/quote-requests">
                      <MessageSquareQuoteIcon className="h-4" />
                      Taleplerim
+                  </Link>
+               </DropdownMenuItem>
+               <DropdownMenuItem className="flex gap-2" asChild>
+                  <Link href="/profile/notifications">
+                     <BellIcon className="h-4" />
+                     Bildirimler
                   </Link>
                </DropdownMenuItem>
                <DropdownMenuSeparator />
