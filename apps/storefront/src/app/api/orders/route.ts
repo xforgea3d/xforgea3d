@@ -8,6 +8,15 @@ import { render } from '@react-email/render'
 import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 
+function generateOrderCode(orderNumber: number): string {
+   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+   let rand = ''
+   for (let i = 0; i < 4; i++) {
+      rand += chars.charAt(Math.floor(Math.random() * chars.length))
+   }
+   return `XF-${orderNumber}-${rand}`
+}
+
 export async function GET(req: Request) {
    try {
       const userId = req.headers.get('X-USER-ID')
@@ -18,6 +27,7 @@ export async function GET(req: Request) {
          select: {
             id: true,
             number: true,
+            orderCode: true,
             status: true,
             total: true,
             payable: true,
@@ -178,6 +188,14 @@ export async function POST(req: Request) {
 
          return created
       })
+
+      // Generate unique order code
+      const orderCode = generateOrderCode(order.number)
+      await prisma.order.update({
+         where: { id: order.id },
+         data: { orderCode },
+      })
+      ;(order as any).orderCode = orderCode
 
       // Check for low stock after order creation (best-effort)
       try {

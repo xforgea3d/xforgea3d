@@ -356,10 +356,38 @@ export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
 
          {/* ── Add to Cart ──────────────────────────────── */}
          <div className="px-6 py-4 space-y-4">
-            <div className="flex gap-2">
-               <CartButton product={product} />
-               <WishlistButton product={product} />
-            </div>
+            {!product?.isAvailable ? (
+               <div className="space-y-3">
+                  <div className="flex items-start gap-2.5 rounded-lg border border-orange-300 dark:border-orange-600/40 bg-orange-50 dark:bg-orange-950/20 px-4 py-3">
+                     <AlertTriangleIcon className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                     <div>
+                        <p className="text-sm font-semibold text-orange-700 dark:text-orange-300">
+                           Bu Ürün Şu An Stokta Yok
+                        </p>
+                        <p className="text-xs text-orange-600/80 dark:text-orange-400/70 mt-0.5">
+                           Talep oluşturarak ürün tekrar stoğa girdiğinde bildirim alabilirsiniz.
+                        </p>
+                     </div>
+                  </div>
+                  <div className="flex gap-2">
+                     <Link
+                        href={`/quote-request?product=${encodeURIComponent(product.title)}&productId=${product.id}`}
+                        className="flex-1"
+                     >
+                        <Button className="w-full gap-2 bg-orange-500 hover:bg-orange-600 text-white">
+                           <BoxIcon className="h-4 w-4" />
+                           Talep Et
+                        </Button>
+                     </Link>
+                     <WishlistButton product={product} />
+                  </div>
+               </div>
+            ) : (
+               <div className="flex gap-2">
+                  <CartButton product={product} />
+                  <WishlistButton product={product} />
+               </div>
+            )}
             {/* Share row */}
             <div className="flex items-center gap-3">
                <span className="text-xs text-muted-foreground flex items-center gap-1.5">

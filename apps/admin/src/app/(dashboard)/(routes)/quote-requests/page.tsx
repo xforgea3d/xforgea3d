@@ -6,36 +6,27 @@ import prisma from '@/lib/prisma'
 import { format } from 'date-fns'
 
 import type { QuoteColumn } from './components/table'
-import { QuoteTable } from './components/table'
+import { QuoteTableWithTabs } from './components/table'
 
 const statusLabels: Record<string, string> = {
    Pending: 'Beklemede',
-   Priced: 'Fiyatlandırıldı',
+   Priced: 'Fiyatlandirildi',
    Accepted: 'Kabul Edildi',
    Rejected: 'Reddedildi',
-   Completed: 'Tamamlandı',
+   Completed: 'Tamamlandi',
 }
 
-export default async function QuoteRequestsPage({
-   searchParams,
-}: {
-   searchParams: { status?: string }
-}) {
-   const { status } = searchParams ?? {}
-
+export default async function QuoteRequestsPage() {
    let requests: any[] = []
    try {
       requests = await prisma.quoteRequest.findMany({
-         where: {
-            ...(status && { status: status as any }),
-         },
          include: {
             user: { select: { name: true, email: true } },
             carBrand: { select: { name: true } },
             carModel: { select: { name: true } },
          },
          orderBy: { createdAt: 'desc' },
-         take: 100,
+         take: 200,
       })
    } catch (error) {
       console.warn('[QuoteRequestsPage] Failed to fetch:', error)
@@ -57,14 +48,23 @@ export default async function QuoteRequestsPage({
       createdAt: format(r.createdAt, 'dd.MM.yyyy HH:mm'),
    }))
 
+   // Counts for tabs
+   const counts = {
+      Pending: formatted.filter((r) => r.statusRaw === 'Pending').length,
+      Priced: formatted.filter((r) => r.statusRaw === 'Priced').length,
+      Accepted: formatted.filter((r) => r.statusRaw === 'Accepted').length,
+      Rejected: formatted.filter((r) => r.statusRaw === 'Rejected').length,
+      all: formatted.length,
+   }
+
    return (
       <div className="block space-y-4 my-6">
          <Heading
-            title={`Parça Talepleri (${requests.length})`}
-            description="Müşteri parça taleplerini yönetin"
+            title={`Parca Talepleri (${requests.length})`}
+            description="Musteri parca taleplerini yonetin"
          />
          <Separator />
-         <QuoteTable data={formatted} />
+         <QuoteTableWithTabs data={formatted} counts={counts} />
       </div>
    )
 }

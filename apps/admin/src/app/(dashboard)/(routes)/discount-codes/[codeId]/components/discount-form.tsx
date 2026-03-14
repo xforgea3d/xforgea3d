@@ -111,9 +111,11 @@ export const DiscountForm: React.FC<DiscountFormProps> = ({ initialData }) => {
             body: JSON.stringify(data),
          })
          if (!res.ok) throw new Error(await res.text())
-         router.refresh()
-         router.push('/discount-codes')
          toast.success(toastMessage)
+         // Refresh first to invalidate client cache, then navigate
+         router.refresh()
+         // Use window.location for a full page navigation to guarantee fresh data
+         window.location.href = '/discount-codes'
       } catch (error: any) {
          toast.error('Bir hata olustu: ' + (error?.message || ''))
       } finally {

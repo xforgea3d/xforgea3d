@@ -17,6 +17,7 @@ export type OrderColumn = {
    isPaid: boolean
    payable: string
    number: string
+   orderCode: string
    status: string
    statusLabel: string
    createdAt: string
@@ -24,6 +25,9 @@ export type OrderColumn = {
    trackingNumber: string | null
    shippingCompany: string | null
    itemCount: number
+   customerName: string
+   customerEmail: string
+   city: string
 }
 
 interface OrdersClientProps {
@@ -118,8 +122,25 @@ function StatusCell({ order, onStatusChange }: { order: OrderColumn; onStatusCha
 function getOrderColumns(onStatusChange: (id: string, status: string) => Promise<void>): ColumnDef<OrderColumn>[] {
    return [
       {
-         accessorKey: 'number',
-         header: 'Sipariş No',
+         accessorKey: 'orderCode',
+         header: 'Sipariş Kodu',
+         cell: ({ row }) => (
+            <span className="font-mono text-xs font-semibold">{row.original.orderCode}</span>
+         ),
+      },
+      {
+         accessorKey: 'customerName',
+         header: 'Müşteri',
+         cell: ({ row }) => (
+            <div className="text-xs">
+               <p className="font-medium">{row.original.customerName}</p>
+               <p className="text-muted-foreground">{row.original.customerEmail}</p>
+            </div>
+         ),
+      },
+      {
+         accessorKey: 'city',
+         header: 'Şehir',
       },
       {
          accessorKey: 'statusLabel',
@@ -217,17 +238,25 @@ export const OrdersClient: React.FC<OrdersClientProps> = ({ data }) => {
    const filteredData = useMemo(() => {
       const tabFilter = TAB_FILTERS[activeTab]
       return data.filter((order) => {
+         const q = search.toLowerCase()
          const matchesSearch =
-            search === '' || order.number.toLowerCase().includes(search.toLowerCase())
+            search === '' ||
+            order.orderCode.toLowerCase().includes(q) ||
+            order.number.toLowerCase().includes(q) ||
+            order.customerName.toLowerCase().includes(q) ||
+            order.customerEmail.toLowerCase().includes(q)
          return matchesSearch && tabFilter(order)
       })
    }, [data, search, activeTab])
 
    const exportCSV = () => {
       const BOM = '\uFEFF'
-      const headers = ['Sipariş No', 'Durum', 'Toplam', 'Ödeme', 'Kargo Takip', 'Kargo Firması', 'Tarih']
+      const headers = ['Sipariş Kodu', 'Müşteri', 'E-posta', 'Şehir', 'Durum', 'Toplam', 'Ödeme', 'Kargo Takip', 'Kargo Firması', 'Tarih']
       const rows = filteredData.map((order) => [
-         order.number,
+         order.orderCode,
+         order.customerName,
+         order.customerEmail,
+         order.city,
          order.statusLabel,
          order.payable,
          order.isPaid ? 'Ödendi' : 'Ödenmedi',
@@ -275,7 +304,7 @@ export const OrdersClient: React.FC<OrdersClientProps> = ({ data }) => {
 
             <div className="flex items-center gap-3 py-4">
                <Input
-                  placeholder="Sipariş numarası ile ara..."
+                  placeholder="Sipariş kodu, müşteri adı veya e-posta ile ara..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="max-w-sm"

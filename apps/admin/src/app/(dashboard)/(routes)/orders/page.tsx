@@ -38,6 +38,8 @@ export default async function OrdersPage() {
                   product: true,
                },
             },
+            user: { select: { name: true, email: true } },
+            address: { select: { city: true } },
          },
          orderBy: { createdAt: 'desc' },
       })
@@ -47,7 +49,8 @@ export default async function OrdersPage() {
 
    const formattedOrders: OrderColumn[] = orders.map((order) => ({
       id: order.id,
-      number: `Sipariş #${order.number}`,
+      number: order.orderCode || `Sipariş #${order.number}`,
+      orderCode: order.orderCode || `#${order.number}`,
       status: order.status,
       statusLabel: STATUS_LABELS[order.status] ?? order.status,
       date: order.createdAt.toUTCString(),
@@ -57,6 +60,9 @@ export default async function OrdersPage() {
       shippingCompany: order.shippingCompany ?? null,
       createdAt: format(order.createdAt, 'd MMMM yyyy', { locale: tr }),
       itemCount: order.orderItems?.length ?? 0,
+      customerName: order.user?.name || '-',
+      customerEmail: order.user?.email || '-',
+      city: order.address?.city || '-',
    }))
 
    return (

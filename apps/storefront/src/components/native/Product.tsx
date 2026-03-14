@@ -83,9 +83,9 @@ export const Product = ({
 
                   {/* Out of stock overlay */}
                   {!product?.isAvailable && (
-                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
-                        <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-neutral-800 shadow">
-                           Tükendi
+                     <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px]">
+                        <span className="rounded-full bg-white/90 dark:bg-neutral-800/90 px-3 py-1 text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow">
+                           Stokta Yok
                         </span>
                      </div>
                   )}
@@ -117,11 +117,9 @@ export const Product = ({
             </Link>
 
             {/* Quick-add button — inside card but outside Link */}
-            {product?.isAvailable && (
-               <div className="px-4 pb-4">
-                  <QuickAddButton product={product} />
-               </div>
-            )}
+            <div className="px-4 pb-4">
+               <QuickAddButton product={product} />
+            </div>
          </div>
       </div>
    )

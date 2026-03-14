@@ -33,7 +33,7 @@ export default function NotificationsPage() {
 
    const [target, setTarget] = useState<'all' | string>('all')
    const [message, setMessage] = useState('')
-   const [notifType, setNotifType] = useState<'popup' | 'notification'>('notification')
+   const [notifType, setNotifType] = useState<'popup' | 'notification' | 'modal'>('notification')
    const [selectedCoupon, setSelectedCoupon] = useState('')
 
    useEffect(() => {
@@ -113,7 +113,7 @@ export default function NotificationsPage() {
          <div className="flex items-center gap-3">
             <Heading
                title="Bildirim Gönder"
-               description="Kullanıcılara bildirim veya popup mesajı gönderin."
+               description="Kullanıcılara bildirim, popup veya modal mesajı gönderin."
             />
          </div>
          <Separator />
@@ -140,11 +140,11 @@ export default function NotificationsPage() {
             {/* Notification Type */}
             <div className="space-y-2">
                <label className="text-sm font-medium">Bildirim Türü</label>
-               <div className="flex gap-3">
+               <div className="grid grid-cols-3 gap-3">
                   <button
                      type="button"
                      onClick={() => setNotifType('notification')}
-                     className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${
+                     className={`rounded-lg border-2 p-4 text-left transition-all ${
                         notifType === 'notification'
                            ? 'border-primary bg-primary/5'
                            : 'border-muted hover:border-muted-foreground/30'
@@ -162,7 +162,7 @@ export default function NotificationsPage() {
                   <button
                      type="button"
                      onClick={() => setNotifType('popup')}
-                     className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${
+                     className={`rounded-lg border-2 p-4 text-left transition-all ${
                         notifType === 'popup'
                            ? 'border-primary bg-primary/5'
                            : 'border-muted hover:border-muted-foreground/30'
@@ -175,6 +175,24 @@ export default function NotificationsPage() {
                      </div>
                      <p className="text-xs text-muted-foreground">
                         Kullanıcının ekranında toast olarak görünür
+                     </p>
+                  </button>
+                  <button
+                     type="button"
+                     onClick={() => setNotifType('modal')}
+                     className={`rounded-lg border-2 p-4 text-left transition-all ${
+                        notifType === 'modal'
+                           ? 'border-primary bg-primary/5'
+                           : 'border-muted hover:border-muted-foreground/30'
+                     }`}
+                     disabled={loading}
+                  >
+                     <div className="flex items-center gap-2 mb-1">
+                        <Bell className="h-4 w-4" />
+                        <span className="font-medium text-sm">Modal</span>
+                     </div>
+                     <p className="text-xs text-muted-foreground">
+                        Ekran ortasında, kullanıcı kapatana kadar kalır
                      </p>
                   </button>
                </div>

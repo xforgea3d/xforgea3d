@@ -180,9 +180,10 @@ model ProductReview {
 }
 
 model Order {
-  id     String          @id @default(cuid())
-  number Int             @unique @default(autoincrement())
-  status OrderStatusEnum
+  id        String          @id @default(cuid())
+  number    Int             @unique @default(autoincrement())
+  orderCode String?          @unique
+  status    OrderStatusEnum
 
   total    Float @default(100)
   shipping Float @default(100)

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ShoppingCartIcon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ShoppingCartIcon, SendIcon } from 'lucide-react'
 import { useCartContext } from '@/state/Cart'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
@@ -17,6 +18,7 @@ import toast from 'react-hot-toast'
  * This ensures dispatchCart updates the SAME cart that CartNav reads.
  */
 export function QuickAddButton({ product }: { product: any }) {
+    const router = useRouter()
     const { authenticated } = useAuthenticated()
     const csrfToken = useCsrf()
     const { cart, dispatchCart } = useCartContext()
@@ -93,8 +95,19 @@ export function QuickAddButton({ product }: { product: any }) {
 
     if (isOutOfStock) {
         return (
-            <button disabled className="w-full h-10 text-xs font-medium rounded-lg bg-neutral-200 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 cursor-not-allowed">
-                Tükendi
+            <button
+                onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    const params = new URLSearchParams()
+                    if (product?.title) params.set('product', product.title)
+                    if (product?.id) params.set('productId', product.id)
+                    router.push(`/quote-request?${params.toString()}`)
+                }}
+                className="w-full h-10 text-xs font-semibold rounded-lg border-2 border-orange-500 text-orange-600 dark:text-orange-400 bg-transparent hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-all duration-200 flex items-center justify-center gap-1.5"
+            >
+                <SendIcon className="h-3.5 w-3.5" />
+                Talep Et
             </button>
         )
     }

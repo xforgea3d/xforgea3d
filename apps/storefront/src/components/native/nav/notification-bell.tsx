@@ -16,10 +16,11 @@ interface Notification {
 }
 
 function getNotificationLink(content: string): string {
-   if (/parça talebi|talep/i.test(content)) return '/profile/quote-requests'
-   if (/sipari[sş]|Siparis/i.test(content)) return '/profile/orders'
-   if (/iade/i.test(content)) return '/profile/orders'
-   if (/indirim|kupon/i.test(content)) return '/cart'
+   const lower = content.toLowerCase()
+   if (/parça talebi|talep/i.test(lower)) return '/profile/quote-requests'
+   if (/sipari[sş]|siparis/i.test(lower)) return '/profile/orders'
+   if (/iade/i.test(lower)) return '/profile/orders'
+   if (/indirim|kupon/i.test(lower)) return '/products'
    return '/profile/notifications'
 }
 
@@ -189,6 +190,11 @@ export function NotificationBell() {
                                        {notification.type === 'popup' && (
                                           <span className="text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-medium">
                                              Popup
+                                          </span>
+                                       )}
+                                       {notification.type === 'modal' && (
+                                          <span className="text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-medium">
+                                             Modal
                                           </span>
                                        )}
                                     </div>

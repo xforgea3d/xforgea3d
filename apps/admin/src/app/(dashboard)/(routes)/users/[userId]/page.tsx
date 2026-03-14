@@ -40,6 +40,7 @@ const UserPage = async ({ params }: { params: { userId: string } }) => {
       const formattedOrders: OrderColumn[] = orders.map((order) => ({
          id: order.id,
          number: `Sipariş #${order.number}`,
+         orderCode: (order as any).orderCode || `XF-${order.number}`,
          date: order.createdAt.toUTCString(),
          payable: order.payable.toFixed(2) + ' ₺',
          isPaid: order.isPaid,
@@ -48,6 +49,9 @@ const UserPage = async ({ params }: { params: { userId: string } }) => {
          trackingNumber: (order as any).trackingNumber || null,
          shippingCompany: (order as any).shippingCompany || null,
          itemCount: (order as any).items?.length || 0,
+         customerName: user?.name || '-',
+         customerEmail: user?.email || '-',
+         city: '-',
          createdAt: format(order.createdAt, 'MMMM do, yyyy'),
       }))
 

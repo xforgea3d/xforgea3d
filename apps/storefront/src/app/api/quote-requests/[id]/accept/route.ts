@@ -3,6 +3,15 @@ import { verifyCsrfToken } from '@/lib/csrf'
 import { logError, extractRequestContext } from '@/lib/error-logger'
 import { NextResponse } from 'next/server'
 
+function generateOrderCode(orderNumber: number): string {
+   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+   let rand = ''
+   for (let i = 0; i < 4; i++) {
+      rand += chars.charAt(Math.floor(Math.random() * chars.length))
+   }
+   return `XF-${orderNumber}-${rand}`
+}
+
 /**
  * POST /api/quote-requests/[id]/accept — PROTECTED
  * User accepts quoted price → creates Order → returns orderId for payment redirect
@@ -142,6 +151,13 @@ export async function POST(
          })
 
          return created
+      })
+
+      // Generate unique order code
+      const orderCode = generateOrderCode(order.number)
+      await prisma.order.update({
+         where: { id: order.id },
+         data: { orderCode },
       })
 
       // Notify admins
