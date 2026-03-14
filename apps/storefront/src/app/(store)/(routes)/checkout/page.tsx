@@ -107,6 +107,7 @@ export default function CheckoutPage() {
             },
             body: JSON.stringify({ code: discountCode.trim(), csrfToken }),
          })
+         if (!res.ok) { setDiscountError('Doğrulama başarısız'); setValidatingDiscount(false); return; }
          const data = await res.json()
 
          if (data.valid) {

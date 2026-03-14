@@ -54,7 +54,7 @@ export async function POST(req: Request) {
          data: {
             code: finalCode,
             percent: Number(percent),
-            maxDiscountAmount: maxDiscountAmount ? Number(maxDiscountAmount) : 1,
+            maxDiscountAmount: maxDiscountAmount !== undefined ? Number(maxDiscountAmount) : 1,
             stock: stock ? Number(stock) : 1,
             description: description || null,
             startDate: new Date(startDate),

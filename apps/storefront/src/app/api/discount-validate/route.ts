@@ -13,7 +13,7 @@ export async function POST(req: Request) {
          return new NextResponse('Gecersiz istek. Sayfayi yenileyip tekrar deneyin.', { status: 403 })
       }
 
-      if (!code) return NextResponse.json({ valid: false, error: 'Kod girilmedi' })
+      if (!code) return NextResponse.json({ valid: false, error: 'Kod girilmedi' }, { status: 400 })
 
       const now = new Date()
       const dc = await prisma.discountCode.findUnique({

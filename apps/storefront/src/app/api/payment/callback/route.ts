@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
                   isSuccessful: true,
                   cardPan: cardPan ?? undefined,
                   cardHash: hash ?? undefined,
-                  fee: safeFee,
+                  fee: safeFee ?? 0,
                },
             })
             await tx.order.update({

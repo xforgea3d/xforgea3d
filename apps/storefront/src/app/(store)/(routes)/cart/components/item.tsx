@@ -143,7 +143,7 @@ export const Item = ({ cartItem }) => {
             getCountInCart({ cartItems: cart?.items, productId }) > 1
          ) {
             for (let i = 0; i < localCart.items.length; i++) {
-               if (localCart.items[i].productId === product?.id) {
+               if (localCart.items[i].productId === productId) {
                   localCart.items[i].count = localCart.items[i].count - 1
                }
             }
@@ -212,7 +212,7 @@ export const Item = ({ cartItem }) => {
    function Price() {
       if (product?.discount > 0) {
          const price = product?.price - product?.discount
-         const percentage = (product?.discount / product?.price) * 100
+         const percentage = product?.price > 0 ? (product?.discount / product?.price) * 100 : 0
          return (
             <div className="flex gap-2 items-center">
                <Badge className="flex gap-4" variant="destructive">

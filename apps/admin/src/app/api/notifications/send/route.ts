@@ -10,7 +10,7 @@ export async function POST(req: Request) {
          return new NextResponse('Bad Request: content is required', { status: 400 })
       }
 
-      const notificationType = type === 'popup' ? 'popup' : 'notification'
+      const notificationType = ['popup', 'notification', 'modal'].includes(type) ? type : 'notification'
 
       // Support both single userId and multiple userIds
       const userIds: string[] = body.userIds ?? (body.userId ? [body.userId] : [])
