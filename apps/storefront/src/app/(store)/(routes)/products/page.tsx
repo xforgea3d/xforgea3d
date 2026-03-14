@@ -95,7 +95,7 @@ export default async function Products({ searchParams }) {
             title="Ürünler"
             description="Tüm 3D baskı ürünlerimize göz atın."
          />
-         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
+         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
             <SortBy initialData={sort} />
             <CategoriesCombobox
                initialCategory={category}

@@ -355,7 +355,7 @@ export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
          {/* Kişiselleştirme sadece CUSTOM ürünlerde gösterilir */}
 
          {/* ── Production Time & Shipping ─────────────── */}
-         <div className="px-6 py-4 grid grid-cols-2 gap-4">
+         <div className="px-6 py-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex items-start gap-3">
                <div className="p-2 rounded-lg bg-foreground/5 flex-shrink-0">
                   <ClockIcon className="h-4 w-4 text-muted-foreground" />

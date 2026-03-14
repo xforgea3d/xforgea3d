@@ -233,7 +233,7 @@ export function CartNav() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
-                className="w-80 p-0"
+                className="w-[calc(100vw-2rem)] sm:w-80 p-0"
                 align="end"
                 sideOffset={8}
                 onCloseAutoFocus={(e) => e.preventDefault()}
@@ -315,7 +315,7 @@ export function CartNav() {
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         <button
-                                            className="h-6 w-6 flex items-center justify-center rounded-md border border-input bg-background hover:bg-muted text-foreground transition-colors disabled:opacity-40"
+                                            className="h-8 w-8 flex items-center justify-center rounded-md border border-input bg-background hover:bg-muted text-foreground transition-colors disabled:opacity-40"
                                             onClick={(e) =>
                                                 handleDecrement(e, productId, item.count)
                                             }
@@ -336,7 +336,7 @@ export function CartNav() {
                                             )}
                                         </span>
                                         <button
-                                            className="h-6 w-6 flex items-center justify-center rounded-md border border-input bg-background hover:bg-muted text-foreground transition-colors disabled:opacity-40"
+                                            className="h-8 w-8 flex items-center justify-center rounded-md border border-input bg-background hover:bg-muted text-foreground transition-colors disabled:opacity-40"
                                             onClick={(e) =>
                                                 handleIncrement(e, productId, item.count)
                                             }

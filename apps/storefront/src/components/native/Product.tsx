@@ -54,7 +54,7 @@ export const Product = ({
          )}>
             <Link href={`/products/${product.id}`} className="block">
                {/* Image container */}
-               <div className="relative h-56 sm:h-64 w-full flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+               <div className="relative aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                   {product?.images?.[0] ? (
                      <SafeImage
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
@@ -128,7 +128,7 @@ export const Product = ({
 export function ProductSkeleton() {
    return (
       <div className="animate-pulse rounded-xl border bg-card overflow-hidden">
-         <div className="h-56 sm:h-64 w-full bg-neutral-200 dark:bg-neutral-700" />
+         <div className="aspect-[4/3] w-full bg-neutral-200 dark:bg-neutral-700" />
          <div className="p-4 space-y-3">
             <div className="h-2 w-16 rounded-full bg-neutral-200 dark:bg-neutral-700" />
             <div className="h-3 w-full rounded-full bg-neutral-200 dark:bg-neutral-700" />

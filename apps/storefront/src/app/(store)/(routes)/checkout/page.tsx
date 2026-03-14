@@ -286,7 +286,7 @@ export default function CheckoutPage() {
             title="Siparişi Tamamla"
             description="Teslimat adresinizi seçin ve siparişinizi onaylayın."
          />
-         <div className="grid lg:grid-cols-3 gap-8 mt-8">
+         <div className="grid lg:grid-cols-3 gap-4 lg:gap-8 mt-8">
             <div className="lg:col-span-2 space-y-6">
                {/* Teslimat Adresi */}
                <Card>
@@ -329,7 +329,7 @@ export default function CheckoutPage() {
 
                      {showNewAddress ? (
                         <div className="space-y-3 rounded-lg border p-4">
-                           <div className="grid grid-cols-2 gap-3">
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
                                  <Label>Şehir</Label>
                                  <Input
@@ -439,7 +439,7 @@ export default function CheckoutPage() {
 
             {/* Sipariş Özeti */}
             <div className="lg:col-span-1">
-               <Card className="sticky top-24">
+               <Card className="lg:sticky lg:top-24">
                   <CardHeader className="pb-4">
                      <CardTitle>Sipariş Özeti</CardTitle>
                      <CardDescription>{cart?.items?.length ?? 0} ürün</CardDescription>

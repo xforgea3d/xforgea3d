@@ -25,7 +25,7 @@ export default function Hero() {
             <PrinterAnimation />
 
             {/* Content */}
-            <div className="relative z-10 px-8 md:px-12 py-12 md:py-14 md:max-w-[56%]">
+            <div className="relative z-10 px-5 sm:px-8 md:px-12 py-12 md:py-14 md:max-w-[56%]">
                 {/* Badge */}
                 <span className="inline-flex items-center gap-2 rounded-full border border-orange-500/25 bg-orange-500/8 dark:bg-orange-500/12 px-4 py-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-orange-600 dark:text-orange-400 mb-6">
                     <SparklesIcon className="h-3 w-3" />
@@ -33,7 +33,7 @@ export default function Hero() {
                 </span>
 
                 {/* Headline */}
-                <h1 className="text-4xl md:text-5xl xl:text-[3.4rem] font-black tracking-tighter leading-[1.0] text-foreground">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-[3.4rem] font-black tracking-tighter leading-[1.0] text-foreground">
                     Fikrine Şekil Ver,
                     <br />
                     <span className="bg-gradient-to-r from-orange-500 via-amber-400 to-orange-600 dark:from-orange-400 dark:via-amber-300 dark:to-orange-500 bg-clip-text text-transparent">

@@ -96,51 +96,84 @@ export default function CookieConsent() {
 
    return (
       <div
-         className={`fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 transition-transform duration-300 ease-out ${
+         className={`fixed bottom-0 left-0 right-0 z-50 p-2 md:p-6 transition-transform duration-300 ease-out ${
             animateOut ? 'translate-y-full' : 'animate-slide-up'
          }`}
       >
-         <div className="mx-auto max-w-2xl rounded-2xl border border-neutral-200 bg-white/95 p-5 shadow-2xl backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/95">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-3">
-               <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40">
-                     <Cookie className="h-5 w-5 text-orange-500" />
-                  </div>
-                  <div>
-                     <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                        Çerez Kullanımı
-                     </h3>
-                     <p className="mt-0.5 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-                        Bu web sitesi deneyiminizi iyileştirmek için çerezler kullanmaktadır.{' '}
-                        <Link
-                           href="/policies/gizlilik-ve-cerez-politikasi"
-                           className="font-medium text-orange-500 underline underline-offset-2 hover:text-orange-600"
-                        >
-                           Çerez Politikası
-                        </Link>
-                     </p>
-                  </div>
+         <div className="mx-auto max-w-2xl rounded-2xl border border-neutral-200 bg-white/95 p-3 md:p-5 shadow-2xl backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/95 max-h-[40vh] md:max-h-none overflow-y-auto">
+            {/* Mobile compact layout */}
+            <div className="flex md:hidden items-center gap-2">
+               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40">
+                  <Cookie className="h-4 w-4 text-orange-500" />
                </div>
-               <button
-                  onClick={dismiss}
-                  className="shrink-0 rounded-lg p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
-                  aria-label="Kapat"
-               >
-                  <X className="h-4 w-4" />
-               </button>
+               <p className="text-[11px] leading-tight text-neutral-600 dark:text-neutral-400 flex-1 min-w-0">
+                  Çerez kullanıyoruz.{' '}
+                  <Link
+                     href="/policies/gizlilik-ve-cerez-politikasi"
+                     className="font-medium text-orange-500 underline underline-offset-2"
+                  >
+                     Detaylar
+                  </Link>
+               </p>
+               <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                     onClick={() => setShowSettings(!showSettings)}
+                     className="inline-flex items-center justify-center rounded-lg border border-neutral-200 px-2 py-1.5 text-[10px] font-medium text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
+                  >
+                     <Settings className="h-3 w-3" />
+                  </button>
+                  <button
+                     onClick={acceptAll}
+                     className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-3 py-1.5 text-[10px] font-semibold text-white"
+                  >
+                     Kabul Et
+                  </button>
+               </div>
             </div>
 
-            {/* Settings Panel */}
+            {/* Desktop full layout */}
+            <div className="hidden md:block">
+               {/* Header */}
+               <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40">
+                        <Cookie className="h-5 w-5 text-orange-500" />
+                     </div>
+                     <div>
+                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                           Çerez Kullanımı
+                        </h3>
+                        <p className="mt-0.5 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+                           Bu web sitesi deneyiminizi iyileştirmek için çerezler kullanmaktadır.{' '}
+                           <Link
+                              href="/policies/gizlilik-ve-cerez-politikasi"
+                              className="font-medium text-orange-500 underline underline-offset-2 hover:text-orange-600"
+                           >
+                              Çerez Politikası
+                           </Link>
+                        </p>
+                     </div>
+                  </div>
+                  <button
+                     onClick={dismiss}
+                     className="shrink-0 rounded-lg p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                     aria-label="Kapat"
+                  >
+                     <X className="h-4 w-4" />
+                  </button>
+               </div>
+            </div>
+
+            {/* Settings Panel (shared mobile+desktop) */}
             {showSettings && (
-               <div className="mt-4 space-y-3 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800/50">
+               <div className="mt-3 md:mt-4 space-y-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3 md:p-4 dark:border-neutral-700 dark:bg-neutral-800/50">
                   {/* Necessary */}
                   <div className="flex items-center justify-between">
                      <div>
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        <p className="text-xs md:text-sm font-medium text-neutral-900 dark:text-neutral-100">
                            Zorunlu Çerezler
                         </p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">
                            Oturum, kimlik doğrulama, CSRF koruması
                         </p>
                      </div>
@@ -152,10 +185,10 @@ export default function CookieConsent() {
                   {/* Analytics */}
                   <div className="flex items-center justify-between">
                      <div>
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        <p className="text-xs md:text-sm font-medium text-neutral-900 dark:text-neutral-100">
                            Analitik Çerezler
                         </p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">
                            Google Analytics, site trafik analizi
                         </p>
                      </div>
@@ -178,10 +211,10 @@ export default function CookieConsent() {
                   {/* Marketing */}
                   <div className="flex items-center justify-between">
                      <div>
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        <p className="text-xs md:text-sm font-medium text-neutral-900 dark:text-neutral-100">
                            Pazarlama Çerezleri
                         </p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">
                            Reklam, yeniden pazarlama, hedefleme
                         </p>
                      </div>
@@ -203,15 +236,15 @@ export default function CookieConsent() {
 
                   <button
                      onClick={saveCustom}
-                     className="mt-2 w-full rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
+                     className="mt-2 w-full rounded-lg bg-orange-500 px-4 py-2 text-xs md:text-sm font-semibold text-white transition-colors hover:bg-orange-600"
                   >
                      Tercihleri Kaydet
                   </button>
                </div>
             )}
 
-            {/* Buttons */}
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            {/* Buttons (desktop only -- mobile has inline buttons above) */}
+            <div className="mt-4 hidden md:flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
                <button
                   onClick={() => setShowSettings(!showSettings)}
                   className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 px-4 py-2 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800"

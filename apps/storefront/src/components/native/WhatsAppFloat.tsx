@@ -83,7 +83,7 @@ export default function WhatsAppFloat() {
          `}</style>
 
          <div
-            className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 transition-opacity duration-500 ${
+            className={`fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex items-center gap-3 transition-opacity duration-500 ${
                mounted ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
          >

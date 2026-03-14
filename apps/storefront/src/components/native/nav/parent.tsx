@@ -31,12 +31,12 @@ export default function Header() {
          <div className="flex h-14 items-center">
             <MainNav />
             <MobileNav />
-            <div className="flex flex-1 items-center gap-2 justify-end">
+            <div className="flex flex-1 items-center gap-1 md:gap-2 justify-end">
                <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setSearchOpen(true)}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="h-8 w-8 md:h-9 md:w-9 text-muted-foreground hover:text-foreground"
                >
                   <SearchIcon className="h-4 w-4" />
                   <span className="sr-only">Ara</span>
@@ -44,7 +44,9 @@ export default function Header() {
                <CommandMenu open={searchOpen} onOpenChange={setSearchOpen} />
                <CartNav />
                {authenticated && <NotificationBell />}
-               <ThemeToggle />
+               <div className="hidden md:flex">
+                  <ThemeToggle />
+               </div>
                <div className="flex-shrink-0">
                   {authenticated ? <UserNav /> : <LoginButton />}
                </div>
