@@ -323,43 +323,7 @@ export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
             </>
          )}
 
-         {/* ── Non-custom toggle (for READY products with customization option) */}
-         {!isCustomProduct && (
-            <>
-               <div className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-2">
-                        <WrenchIcon className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Kişiselleştirme</span>
-                        <Badge variant="outline" className="text-xs">Sipariş notunuzla</Badge>
-                     </div>
-                     <button
-                        onClick={() => setIsCustomized((v) => !v)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isCustomized ? 'bg-foreground' : 'bg-neutral-300 dark:bg-neutral-600'
-                           }`}
-                        aria-pressed={isCustomized}
-                     >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isCustomized ? 'translate-x-6' : 'translate-x-1'
-                           }`} />
-                     </button>
-                  </div>
-                  {isCustomized && (
-                     <div className="mt-3 rounded-lg border border-dashed p-4 space-y-3">
-                        <p className="text-xs text-muted-foreground">
-                           Sipariş notunuzu ödeme sırasında iletebilirsiniz.
-                        </p>
-                        <div className="flex items-start gap-2 rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2.5 text-destructive">
-                           <AlertTriangleIcon className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                           <span className="text-xs font-medium">
-                              Kişiye Özel Ürünlerde İade Yoktur.
-                           </span>
-                        </div>
-                     </div>
-                  )}
-               </div>
-               <Separator />
-            </>
-         )}
+         {/* Kişiselleştirme sadece CUSTOM ürünlerde gösterilir */}
 
          {/* ── Production Time & Shipping ─────────────── */}
          <div className="px-6 py-4 grid grid-cols-2 gap-4">

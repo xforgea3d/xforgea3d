@@ -7,6 +7,7 @@ import {
    CommandGroup,
    CommandInput,
    CommandItem,
+   CommandList,
 } from '@/components/ui/command'
 import { Label } from '@/components/ui/label'
 import {
@@ -108,48 +109,50 @@ export function CategoriesCombobox({ categories, initialCategory }) {
          <PopoverContent className="w-full p-0">
             <Command>
                <CommandInput placeholder="Kategori ara..." />
-               <CommandEmpty>Kategori bulunamadı.</CommandEmpty>
-               <CommandGroup>
-                  {categories.map((category) => (
-                     <CommandItem
-                        key={category.title}
-                        value={category.title}
-                        onSelect={(currentValue) => {
-                           const current = new URLSearchParams(
-                              Array.from(searchParams.entries())
-                           )
+               <CommandList>
+                  <CommandEmpty>Kategori bulunamadı.</CommandEmpty>
+                  <CommandGroup>
+                     {categories.map((category) => (
+                        <CommandItem
+                           key={category.title}
+                           value={category.title}
+                           onSelect={(currentValue) => {
+                              const current = new URLSearchParams(
+                                 Array.from(searchParams.entries())
+                              )
 
-                           if (currentValue === value) {
-                              current.delete('category')
-                              setValue('')
-                           } else {
-                              current.set('category', currentValue)
-                              setValue(currentValue)
-                           }
+                              if (currentValue === value) {
+                                 current.delete('category')
+                                 setValue('')
+                              } else {
+                                 current.set('category', currentValue)
+                                 setValue(currentValue)
+                              }
 
-                           const search = current.toString()
-                           const query = search ? `?${search}` : ''
+                              const search = current.toString()
+                              const query = search ? `?${search}` : ''
 
-                           router.replace(`${pathname}${query}`, {
-                              scroll: false,
-                           })
+                              router.replace(`${pathname}${query}`, {
+                                 scroll: false,
+                              })
 
-                           setOpen(false)
-                        }}
-                        className="cursor-pointer py-2"
-                     >
-                        <Check
-                           className={cn(
-                              'mr-2 h-4 w-4 text-emerald-500',
-                              value === category.title
-                                 ? 'opacity-100'
-                                 : 'opacity-0'
-                           )}
-                        />
-                        {category.title}
-                     </CommandItem>
-                  ))}
-               </CommandGroup>
+                              setOpen(false)
+                           }}
+                           className="cursor-pointer py-2"
+                        >
+                           <Check
+                              className={cn(
+                                 'mr-2 h-4 w-4 text-emerald-500',
+                                 value === category.title
+                                    ? 'opacity-100'
+                                    : 'opacity-0'
+                              )}
+                           />
+                           {category.title}
+                        </CommandItem>
+                     ))}
+                  </CommandGroup>
+               </CommandList>
             </Command>
          </PopoverContent>
       </Popover>
@@ -190,48 +193,50 @@ export function BrandCombobox({ brands, initialBrand }) {
          <PopoverContent className="w-full p-0">
             <Command>
                <CommandInput placeholder="Marka ara..." />
-               <CommandEmpty>Marka bulunamadı.</CommandEmpty>
-               <CommandGroup>
-                  {brands.map((brand) => (
-                     <CommandItem
-                        key={brand.title}
-                        value={brand.title}
-                        onSelect={(currentValue) => {
-                           const current = new URLSearchParams(
-                              Array.from(searchParams.entries())
-                           )
+               <CommandList>
+                  <CommandEmpty>Marka bulunamadı.</CommandEmpty>
+                  <CommandGroup>
+                     {brands.map((brand) => (
+                        <CommandItem
+                           key={brand.title}
+                           value={brand.title}
+                           onSelect={(currentValue) => {
+                              const current = new URLSearchParams(
+                                 Array.from(searchParams.entries())
+                              )
 
-                           if (currentValue === value) {
-                              current.delete('brand')
-                              setValue('')
-                           } else {
-                              current.set('brand', currentValue)
-                              setValue(currentValue)
-                           }
+                              if (currentValue === value) {
+                                 current.delete('brand')
+                                 setValue('')
+                              } else {
+                                 current.set('brand', currentValue)
+                                 setValue(currentValue)
+                              }
 
-                           const search = current.toString()
-                           const query = search ? `?${search}` : ''
+                              const search = current.toString()
+                              const query = search ? `?${search}` : ''
 
-                           router.replace(`${pathname}${query}`, {
-                              scroll: false,
-                           })
+                              router.replace(`${pathname}${query}`, {
+                                 scroll: false,
+                              })
 
-                           setOpen(false)
-                        }}
-                        className="cursor-pointer py-2"
-                     >
-                        <Check
-                           className={cn(
-                              'mr-2 h-4 w-4 text-emerald-500',
-                              value === brand.title
-                                 ? 'opacity-100'
-                                 : 'opacity-0'
-                           )}
-                        />
-                        {brand.title}
-                     </CommandItem>
-                  ))}
-               </CommandGroup>
+                              setOpen(false)
+                           }}
+                           className="cursor-pointer py-2"
+                        >
+                           <Check
+                              className={cn(
+                                 'mr-2 h-4 w-4 text-emerald-500',
+                                 value === brand.title
+                                    ? 'opacity-100'
+                                    : 'opacity-0'
+                              )}
+                           />
+                           {brand.title}
+                        </CommandItem>
+                     ))}
+                  </CommandGroup>
+               </CommandList>
             </Command>
          </PopoverContent>
       </Popover>

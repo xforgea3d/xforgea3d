@@ -1,9 +1,5 @@
 export const dynamic = 'force-dynamic'
 
-import {
-   BlogPostGrid,
-   BlogPostSkeletonGrid,
-} from '@/components/native/BlogCard'
 import Carousel from '@/components/native/Carousel'
 import Hero from '@/components/native/Hero'
 import { ProductSkeletonGrid } from '@/components/native/Product'
@@ -42,15 +38,11 @@ const AnimatedCounter = nextDynamic(
    () => import('@/components/native/AnimatedCounter').then(m => ({ default: m.AnimatedCounter })),
    { ssr: false }
 )
-const NewsletterSection = nextDynamic(
-   () => import('@/components/native/NewsletterSection'),
-   { ssr: false }
-)
 
 export default async function Index() {
-   let featuredProducts: any[] = [], blogs: any[] = [], banners: any[] = [], carBrands: any[] = []
+   let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = []
    try {
-      ;[featuredProducts, blogs, banners, carBrands] = await Promise.all([
+      ;[featuredProducts, banners, carBrands] = await Promise.all([
          prisma.product.findMany({
             where: { isAvailable: true, isFeatured: true },
             select: {
@@ -61,11 +53,6 @@ export default async function Index() {
             },
             take: 8,
             orderBy: { createdAt: 'desc' },
-         }),
-         prisma.blogPost.findMany({
-            where: { status: 'published' },
-            take: 3,
-            orderBy: { published_at: 'desc' },
          }),
          prisma.banner.findMany({
             orderBy: { createdAt: 'desc' },
@@ -427,24 +414,8 @@ export default async function Index() {
                   </div>
                </div>
 
-               {/* Newsletter */}
-               <NewsletterSection />
+               {/* Newsletter footer'da mevcut */}
             </div>
-         </section>
-
-         {/* ── 10. GÜNDEMDEN (Blog) ──────────────────────────────── */}
-         <section className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem] py-12 bg-background">
-            <div className="mb-6">
-               <h2 className="text-3xl font-bold tracking-tight">Gündemden</h2>
-               <p className="text-sm text-muted-foreground mt-1">
-                  3D baskı dünyasından haberler ve ilham veren içerikler.
-               </p>
-            </div>
-            {isVariableValid(blogs) ? (
-               <BlogPostGrid blogs={blogs} />
-            ) : (
-               <BlogPostSkeletonGrid />
-            )}
          </section>
 
       </div>
