@@ -13,8 +13,20 @@ import { ProductColumn } from './components/table'
 
 export default async function ProductsPage() {
    let products: any[] = []
+   let allBrands: { id: string; title: string }[] = []
+   try {
+      allBrands = await prisma.brand.findMany({
+         select: { id: true, title: true },
+         orderBy: { title: 'asc' },
+      })
+   } catch (error) {
+      console.warn('[ProductsPage] Failed to fetch brands:', error)
+   }
    try {
       products = await prisma.product.findMany({
+         where: {
+            id: { not: 'quote-request-product' },
+         },
          select: {
             id: true,
             title: true,
@@ -61,7 +73,7 @@ export default async function ProductsPage() {
             </Link>
          </div>
          <Separator />
-         <ProductsTable data={formattedProducts} />
+         <ProductsTable data={formattedProducts} brands={allBrands} />
       </div>
    )
 }

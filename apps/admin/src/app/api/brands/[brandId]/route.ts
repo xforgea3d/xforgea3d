@@ -55,17 +55,17 @@ export async function PATCH(
       const body = await req.json()
       const { title, description, logo } = body
 
-      if (!title && !description && !logo) {
-         return new NextResponse('At least one field is required', { status: 400 })
-      }
+      // Build update data, treating empty strings as valid values (clearing a field)
+      const data: Record<string, any> = {}
+      if (title !== undefined && title !== '') data.title = title
+      if (description !== undefined) data.description = description || null
+      if (logo !== undefined) data.logo = logo || null
 
+      // If title was sent as empty but is the only field, keep existing title
+      // At minimum we need the brand to exist, so just do a touch-update
       const updatedBrand = await prisma.brand.update({
          where: { id: params.brandId },
-         data: {
-            ...(title !== undefined && { title }),
-            ...(description !== undefined && { description }),
-            ...(logo !== undefined && { logo }),
-         },
+         data,
       })
 
       revalidatePath('/brands')
@@ -73,8 +73,9 @@ export async function PATCH(
       await revalidateAllStorefront()
 
       return NextResponse.json(updatedBrand)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[BRAND_PATCH]', error)
-      return new NextResponse('Internal error', { status: 500 })
+      const message = error?.message || 'Internal error'
+      return new NextResponse(message, { status: 500 })
    }
 }

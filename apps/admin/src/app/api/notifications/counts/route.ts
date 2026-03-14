@@ -1,17 +1,13 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
    try {
-      const [pendingOrders, shippedWithoutTracking, pendingQuotes, pendingReturns, unreadErrors] = await Promise.all([
+      const [pendingOrders, pendingQuotes, pendingReturns, unreadErrors] = await Promise.all([
          prisma.order.count({
             where: { status: 'OnayBekleniyor' },
-         }),
-         prisma.order.count({
-            where: {
-               status: 'Shipped',
-               trackingNumber: null,
-            },
          }),
          prisma.quoteRequest.count({
             where: { status: 'Pending' },
@@ -25,7 +21,7 @@ export async function GET() {
       ])
 
       return NextResponse.json({
-         orders: pendingOrders + shippedWithoutTracking,
+         orders: pendingOrders,
          quotes: pendingQuotes,
          returns: pendingReturns,
          errors: unreadErrors,

@@ -32,6 +32,14 @@ export default async function OrdersPage() {
    let orders: any[] = []
    try {
       orders = await prisma.order.findMany({
+         where: {
+            // Hide unpaid orders that are still waiting for payment redirect
+            // (OnayBekleniyor + isPaid=false means user hasn't completed payment yet)
+            NOT: {
+               status: 'OnayBekleniyor',
+               isPaid: false,
+            },
+         },
          include: {
             orderItems: {
                include: {

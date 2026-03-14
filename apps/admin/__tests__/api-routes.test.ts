@@ -657,7 +657,7 @@ describe('Brand API Routes', () => {
          expect(res.status).toBe(200)
       })
 
-      it('should return 400 when no fields are provided', async () => {
+      it('should return 200 when no fields are provided (no-op update)', async () => {
          const { PATCH } = await import('@admin/app/api/brands/[brandId]/route')
 
          const res = await PATCH(
@@ -668,7 +668,7 @@ describe('Brand API Routes', () => {
             { params: { brandId: 'b1' } }
          )
 
-         expect(res.status).toBe(400)
+         expect(res.status).toBe(200)
       })
    })
 

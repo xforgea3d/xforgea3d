@@ -186,8 +186,8 @@ export default function CheckoutPage() {
 
          const order = await res.json()
          await refreshCart()
-         toast.success(`Sipariş #${order.number} başarıyla oluşturuldu!`)
-         router.push(`/profile/orders/${order.id}`)
+         toast.success('Ödeme sayfasına yönlendiriliyorsunuz...')
+         router.push(`/payment/${order.id}`)
       } catch (err: any) {
          const msg = err.message || ''
          // Parse specific error messages from API and show user-friendly Turkish messages
@@ -488,7 +488,7 @@ export default function CheckoutPage() {
                         {loading ? (
                            <><Loader2 className="h-4 w-4 animate-spin mr-2" /> İşleniyor...</>
                         ) : (
-                           'Siparişi Onayla'
+                           'Siparişi Onayla ve Öde'
                         )}
                      </Button>
                   </CardFooter>

@@ -17,7 +17,7 @@ export function NotificationBadges() {
 
    useEffect(() => {
       const fetchCounts = () => {
-         fetch('/api/notifications/counts')
+         fetch('/api/notifications/counts?t=' + Date.now(), { cache: 'no-store' })
             .then(r => {
                if (!r.ok) throw new Error('Failed to fetch')
                return r.json()

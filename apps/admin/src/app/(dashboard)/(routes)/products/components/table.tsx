@@ -13,12 +13,18 @@ import { AlertModal } from '@/components/modals/alert-modal'
 
 interface ProductsTableProps {
    data: ProductColumn[]
+   brands: { id: string; title: string }[]
 }
 
-export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
+export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) => {
    const router = useRouter()
    const [deleteId, setDeleteId] = useState<string | null>(null)
    const [loading, setLoading] = useState(false)
+
+   // Bulk selection state
+   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+   const [bulkMoveOpen, setBulkMoveOpen] = useState(false)
 
    // Filter states
    const [search, setSearch] = useState('')
@@ -32,7 +38,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
       return unique
    }, [data])
 
-   const brands = useMemo(() => {
+   const brandNames = useMemo(() => {
       const unique = [...new Set(data.map((p) => p.brand))].filter((b) => b && b !== '-').sort()
       return unique
    }, [data])
@@ -40,25 +46,52 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
    // Filtered data
    const filteredData = useMemo(() => {
       return data.filter((item) => {
-         // Search filter
          if (search && !item.title.toLowerCase().includes(search.toLowerCase())) {
             return false
          }
-         // Category filter
          if (categoryFilter && item.category !== categoryFilter) {
             return false
          }
-         // Brand filter
          if (brandFilter && item.brand !== brandFilter) {
             return false
          }
-         // Availability filter
          if (availabilityFilter === 'active' && !item.isAvailable) return false
          if (availabilityFilter === 'passive' && item.isAvailable) return false
-
          return true
       })
    }, [data, search, categoryFilter, brandFilter, availabilityFilter])
+
+   // Filtered IDs for "select all" within current filter
+   const filteredIds = useMemo(() => new Set(filteredData.map((p) => p.id)), [filteredData])
+
+   const toggleSelect = (id: string) => {
+      setSelectedIds((prev) => {
+         const next = new Set(prev)
+         if (next.has(id)) next.delete(id)
+         else next.add(id)
+         return next
+      })
+   }
+
+   const selectAll = () => {
+      setSelectedIds((prev) => {
+         const next = new Set(prev)
+         filteredIds.forEach((id) => next.add(id))
+         return next
+      })
+   }
+
+   const clearSelection = () => {
+      setSelectedIds(new Set())
+   }
+
+   // Count selected items that are visible in current filter
+   const visibleSelectedCount = useMemo(
+      () => [...selectedIds].filter((id) => filteredIds.has(id)).length,
+      [selectedIds, filteredIds]
+   )
+
+   const allVisibleSelected = filteredData.length > 0 && filteredData.every((p) => selectedIds.has(p.id))
 
    const onDelete = async () => {
       if (!deleteId) return
@@ -76,7 +109,83 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
       }
    }
 
+   const onBulkDelete = async () => {
+      const ids = [...selectedIds]
+      if (ids.length === 0) return
+      try {
+         setLoading(true)
+         const res = await fetch('/api/products/bulk-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids }),
+         })
+         if (!res.ok) throw new Error(await res.text())
+         toast.success(`${ids.length} ürün silindi.`)
+         setSelectedIds(new Set())
+         router.refresh()
+      } catch (error: any) {
+         toast.error('Toplu silme başarısız:' + (error?.message || ''))
+      } finally {
+         setLoading(false)
+         setBulkDeleteOpen(false)
+      }
+   }
+
+   const onBulkMove = async (brandId: string) => {
+      const ids = [...selectedIds]
+      if (ids.length === 0) return
+      try {
+         setLoading(true)
+         const res = await fetch('/api/products/bulk-move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids, brandId }),
+         })
+         if (!res.ok) throw new Error(await res.text())
+         const brand = brands.find((b) => b.id === brandId)
+         toast.success(`${ids.length} ürün "${brand?.title}" koleksiyonuna taşındı.`)
+         setSelectedIds(new Set())
+         router.refresh()
+      } catch (error: any) {
+         toast.error('Taşıma başarısız:' + (error?.message || ''))
+      } finally {
+         setLoading(false)
+         setBulkMoveOpen(false)
+      }
+   }
+
    const columns: ColumnDef<ProductColumn>[] = [
+      {
+         id: 'select',
+         header: () => (
+            <input
+               type="checkbox"
+               checked={allVisibleSelected}
+               onChange={() => {
+                  if (allVisibleSelected) {
+                     // Deselect all visible
+                     setSelectedIds((prev) => {
+                        const next = new Set(prev)
+                        filteredIds.forEach((id) => next.delete(id))
+                        return next
+                     })
+                  } else {
+                     selectAll()
+                  }
+               }}
+               className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+            />
+         ),
+         cell: ({ row }) => (
+            <input
+               type="checkbox"
+               checked={selectedIds.has(row.original.id)}
+               onChange={() => toggleSelect(row.original.id)}
+               className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+            />
+         ),
+         enableSorting: false,
+      },
       {
          accessorKey: 'image',
          header: '',
@@ -153,12 +262,68 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
 
    return (
       <>
+         {/* Single delete modal */}
          <AlertModal
             isOpen={!!deleteId}
             onClose={() => setDeleteId(null)}
             onConfirm={onDelete}
             loading={loading}
          />
+
+         {/* Bulk delete modal */}
+         <AlertModal
+            isOpen={bulkDeleteOpen}
+            onClose={() => setBulkDeleteOpen(false)}
+            onConfirm={onBulkDelete}
+            loading={loading}
+         />
+
+         {/* Bulk Action Bar */}
+         {selectedIds.size > 0 && (
+            <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-muted/50 border rounded-lg">
+               <span className="text-sm font-medium">
+                  {selectedIds.size} ürün seçildi
+               </span>
+
+               <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => setBulkDeleteOpen(true)}
+                  disabled={loading}
+               >
+                  <Trash2Icon className="h-4 w-4 mr-1" />
+                  Toplu Sil
+               </Button>
+
+               {/* Bulk move dropdown */}
+               <div className="relative">
+                  <select
+                     value=""
+                     onChange={(e) => {
+                        if (e.target.value) onBulkMove(e.target.value)
+                     }}
+                     disabled={loading}
+                     className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                     <option value="">Koleksiyona Taşı...</option>
+                     {brands.map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                           {brand.title}
+                        </option>
+                     ))}
+                  </select>
+               </div>
+
+               <div className="ml-auto flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={selectAll}>
+                     Tümünü Seç
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={clearSelection}>
+                     Seçimi Temizle
+                  </Button>
+               </div>
+            </div>
+         )}
 
          {/* Filter Controls */}
          <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -194,7 +359,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
                <option value="">Tüm Koleksiyonlar</option>
-               {brands.map((brand) => (
+               {brandNames.map((brand) => (
                   <option key={brand} value={brand}>
                      {brand}
                   </option>
