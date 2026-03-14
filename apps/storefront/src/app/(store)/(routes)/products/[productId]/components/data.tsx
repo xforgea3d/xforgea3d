@@ -20,6 +20,7 @@ import {
    ChevronDownIcon,
    ChevronUpIcon,
    ClockIcon,
+   CreditCardIcon,
    Layers3Icon,
    LinkIcon,
    LockIcon,
@@ -545,6 +546,50 @@ export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
                      </div>
                   </div>
                ),
+            },
+            {
+               key: 'taksit',
+               icon: <CreditCardIcon className="h-4 w-4 text-muted-foreground" />,
+               title: 'Taksit Seçenekleri',
+               content: (() => {
+                  const installmentPrice = finalPrice
+                  const installments = [3, 6, 9, 12]
+                  return (
+                     <div className="space-y-3 text-sm">
+                        <div className="overflow-hidden rounded-lg border">
+                           <table className="w-full text-sm">
+                              <thead>
+                                 <tr className="bg-muted/50">
+                                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">Taksit Sayısı</th>
+                                    <th className="text-right px-3 py-2 font-medium text-muted-foreground">Aylık Tutar</th>
+                                    <th className="text-right px-3 py-2 font-medium text-muted-foreground">Toplam</th>
+                                 </tr>
+                              </thead>
+                              <tbody className="divide-y">
+                                 <tr>
+                                    <td className="px-3 py-2 font-medium">Tek Çekim</td>
+                                    <td className="px-3 py-2 text-right">{installmentPrice.toFixed(2)} ₺</td>
+                                    <td className="px-3 py-2 text-right font-semibold">{installmentPrice.toFixed(2)} ₺</td>
+                                 </tr>
+                                 {installments.map((count) => {
+                                    const monthly = installmentPrice / count
+                                    return (
+                                       <tr key={count}>
+                                          <td className="px-3 py-2 font-medium">{count} Taksit</td>
+                                          <td className="px-3 py-2 text-right">{monthly.toFixed(2)} ₺</td>
+                                          <td className="px-3 py-2 text-right font-semibold">{installmentPrice.toFixed(2)} ₺</td>
+                                       </tr>
+                                    )
+                                 })}
+                              </tbody>
+                           </table>
+                        </div>
+                        <p className="text-xs text-muted-foreground italic">
+                           * Taksit seçenekleri bankanıza göre değişiklik gösterebilir. Vade farkı uygulanmamaktadır.
+                        </p>
+                     </div>
+                  )
+               })(),
             },
          ].map(({ key, icon, title, content }) => (
             <div key={key}>

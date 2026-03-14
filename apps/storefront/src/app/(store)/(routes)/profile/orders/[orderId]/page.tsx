@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
 import { cn } from '@/lib/utils'
-import { AlertCircle, CheckCircle, Clock, Copy, CreditCard, ExternalLink, Loader2, MapPin, Package, Printer, RotateCcw, Send, Truck, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Clock, Copy, CreditCard, ExternalLink, Loader2, MapPin, Package, Printer, RotateCcw, Send, Star, Truck, XCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -551,6 +551,15 @@ export default function OrderDetailPage({ params }: { params: { orderId: string 
                            <div className="flex-1 min-w-0">
                               <p className="font-medium truncate">{item.product?.title || 'Ürün'}</p>
                               <p className="text-sm text-muted-foreground">{item.count} adet</p>
+                              {order.status === 'Delivered' && item.product?.id && (
+                                 <a
+                                    href={`/products/${item.product.id}#reviews`}
+                                    className="inline-flex items-center gap-1.5 mt-1 text-xs font-medium text-orange-500 border border-orange-500 rounded-md px-2.5 py-1 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors"
+                                 >
+                                    <Star size={12} className="fill-orange-500" />
+                                    Değerlendir
+                                 </a>
+                              )}
                            </div>
                            <div className="text-right">
                               <p className="font-semibold">{(item.price * item.count).toFixed(2)} ₺</p>

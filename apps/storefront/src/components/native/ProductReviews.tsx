@@ -2,7 +2,7 @@
 
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
-import { Star } from 'lucide-react'
+import { Camera, ImageIcon, Star, X, ZoomIn } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -11,6 +11,7 @@ interface Review {
    id: string
    text: string
    rating: number
+   images?: string[]
    createdAt: string
    user: { id: string; name: string | null }
 }
@@ -70,6 +71,122 @@ function UserAvatar({ name }: { name: string | null }) {
    )
 }
 
+// ─── Lightbox ────────────────────────────────────────────────────
+function Lightbox({
+   images,
+   initialIndex,
+   onClose,
+}: {
+   images: string[]
+   initialIndex: number
+   onClose: () => void
+}) {
+   const [currentIndex, setCurrentIndex] = useState(initialIndex)
+
+   useEffect(() => {
+      function handleKey(e: KeyboardEvent) {
+         if (e.key === 'Escape') onClose()
+         if (e.key === 'ArrowLeft') setCurrentIndex((p) => (p > 0 ? p - 1 : images.length - 1))
+         if (e.key === 'ArrowRight') setCurrentIndex((p) => (p < images.length - 1 ? p + 1 : 0))
+      }
+      window.addEventListener('keydown', handleKey)
+      return () => window.removeEventListener('keydown', handleKey)
+   }, [images.length, onClose])
+
+   return (
+      <div
+         className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+         onClick={onClose}
+      >
+         <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-white hover:text-neutral-300 transition-colors z-50"
+         >
+            <X size={28} />
+         </button>
+         <div
+            className="relative max-w-3xl max-h-[80vh] w-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+         >
+            {images.length > 1 && (
+               <>
+                  <button
+                     onClick={() => setCurrentIndex((p) => (p > 0 ? p - 1 : images.length - 1))}
+                     className="absolute left-2 z-10 bg-black/50 text-white rounded-full h-10 w-10 flex items-center justify-center hover:bg-black/70 transition-colors"
+                  >
+                     &larr;
+                  </button>
+                  <button
+                     onClick={() => setCurrentIndex((p) => (p < images.length - 1 ? p + 1 : 0))}
+                     className="absolute right-2 z-10 bg-black/50 text-white rounded-full h-10 w-10 flex items-center justify-center hover:bg-black/70 transition-colors"
+                  >
+                     &rarr;
+                  </button>
+               </>
+            )}
+            <img
+               src={images[currentIndex]}
+               alt={`Değerlendirme görseli ${currentIndex + 1}`}
+               className="max-h-[80vh] max-w-full object-contain rounded-lg"
+            />
+            {images.length > 1 && (
+               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
+                  {currentIndex + 1} / {images.length}
+               </div>
+            )}
+         </div>
+      </div>
+   )
+}
+
+// ─── Review Images Display ───────────────────────────────────────
+function ReviewImages({ images }: { images: string[] }) {
+   const [lightboxOpen, setLightboxOpen] = useState(false)
+   const [lightboxIndex, setLightboxIndex] = useState(0)
+
+   if (!images || images.length === 0) return null
+
+   return (
+      <>
+         <div className="flex items-center gap-2 flex-wrap">
+            {images.map((img, idx) => (
+               <button
+                  key={idx}
+                  onClick={() => {
+                     setLightboxIndex(idx)
+                     setLightboxOpen(true)
+                  }}
+                  className="relative h-16 w-16 rounded-lg overflow-hidden border hover:border-orange-500 transition-colors group"
+               >
+                  <img
+                     src={img}
+                     alt={`Değerlendirme görseli ${idx + 1}`}
+                     className="absolute inset-0 h-full w-full object-cover"
+                     loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                     <ZoomIn size={14} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+               </button>
+            ))}
+            {images.length > 1 && (
+               <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <ImageIcon size={12} />
+                  {images.length} foto
+               </span>
+            )}
+         </div>
+         {lightboxOpen && (
+            <Lightbox
+               images={images}
+               initialIndex={lightboxIndex}
+               onClose={() => setLightboxOpen(false)}
+            />
+         )}
+      </>
+   )
+}
+
 // ─── Review Form ─────────────────────────────────────────────────
 function ReviewForm({
    productId,
@@ -84,6 +201,35 @@ function ReviewForm({
    const [hoverRating, setHoverRating] = useState(0)
    const [text, setText] = useState('')
    const [submitting, setSubmitting] = useState(false)
+   const [uploadedImages, setUploadedImages] = useState<string[]>([])
+   const [uploading, setUploading] = useState(false)
+   const [canReview, setCanReview] = useState<boolean | null>(null)
+   const [canReviewReason, setCanReviewReason] = useState<string>('')
+   const [checkingCanReview, setCheckingCanReview] = useState(true)
+
+   useEffect(() => {
+      if (!authenticated) {
+         setCheckingCanReview(false)
+         return
+      }
+
+      async function checkPurchase() {
+         try {
+            const res = await fetch(`/api/products/${productId}/reviews?canReview=true`)
+            if (res.ok) {
+               const data = await res.json()
+               setCanReview(data.canReview)
+               setCanReviewReason(data.reason || '')
+            }
+         } catch {
+            // silently fail — show form anyway
+            setCanReview(true)
+         } finally {
+            setCheckingCanReview(false)
+         }
+      }
+      checkPurchase()
+   }, [authenticated, productId])
 
    if (!authenticated) {
       return (
@@ -99,6 +245,88 @@ function ReviewForm({
             </Link>
          </div>
       )
+   }
+
+   if (checkingCanReview) {
+      return (
+         <div className="rounded-xl border p-6 flex items-center justify-center">
+            <div className="h-5 w-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+         </div>
+      )
+   }
+
+   if (canReview === false) {
+      if (canReviewReason === 'already_reviewed') {
+         return (
+            <div className="rounded-xl border p-6 text-center space-y-2">
+               <p className="text-sm text-muted-foreground">
+                  Bu ürünü zaten değerlendirdiniz.
+               </p>
+            </div>
+         )
+      }
+      return (
+         <div className="rounded-xl border p-6 text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+               Bu ürünü değerlendirebilmek için satın almış olmanız gerekiyor.
+            </p>
+         </div>
+      )
+   }
+
+   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+      const files = e.target.files
+      if (!files || files.length === 0) return
+
+      const remaining = 5 - uploadedImages.length
+      if (remaining <= 0) {
+         toast.error('En fazla 5 görsel eklenebilir')
+         return
+      }
+
+      const filesToUpload = Array.from(files).slice(0, remaining)
+      setUploading(true)
+
+      try {
+         for (const file of filesToUpload) {
+            if (file.size > 5 * 1024 * 1024) {
+               toast.error(`${file.name} 5MB limitini aşıyor`)
+               continue
+            }
+
+            const formData = new FormData()
+            formData.append('file', file)
+
+            const res = await fetch('/api/files', {
+               method: 'POST',
+               headers: {
+                  ...(csrfToken && { 'x-csrf-token': csrfToken }),
+               },
+               body: formData,
+            })
+
+            if (!res.ok) {
+               const err = await res.json().catch(() => ({ error: 'Yükleme başarısız' }))
+               toast.error(err.error || 'Görsel yüklenemedi')
+               continue
+            }
+
+            const data = await res.json()
+            if (data.url) {
+               setUploadedImages((prev) => [...prev, data.url])
+            }
+         }
+      } catch {
+         toast.error('Görsel yüklenirken bir hata oluştu')
+      } finally {
+         setUploading(false)
+         // Reset file input
+         e.target.value = ''
+      }
+   }
+
+   function removeImage(index: number) {
+      setUploadedImages((prev) => prev.filter((_, i) => i !== index))
    }
 
    async function handleSubmit(e: React.FormEvent) {
@@ -120,7 +348,12 @@ function ReviewForm({
                'Content-Type': 'application/json',
                ...(csrfToken && { 'x-csrf-token': csrfToken }),
             },
-            body: JSON.stringify({ rating, text: text.trim(), csrfToken }),
+            body: JSON.stringify({
+               rating,
+               text: text.trim(),
+               images: uploadedImages,
+               csrfToken,
+            }),
          })
 
          if (!res.ok) {
@@ -132,6 +365,7 @@ function ReviewForm({
          onSuccess(review)
          setRating(0)
          setText('')
+         setUploadedImages([])
          toast.success('Değerlendirmeniz eklendi!')
       } catch (err: any) {
          toast.error(err?.message || 'Değerlendirme gönderilemedi')
@@ -182,10 +416,55 @@ function ReviewForm({
             className="w-full rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 resize-none transition-colors"
          />
 
+         {/* Image Upload */}
+         <div className="space-y-3">
+            {/* Preview thumbnails */}
+            {uploadedImages.length > 0 && (
+               <div className="flex items-center gap-2 flex-wrap">
+                  {uploadedImages.map((url, idx) => (
+                     <div key={idx} className="relative h-16 w-16 rounded-lg overflow-hidden border group">
+                        <img
+                           src={url}
+                           alt={`Yüklenen görsel ${idx + 1}`}
+                           className="absolute inset-0 h-full w-full object-cover"
+                        />
+                        <button
+                           type="button"
+                           onClick={() => removeImage(idx)}
+                           className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full h-5 w-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                           <X size={12} />
+                        </button>
+                     </div>
+                  ))}
+               </div>
+            )}
+
+            {/* Upload button */}
+            {uploadedImages.length < 5 && (
+               <label className="inline-flex items-center gap-2 cursor-pointer rounded-lg border border-dashed px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:border-orange-500 transition-colors">
+                  {uploading ? (
+                     <div className="h-4 w-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                     <Camera size={16} />
+                  )}
+                  {uploading ? 'Yükleniyor...' : `Fotoğraf Ekle (${uploadedImages.length}/5)`}
+                  <input
+                     type="file"
+                     accept="image/jpeg,image/png,image/webp,image/gif"
+                     multiple
+                     onChange={handleImageUpload}
+                     disabled={uploading}
+                     className="hidden"
+                  />
+               </label>
+            )}
+         </div>
+
          {/* Submit */}
          <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || uploading}
             className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
          >
             {submitting ? 'Gönderiliyor...' : 'Değerlendirmeyi Gönder'}
@@ -301,6 +580,8 @@ export default function ProductReviews({ productId }: { productId: string }) {
                         <p className="text-sm text-muted-foreground leading-relaxed">
                            {review.text}
                         </p>
+                        {/* Review Images */}
+                        <ReviewImages images={review.images || []} />
                      </div>
                   ))
                )}

@@ -167,6 +167,7 @@ model ProductReview {
   id     String @id @default(cuid())
   text   String
   rating Int
+  images String[] @default([])
 
   product   Product @relation(fields: [productId], references: [id])
   productId String

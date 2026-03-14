@@ -30,6 +30,11 @@ const FeaturedProductsCarousel = nextDynamic(
    { ssr: false }
 )
 
+const CountdownTimer = nextDynamic(
+   () => import('@/components/native/CountdownTimer'),
+   { ssr: false }
+)
+
 const RecentlyViewed = nextDynamic(
    () => import('@/components/native/RecentlyViewed'),
    { ssr: false }
@@ -84,6 +89,9 @@ async function fetchHomeData() {
 }
 
 export default async function Index() {
+   const campaignEndDate = process.env.CAMPAIGN_END_DATE ||
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+
    let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = []
    try {
       ;[featuredProducts, banners, carBrands] = await fetchHomeData()
@@ -107,6 +115,14 @@ export default async function Index() {
                   En çok tercih edilen 3D baskı ürünlerimiz.
                </p>
             </div>
+            {featuredProducts.some((p: any) => p.discount > 0) && (
+               <div className="mb-6 flex items-center justify-center rounded-xl border border-orange-200 dark:border-orange-800/40 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 dark:from-orange-950/20 dark:via-amber-950/10 dark:to-orange-950/20 px-4 py-4">
+                  <CountdownTimer
+                     endDate={campaignEndDate}
+                     title="Özel Fırsat! Kalan Süre:"
+                  />
+               </div>
+            )}
             {isVariableValid(featuredProducts) ? (
                <FeaturedProductsCarousel products={featuredProducts} />
             ) : (
