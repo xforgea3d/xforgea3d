@@ -27,7 +27,24 @@ import { cn, isVariableValid } from '@/lib/utils'
 import { slugify } from '@persepolis/slugify'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
+
+// ─── Session storage helpers for filter persistence ─────────────────────────
+const FILTER_STORAGE_KEY = 'xforgea3d_product_filters'
+
+function saveFiltersToSession(params: string) {
+   try {
+      sessionStorage.setItem(FILTER_STORAGE_KEY, params)
+   } catch {}
+}
+
+export function getFiltersFromSession(): string | null {
+   try {
+      return sessionStorage.getItem(FILTER_STORAGE_KEY)
+   } catch {
+      return null
+   }
+}
 
 export function SortBy({ initialData }) {
    const router = useRouter()
@@ -58,6 +75,7 @@ export function SortBy({ initialData }) {
             const search = current.toString()
             const query = search ? `?${search}` : ''
 
+            saveFiltersToSession(search)
             router.replace(`${pathname}${query}`, {
                scroll: false,
             })
@@ -106,8 +124,8 @@ export function CategoriesCombobox({ categories, initialCategory }) {
                <ChevronsUpDown className="ml-2 h-4 shrink-0 opacity-50" />
             </Button>
          </PopoverTrigger>
-         <PopoverContent className="w-full p-0">
-            <Command>
+         <PopoverContent className="w-[200px] p-0">
+            <Command shouldFilter={false}>
                <CommandInput placeholder="Kategori ara..." />
                <CommandList>
                   <CommandEmpty>Kategori bulunamadı.</CommandEmpty>
@@ -116,22 +134,24 @@ export function CategoriesCombobox({ categories, initialCategory }) {
                         <CommandItem
                            key={category.title}
                            value={category.title}
-                           onSelect={(currentValue) => {
+                           onSelect={() => {
+                              const selectedValue = category.title
                               const current = new URLSearchParams(
                                  Array.from(searchParams.entries())
                               )
 
-                              if (currentValue === value) {
+                              if (selectedValue === value) {
                                  current.delete('category')
                                  setValue('')
                               } else {
-                                 current.set('category', currentValue)
-                                 setValue(currentValue)
+                                 current.set('category', selectedValue)
+                                 setValue(selectedValue)
                               }
 
                               const search = current.toString()
                               const query = search ? `?${search}` : ''
 
+                              saveFiltersToSession(search)
                               router.replace(`${pathname}${query}`, {
                                  scroll: false,
                               })
@@ -190,8 +210,8 @@ export function BrandCombobox({ brands, initialBrand }) {
                <ChevronsUpDown className="ml-2 h-4 shrink-0 opacity-50" />
             </Button>
          </PopoverTrigger>
-         <PopoverContent className="w-full p-0">
-            <Command>
+         <PopoverContent className="w-[200px] p-0">
+            <Command shouldFilter={false}>
                <CommandInput placeholder="Marka ara..." />
                <CommandList>
                   <CommandEmpty>Marka bulunamadı.</CommandEmpty>
@@ -200,22 +220,24 @@ export function BrandCombobox({ brands, initialBrand }) {
                         <CommandItem
                            key={brand.title}
                            value={brand.title}
-                           onSelect={(currentValue) => {
+                           onSelect={() => {
+                              const selectedValue = brand.title
                               const current = new URLSearchParams(
                                  Array.from(searchParams.entries())
                               )
 
-                              if (currentValue === value) {
+                              if (selectedValue === value) {
                                  current.delete('brand')
                                  setValue('')
                               } else {
-                                 current.set('brand', currentValue)
-                                 setValue(currentValue)
+                                 current.set('brand', selectedValue)
+                                 setValue(selectedValue)
                               }
 
                               const search = current.toString()
                               const query = search ? `?${search}` : ''
 
+                              saveFiltersToSession(search)
                               router.replace(`${pathname}${query}`, {
                                  scroll: false,
                               })
@@ -272,6 +294,7 @@ export function AvailableToggle({ initialData }) {
                const search = current.toString()
                const query = search ? `?${search}` : ''
 
+               saveFiltersToSession(search)
                router.replace(`${pathname}${query}`, {
                   scroll: false,
                })

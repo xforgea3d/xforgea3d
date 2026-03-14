@@ -54,7 +54,7 @@ const DeleteAction = ({ id }: { id: string }) => {
          })
          if (!res.ok) throw new Error('Silme başarısız')
          toast.success('Kupon silindi.')
-         router.refresh()
+         window.location.reload()
       } catch {
          toast.error('Kupon silinemedi.')
       } finally {
@@ -74,6 +74,7 @@ const DeleteAction = ({ id }: { id: string }) => {
          <Button
             size="icon"
             variant="destructive"
+            disabled={loading}
             onClick={() => setOpen(true)}
          >
             <Trash className="h-4" />

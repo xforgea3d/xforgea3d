@@ -68,7 +68,7 @@ function MagnifierLens({
 }
 
 // ─── Main Carousel ─────────────────────────────────────────────────────────
-export default function Carousel({ images }: { images: string[] }) {
+export default function Carousel({ images, disableZoom = false }: { images: string[]; disableZoom?: boolean }) {
    const [emblaRef, emblaApi] = useEmblaCarousel(
       { loop: true, dragFree: false },
       [Autoplay({ delay: 5000, stopOnInteraction: true })]
@@ -130,7 +130,10 @@ export default function Carousel({ images }: { images: string[] }) {
                   {validImages.map((src, i) => (
                      <div
                         key={i}
-                        className="relative flex-[0_0_100%] h-[420px] bg-neutral-100 dark:bg-neutral-900 select-none"
+                        className={cn(
+                           "relative flex-[0_0_100%] bg-neutral-100 dark:bg-neutral-900 select-none",
+                           disableZoom ? "h-[400px] max-h-[400px]" : "h-[420px]"
+                        )}
                      >
                         <img
                            src={src}
@@ -160,10 +163,12 @@ export default function Carousel({ images }: { images: string[] }) {
                </div>
             </div>
 
-            {/* ── Hover Magnifier Lens — only on desktop ─────────────── */}
-            <div className="hidden md:block">
-               <MagnifierLens src={currentSrc} containerRef={containerRef} />
-            </div>
+            {/* ── Hover Magnifier Lens — only on desktop, disabled for banners ── */}
+            {!disableZoom && (
+               <div className="hidden md:block">
+                  <MagnifierLens src={currentSrc} containerRef={containerRef} />
+               </div>
+            )}
 
             {/* ── Prev / Next arrows ────────────────────────────────── */}
             {validImages.length > 1 && (
@@ -184,13 +189,15 @@ export default function Carousel({ images }: { images: string[] }) {
             )}
 
             {/* ── Click-to-open lightbox hint ───────────────────────── */}
-            <button
-               onClick={openLightbox}
-               className="absolute bottom-3 right-3 z-30 hidden md:flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur px-3 py-1.5 text-xs font-medium text-foreground shadow border border-border opacity-60 group-hover:opacity-100 transition-opacity"
-            >
-               <SearchIcon className="w-3.5 h-3.5" />
-               Büyüt
-            </button>
+            {!disableZoom && (
+               <button
+                  onClick={openLightbox}
+                  className="absolute bottom-3 right-3 z-30 hidden md:flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur px-3 py-1.5 text-xs font-medium text-foreground shadow border border-border opacity-60 group-hover:opacity-100 transition-opacity"
+               >
+                  <SearchIcon className="w-3.5 h-3.5" />
+                  Büyüt
+               </button>
+            )}
          </div>
 
          {/* ── Thumbnail strip ─────────────────────────────────────── */}

@@ -34,7 +34,7 @@ export const CategoriesClient: React.FC<CategoriesClientProps> = ({ data }) => {
          const res = await fetch(`/api/categories/${deleteId}`, { method: 'DELETE' })
          if (!res.ok) throw new Error('Silme başarısız')
          toast.success('Kategori silindi.')
-         router.refresh()
+         window.location.reload()
       } catch {
          toast.error('Kategori silinemedi. Önce bu kategoriyi kullanan ürünleri kaldırın.')
       } finally {
@@ -53,7 +53,7 @@ export const CategoriesClient: React.FC<CategoriesClientProps> = ({ data }) => {
          })
          if (!res.ok) throw new Error('Güncelleme başarısız')
          toast.success(currentValue ? 'Kategori gizlendi.' : 'Kategori görünür yapıldı.')
-         router.refresh()
+         window.location.reload()
       } catch {
          toast.error('Görünürlük güncellenemedi.')
       } finally {
@@ -112,6 +112,7 @@ export const CategoriesClient: React.FC<CategoriesClientProps> = ({ data }) => {
                   size="icon"
                   variant="outline"
                   className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                  disabled={loading}
                   onClick={() => setDeleteId(row.original.id)}
                >
                   <Trash2Icon className="h-4" />

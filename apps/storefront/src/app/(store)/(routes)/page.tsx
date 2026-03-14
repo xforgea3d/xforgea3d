@@ -186,7 +186,7 @@ export default async function Index() {
                   Yeni koleksiyonumuza göz atın, size ilham verecek ürünler sizi bekliyor.
                </p>
             </div>
-            <Carousel images={banners.map((obj) => obj.image)} />
+            <Carousel images={banners.map((obj) => obj.image)} disableZoom />
          </section>
          )}
 
@@ -311,7 +311,7 @@ export default async function Index() {
                                     src={firstModelImage}
                                     alt={`${brand.name} model`}
                                     className="absolute inset-0 h-full w-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
-                                    containerClassName="relative w-full aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-white"
+                                    containerClassName="relative w-full aspect-[16/10] rounded-xl overflow-hidden mb-3 bg-white"
                                  />
                               ) : (
                                  <div className="w-full aspect-[16/10] rounded-lg bg-white flex items-center justify-center mb-3">

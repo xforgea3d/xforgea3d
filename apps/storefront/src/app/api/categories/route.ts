@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
    try {
       const categories = await prisma.category.findMany({
+         where: { isVisible: true },
          orderBy: { title: 'asc' },
          select: {
             id: true,

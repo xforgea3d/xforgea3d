@@ -19,40 +19,44 @@ export async function POST(req: Request) {
          return new NextResponse('No valid product ids provided', { status: 400 })
       }
 
-      // Delete in a transaction, removing related records first
-      await prisma.$transaction(async (tx) => {
-         // Delete related cart items
-         await tx.cartItem.deleteMany({
-            where: { productId: { in: safeIds } },
-         })
-
-         // Delete related product reviews
-         await tx.productReview.deleteMany({
-            where: { productId: { in: safeIds } },
-         })
-
-         // Disconnect wishlist relations (many-to-many, just disconnect)
-         for (const id of safeIds) {
-            await tx.product.update({
-               where: { id },
-               data: {
-                  wishlists: { set: [] },
-                  categories: { set: [] },
-                  carModels: { set: [] },
-               },
+      // Delete in batches to avoid transaction timeout
+      const BATCH_SIZE = 10
+      for (let i = 0; i < safeIds.length; i += BATCH_SIZE) {
+         const batch = safeIds.slice(i, i + BATCH_SIZE)
+         await prisma.$transaction(async (tx) => {
+            // Delete related cart items
+            await tx.cartItem.deleteMany({
+               where: { productId: { in: batch } },
             })
-         }
 
-         // Delete order items
-         await tx.orderItem.deleteMany({
-            where: { productId: { in: safeIds } },
-         })
+            // Delete related product reviews
+            await tx.productReview.deleteMany({
+               where: { productId: { in: batch } },
+            })
 
-         // Delete the products
-         await tx.product.deleteMany({
-            where: { id: { in: safeIds } },
-         })
-      })
+            // Disconnect wishlist relations (many-to-many, just disconnect)
+            for (const id of batch) {
+               await tx.product.update({
+                  where: { id },
+                  data: {
+                     wishlists: { set: [] },
+                     categories: { set: [] },
+                     carModels: { set: [] },
+                  },
+               })
+            }
+
+            // Delete order items
+            await tx.orderItem.deleteMany({
+               where: { productId: { in: batch } },
+            })
+
+            // Delete the products
+            await tx.product.deleteMany({
+               where: { id: { in: batch } },
+            })
+         }, { timeout: 30000 })
+      }
 
       revalidatePath('/', 'layout')
       await revalidateAllStorefront()

@@ -129,7 +129,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             if (!res.ok) throw new Error(await res.text())
          }
          router.refresh()
-         router.push(`/products`)
+         window.location.href = '/products'
          toast.success(toastMessage)
       } catch (error: any) {
          toast.error('Bir hata oluştu: ' + (error?.message || ''))
@@ -149,7 +149,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
-         router.push(`/products`)
+         window.location.href = '/products'
          toast.success('Ürün silindi.')
       } catch (error: any) {
          toast.error('Bir hata oluştu.')

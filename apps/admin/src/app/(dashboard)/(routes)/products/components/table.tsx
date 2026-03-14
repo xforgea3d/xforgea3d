@@ -100,7 +100,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
          const res = await fetch(`/api/products/${deleteId}`, { method: 'DELETE' })
          if (!res.ok) throw new Error('Silme başarısız')
          toast.success('Ürün silindi.')
-         router.refresh()
+         window.location.reload()
       } catch {
          toast.error('Ürün silinemedi. Önce ilişkili siparişleri kontrol edin.')
       } finally {
@@ -122,7 +122,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
          if (!res.ok) throw new Error(await res.text())
          toast.success(`${ids.length} ürün silindi.`)
          setSelectedIds(new Set())
-         router.refresh()
+         window.location.reload()
       } catch (error: any) {
          toast.error('Toplu silme başarısız:' + (error?.message || ''))
       } finally {
@@ -145,7 +145,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
          const brand = brands.find((b) => b.id === brandId)
          toast.success(`${ids.length} ürün "${brand?.title}" koleksiyonuna taşındı.`)
          setSelectedIds(new Set())
-         router.refresh()
+         window.location.reload()
       } catch (error: any) {
          toast.error('Taşıma başarısız:' + (error?.message || ''))
       } finally {
@@ -251,6 +251,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
                   size="icon"
                   variant="outline"
                   className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                  disabled={loading}
                   onClick={() => setDeleteId(row.original.id)}
                >
                   <Trash2Icon className="h-4" />

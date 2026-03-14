@@ -28,23 +28,44 @@ export async function GET(req: Request) {
 
          if (!user) return new NextResponse('Unauthorized', { status: 401 })
 
-         profile = await prisma.profile.create({
-            data: {
-               id: userId,
-               email: user.email || '',
-               name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-               role: 'customer',
-            },
-            include: {
-               cart: {
-                  include: {
-                     items: { include: { product: true } },
-                  },
+         try {
+            profile = await prisma.profile.create({
+               data: {
+                  id: userId,
+                  email: user.email || '',
+                  name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                  role: 'customer',
                },
-               addresses: true,
-               wishlist: true,
-            },
-         })
+               include: {
+                  cart: {
+                     include: {
+                        items: { include: { product: true } },
+                     },
+                  },
+                  addresses: true,
+                  wishlist: true,
+               },
+            })
+         } catch (createError: any) {
+            // Handle race condition: profile might have been created between findUnique and create
+            if (createError?.code === 'P2002') {
+               profile = await prisma.profile.findUnique({
+                  where: { id: userId },
+                  include: {
+                     cart: {
+                        include: {
+                           items: { include: { product: true } },
+                        },
+                     },
+                     addresses: true,
+                     wishlist: true,
+                  },
+               })
+               if (!profile) throw createError
+            } else {
+               throw createError
+            }
+         }
       }
 
       return NextResponse.json({

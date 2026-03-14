@@ -311,13 +311,31 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
 
          if (error) {
             if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
-               setErrorMsg('Bu e-posta adresi zaten kullanımda.')
+               setErrorMsg('Bu e-posta adresi zaten kullanımda. Giriş yapmayı deneyin.')
+            } else if (error.message?.includes('Database error saving new user')) {
+               // Supabase auth schema issue — user may already exist in auth.users
+               // Try signing in directly; if the user was partially created this recovers the flow
+               const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+               if (signInData?.session) {
+                  setLoggedInCookie()
+                  setSuccessMsg('welcome')
+                  setTimeout(() => {
+                     const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'
+                     window.location.assign(target)
+                  }, 2000)
+                  return
+               }
+               setErrorMsg('Hesap oluşturulurken bir sorun oluştu. Lütfen farklı bir e-posta deneyin veya giriş yapmayı deneyin.')
+            } else if (error.message?.includes('rate limit') || error.message?.includes('too many')) {
+               setErrorMsg('Çok fazla deneme. Lütfen birkaç dakika bekleyip tekrar deneyin.')
+            } else if (error.message?.includes('password') && error.message?.includes('characters')) {
+               setErrorMsg('Şifre en az 6 karakter olmalıdır.')
             } else {
-               setErrorMsg(error.message)
+               setErrorMsg(error.message || 'Hesap oluşturulurken bir hata oluştu.')
             }
             console.error('SignUp Error:', error.message)
          } else if (data?.user?.identities?.length === 0) {
-            setErrorMsg('Bu e-posta adresi zaten kullanımda.')
+            setErrorMsg('Bu e-posta adresi zaten kullanımda. Giriş yapmayı deneyin.')
          } else if (data.session) {
             setLoggedInCookie()
             setSuccessMsg('welcome')
@@ -326,15 +344,22 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
                window.location.assign(target)
             }, 2000)
          } else {
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-            if (signInData?.session) {
-               setLoggedInCookie()
-               setSuccessMsg('welcome')
-               setTimeout(() => {
-                  const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'
-                  window.location.assign(target)
-               }, 2000)
-            } else {
+            // No session returned — try to sign in directly (email confirmation may be disabled)
+            try {
+               const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+               if (signInData?.session) {
+                  setLoggedInCookie()
+                  setSuccessMsg('welcome')
+                  setTimeout(() => {
+                     const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'
+                     window.location.assign(target)
+                  }, 2000)
+               } else if (signInError?.message?.includes('Email not confirmed')) {
+                  setSuccessMsg('Kayıt başarılı! Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın.')
+               } else {
+                  setSuccessMsg('Kayıt başarılı! Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın.')
+               }
+            } catch {
                setSuccessMsg('Kayıt başarılı! Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın.')
             }
          }

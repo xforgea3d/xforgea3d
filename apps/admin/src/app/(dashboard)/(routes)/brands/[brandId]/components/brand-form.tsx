@@ -74,7 +74,7 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
          })
          if (!res.ok) throw new Error(await res.text())
          router.refresh()
-         router.push(`/brands`)
+         window.location.href = '/brands'
          toast.success(toastMessage)
       } catch (error: any) {
          toast.error('Bir hata oluştu: ' + (error?.message || ''))
@@ -94,7 +94,7 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
          if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
-         router.push(`/brands`)
+         window.location.href = '/brands'
          toast.success('Koleksiyon silindi.')
       } catch (error: any) {
          toast.error(

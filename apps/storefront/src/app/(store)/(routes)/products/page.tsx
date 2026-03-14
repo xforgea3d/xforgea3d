@@ -15,6 +15,7 @@ import {
    CategoriesCombobox,
    SortBy,
 } from './components/options'
+import FilterRestorer from './components/FilterRestorer'
 
 const PAGE_SIZE = 12
 
@@ -45,7 +46,7 @@ export default async function Products({ searchParams }) {
    try {
       ;[brands, categories, products, totalCount] = await Promise.all([
          prisma.brand.findMany({ orderBy: { title: 'asc' } }),
-         prisma.category.findMany({ orderBy: { title: 'asc' } }),
+         prisma.category.findMany({ where: { isVisible: true }, orderBy: { title: 'asc' } }),
          prisma.product.findMany({
             where: whereClause,
             orderBy,
@@ -80,6 +81,7 @@ export default async function Products({ searchParams }) {
 
    return (
       <>
+         <FilterRestorer />
          <Heading
             title="Ürünler"
             description="Tüm 3D baskı ürünlerimize göz atın."

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
+import { Loader2 } from 'lucide-react'
 
 const statusOptions = [
    { value: 'Pending', label: 'Beklemede' },
@@ -62,7 +63,7 @@ export function ReturnForm({
          if (!res.ok) throw new Error('Guncelleme basarisiz')
 
          toast.success('Iade talebi guncellendi')
-         router.refresh()
+         window.location.reload()
       } catch (error) {
          toast.error('Bir hata olustu')
          console.error(error)
@@ -90,7 +91,7 @@ export function ReturnForm({
 
          toast.success('Durum guncellendi')
          router.refresh()
-         router.push('/returns')
+         window.location.href = '/returns'
       } catch (error) {
          toast.error('Bir hata olustu')
          console.error(error)
@@ -172,6 +173,7 @@ export function ReturnForm({
                disabled={loading}
                className="w-full"
             >
+               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                {loading ? 'Kaydediliyor...' : 'Kaydet'}
             </Button>
          </div>

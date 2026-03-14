@@ -78,7 +78,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
          })
          if (!res.ok) throw new Error(await res.text())
          router.refresh()
-         router.push(`/categories`)
+         window.location.href = '/categories'
          toast.success(toastMessage)
       } catch (error: any) {
          toast.error('Bir hata oluştu: ' + (error?.message || ''))
@@ -98,7 +98,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
          if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
-         router.push(`/categories`)
+         window.location.href = '/categories'
          toast.success('Kategori silindi.')
       } catch (error: any) {
          toast.error(
