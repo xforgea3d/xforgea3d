@@ -2,6 +2,7 @@ export const revalidate = 3600
 
 import prisma from '@/lib/prisma'
 import Link from 'next/link'
+import { ChevronRightIcon } from 'lucide-react'
 const formatTR = (d: Date) => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)
 import { Heading } from '@/components/native/heading'
 
@@ -23,6 +24,21 @@ export default async function BlogPage() {
 
    return (
       <div className="max-w-5xl mx-auto px-4 py-12">
+         <nav className="flex text-muted-foreground mb-6" aria-label="Breadcrumb">
+            <ol className="inline-flex items-center gap-2">
+               <li className="inline-flex items-center">
+                  <Link className="text-sm font-medium hover:text-foreground transition-colors" href="/">
+                     Ana Sayfa
+                  </Link>
+               </li>
+               <li aria-current="page">
+                  <div className="flex items-center gap-2">
+                     <ChevronRightIcon className="h-4" />
+                     <span className="text-sm font-medium text-foreground">Blog</span>
+                  </div>
+               </li>
+            </ol>
+         </nav>
          <div className="mb-10">
             <h1 className="text-3xl font-bold tracking-tight">Blog</h1>
             <p className="text-muted-foreground mt-2">

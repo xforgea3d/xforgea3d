@@ -5,6 +5,7 @@ import { sanitizeHtml } from '@/lib/sanitize'
 import { BlogPostJsonLd } from '@/app/json-ld'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ChevronRightIcon } from 'lucide-react'
 import { notFound } from 'next/navigation'
 const formatTR = (d: Date) => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)
 
@@ -58,6 +59,31 @@ export default async function BlogPostPage({ params }: Props) {
 
    return (
       <article className="max-w-3xl mx-auto px-4 py-12">
+         {/* Breadcrumbs */}
+         <nav className="flex text-muted-foreground mb-6" aria-label="Breadcrumb">
+            <ol className="inline-flex items-center gap-2">
+               <li className="inline-flex items-center">
+                  <Link className="text-sm font-medium hover:text-foreground transition-colors" href="/">
+                     Ana Sayfa
+                  </Link>
+               </li>
+               <li>
+                  <div className="flex items-center gap-2">
+                     <ChevronRightIcon className="h-4" />
+                     <Link className="text-sm font-medium hover:text-foreground transition-colors" href="/blog">
+                        Blog
+                     </Link>
+                  </div>
+               </li>
+               <li aria-current="page">
+                  <div className="flex items-center gap-2">
+                     <ChevronRightIcon className="h-4" />
+                     <span className="text-sm font-medium text-foreground">{post.title_tr}</span>
+                  </div>
+               </li>
+            </ol>
+         </nav>
+
          {/* JSON-LD BlogPosting Schema */}
          <BlogPostJsonLd post={post} />
 

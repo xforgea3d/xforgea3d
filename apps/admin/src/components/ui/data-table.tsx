@@ -103,7 +103,7 @@ export function DataTable<TData, TValue>({
                            colSpan={columns.length}
                            className="h-24 text-center"
                         >
-                           No results.
+                           Sonuç bulunamadı.
                         </TableCell>
                      </TableRow>
                   )}
@@ -117,15 +117,18 @@ export function DataTable<TData, TValue>({
                onClick={() => table.previousPage()}
                disabled={!table.getCanPreviousPage()}
             >
-               Previous
+               Önceki
             </Button>
+            <span className="text-sm text-muted-foreground">
+               Sayfa {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+            </span>
             <Button
                variant="outline"
                size="sm"
                onClick={() => table.nextPage()}
                disabled={!table.getCanNextPage()}
             >
-               Next
+               Sonraki
             </Button>
          </div>
       </div>

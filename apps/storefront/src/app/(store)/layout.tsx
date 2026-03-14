@@ -9,6 +9,10 @@ const WhatsAppFloat = dynamic(() => import('@/components/native/WhatsAppFloat'),
    ssr: false,
 })
 
+const BackToTop = dynamic(() => import('@/components/native/BackToTop'), {
+   ssr: false,
+})
+
 export default async function DashboardLayout({
    children,
 }: {
@@ -39,6 +43,7 @@ export default async function DashboardLayout({
          </StoreProviders>
          <Footer />
          <WhatsAppFloat />
+         <BackToTop />
       </>
    )
 }

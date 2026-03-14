@@ -70,10 +70,15 @@ export default function UserPage() {
 function OrderSection({ orders }) {
    const formattedOrders: OrderColumn[] = orders.map((order) => ({
       id: order.id,
-      number: `Order #${order.number}`,
-      date: order.createdAt.toString(),
-      payable: '$' + order.payable.toString(),
+      number: `Sipariş #${order.number}`,
+      date: new Date(order.createdAt).toLocaleDateString('tr-TR', {
+         year: 'numeric',
+         month: 'long',
+         day: 'numeric',
+      }),
+      payable: order.payable.toFixed(2) + ' ₺',
       isPaid: order.isPaid,
+      status: order.status,
    }))
 
    return <OrdersTable data={formattedOrders} />

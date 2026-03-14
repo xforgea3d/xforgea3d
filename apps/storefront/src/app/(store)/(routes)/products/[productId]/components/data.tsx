@@ -21,14 +21,18 @@ import {
    ChevronUpIcon,
    ClockIcon,
    Layers3Icon,
+   LinkIcon,
+   MessageCircleIcon,
    PackageCheckIcon,
    PaletteIcon,
    PaperclipIcon,
+   Share2Icon,
    ShieldCheckIcon,
    SparklesIcon,
    TruckIcon,
    WrenchIcon,
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { useRef, useState } from 'react'
 
@@ -392,6 +396,48 @@ export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
                <CartButton product={product} />
                <WishlistButton product={product} />
             </div>
+            {/* Share row */}
+            <div className="flex items-center gap-3">
+               <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Share2Icon className="h-3.5 w-3.5" /> Paylaş
+               </span>
+               <div className="flex gap-1">
+                  <button
+                     onClick={() => {
+                        const url = window.location.href
+                        navigator.clipboard.writeText(url)
+                        toast.success('Link kopyalandı!')
+                     }}
+                     className="inline-flex items-center justify-center h-8 w-8 rounded-md border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                     title="Linki kopyala"
+                  >
+                     <LinkIcon className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                     onClick={() => {
+                        const url = window.location.href
+                        const text = `${product.title} - ${url}`
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+                     }}
+                     className="inline-flex items-center justify-center h-8 w-8 rounded-md border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                     title="WhatsApp ile paylaş"
+                  >
+                     <MessageCircleIcon className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                     onClick={() => {
+                        const url = window.location.href
+                        const text = product.title
+                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
+                     }}
+                     className="inline-flex items-center justify-center h-8 w-8 rounded-md border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                     title="X ile paylaş"
+                  >
+                     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                  </button>
+               </div>
+            </div>
+
             <div className="grid grid-cols-3 gap-2 pt-1">
                {[
                   { icon: <PackageCheckIcon className="h-4 w-4" />, label: 'Özenli Paketleme' },

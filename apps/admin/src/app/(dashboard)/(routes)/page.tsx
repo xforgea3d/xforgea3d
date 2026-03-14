@@ -5,11 +5,13 @@ import { getSalesCount } from '@/actions/get-sales-count'
 import { getStockCount } from '@/actions/get-stock-count'
 import { getTotalRevenue } from '@/actions/get-total-revenue'
 import { Overview } from '@/components/overview'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Heading } from '@/components/ui/heading'
 import { Separator } from '@/components/ui/separator'
 import { formatter } from '@/lib/utils'
-import { CreditCard, DollarSign, Package } from 'lucide-react'
+import { ClipboardList, CreditCard, FileText, Package, PlusCircle, ShoppingCart, TrendingUp } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function DashboardPage() {
    const [totalRevenue, graphRevenue, salesCount, stockCount] = await Promise.all([
@@ -30,7 +32,7 @@ export default async function DashboardPage() {
                      <CardTitle className="text-sm font-medium">
                         Toplam Gelir
                      </CardTitle>
-                     <DollarSign className="h-4 text-muted-foreground" />
+                     <TrendingUp className="h-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                      <div className="text-2xl font-bold">
@@ -67,6 +69,39 @@ export default async function DashboardPage() {
                </CardHeader>
                <CardContent className="pl-2">
                   <Overview data={graphRevenue} />
+               </CardContent>
+            </Card>
+            <Card>
+               <CardHeader>
+                  <CardTitle>Hızlı İşlemler</CardTitle>
+               </CardHeader>
+               <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                     <Link href="/products/new">
+                        <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center gap-2">
+                           <PlusCircle className="h-5 w-5" />
+                           <span className="text-sm">Yeni Ürün Ekle</span>
+                        </Button>
+                     </Link>
+                     <Link href="/orders">
+                        <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center gap-2">
+                           <ShoppingCart className="h-5 w-5" />
+                           <span className="text-sm">Siparişleri Gör</span>
+                        </Button>
+                     </Link>
+                     <Link href="/quote-requests">
+                        <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center gap-2">
+                           <ClipboardList className="h-5 w-5" />
+                           <span className="text-sm">Bekleyen Talepler</span>
+                        </Button>
+                     </Link>
+                     <Link href="/content/blog/new">
+                        <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center gap-2">
+                           <FileText className="h-5 w-5" />
+                           <span className="text-sm">Blog Yazısı Ekle</span>
+                        </Button>
+                     </Link>
+                  </div>
                </CardContent>
             </Card>
          </div>

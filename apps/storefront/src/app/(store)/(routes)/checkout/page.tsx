@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCsrf } from '@/hooks/useCsrf'
 import { useCartContext } from '@/state/Cart'
-import { CheckCircle2Icon, Loader2, MapPin, Plus } from 'lucide-react'
+import { CheckCircle2Icon, ChevronRightIcon, Loader2, MapPin, Plus } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -137,6 +138,29 @@ export default function CheckoutPage() {
 
    return (
       <div className="flex flex-col border-neutral-200 dark:border-neutral-700 pb-24">
+         <nav className="flex text-muted-foreground mb-6" aria-label="Breadcrumb">
+            <ol className="inline-flex items-center gap-2">
+               <li className="inline-flex items-center">
+                  <Link className="text-sm font-medium hover:text-foreground transition-colors" href="/">
+                     Ana Sayfa
+                  </Link>
+               </li>
+               <li>
+                  <div className="flex items-center gap-2">
+                     <ChevronRightIcon className="h-4" />
+                     <Link className="text-sm font-medium hover:text-foreground transition-colors" href="/cart">
+                        Sepet
+                     </Link>
+                  </div>
+               </li>
+               <li aria-current="page">
+                  <div className="flex items-center gap-2">
+                     <ChevronRightIcon className="h-4" />
+                     <span className="text-sm font-medium text-foreground">Siparisi Tamamla</span>
+                  </div>
+               </li>
+            </ol>
+         </nav>
          <Heading
             title="Siparişi Tamamla"
             description="Teslimat adresinizi seçin ve siparişinizi onaylayın."
