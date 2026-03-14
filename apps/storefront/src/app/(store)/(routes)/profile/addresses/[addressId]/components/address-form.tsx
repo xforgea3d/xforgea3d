@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
+import { useCsrf } from '@/hooks/useCsrf'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Address } from '@prisma/client'
 import { Trash } from 'lucide-react'
@@ -39,6 +40,7 @@ interface AddressFormProps {
 export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
    const params = useParams()
    const router = useRouter()
+   const csrfToken = useCsrf()
 
    const [open, setOpen] = useState(false)
    const [loading, setLoading] = useState(false)
@@ -65,15 +67,15 @@ export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
          if (initialData) {
             await fetch(`/api/addresses/${params.addressId}`, {
                method: 'PATCH',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify(data),
+               headers: { 'Content-Type': 'application/json', ...(csrfToken && { 'x-csrf-token': csrfToken }) },
+               body: JSON.stringify({ ...data, csrfToken }),
                cache: 'no-store',
             })
          } else {
             await fetch(`/api/addresses`, {
                method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify(data),
+               headers: { 'Content-Type': 'application/json', ...(csrfToken && { 'x-csrf-token': csrfToken }) },
+               body: JSON.stringify({ ...data, csrfToken }),
                cache: 'no-store',
             })
          }
@@ -94,6 +96,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
 
          await fetch(`/api/addresses/${params.addressId}`, {
             method: 'DELETE',
+            headers: { ...(csrfToken && { 'x-csrf-token': csrfToken }) },
             cache: 'no-store',
          })
 

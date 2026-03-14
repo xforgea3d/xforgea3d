@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 interface BrandOption {
    id: string
@@ -86,16 +88,26 @@ export function QuoteRequestForm({ brands }: { brands: BrandOption[] }) {
                Parça talebiniz başarıyla gönderildi. En kısa sürede e-posta
                adresinize fiyat bilgisi ile dönüş yapacağız.
             </p>
-            <button
-               onClick={() => {
-                  setSuccess(false)
-                  setPartDescription('')
-                  setImage(null)
-               }}
-               className="text-sm text-orange-500 hover:underline"
-            >
-               Yeni talep oluştur
-            </button>
+            <div className="flex items-center justify-center gap-4">
+               <button
+                  onClick={() => {
+                     setSuccess(false)
+                     setPartDescription('')
+                     setImage(null)
+                  }}
+                  className="text-sm text-orange-500 hover:underline"
+               >
+                  Yeni talep oluştur
+               </button>
+               <Link href="/profile/quote-requests">
+                  <Button
+                     variant="outline"
+                     className="border-orange-500 text-orange-500 hover:bg-orange-50 hover:text-orange-600"
+                  >
+                     Taleplerime Git
+                  </Button>
+               </Link>
+            </div>
          </div>
       )
    }

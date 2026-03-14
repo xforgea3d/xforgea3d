@@ -85,10 +85,21 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith(route)) return NextResponse.next()
    }
 
-   // Allow public POST to quote-requests (form submission without auth)
-   if (pathname === '/api/quote-requests' && request.method === 'POST') return NextResponse.next()
-   // Allow public POST to custom-order
-   if (pathname === '/api/custom-order' && request.method === 'POST') return NextResponse.next()
+   // Allow public POST to quote-requests and custom-order (no auth required)
+   // But still try to resolve user session so userId can be attached if logged in
+   if (
+      (pathname === '/api/quote-requests' && request.method === 'POST') ||
+      (pathname === '/api/custom-order' && request.method === 'POST')
+   ) {
+      try {
+         const { supabaseResponse, user } = await updateSession(request)
+         if (user) {
+            supabaseResponse.headers.set('X-USER-ID', user.id)
+            return supabaseResponse
+         }
+      } catch {}
+      return NextResponse.next()
+   }
 
    // Session check (only for protected paths)
    const { supabaseResponse, user } = await updateSession(request)

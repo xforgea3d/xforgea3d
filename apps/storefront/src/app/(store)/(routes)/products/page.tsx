@@ -25,7 +25,7 @@ export default async function Products({ searchParams }) {
 
    const whereClause = {
       id: { not: 'quote-request-product' },
-      isAvailable: isAvailable === 'true' || sort ? true : undefined,
+      isAvailable: isAvailable === 'true' ? true : undefined,
       brand: brand
          ? { title: { contains: brand, mode: 'insensitive' as const } }
          : undefined,
