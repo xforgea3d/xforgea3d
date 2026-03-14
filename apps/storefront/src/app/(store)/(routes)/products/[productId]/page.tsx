@@ -9,6 +9,16 @@ const ProductReviews = nextDynamic(
    () => import('@/components/native/ProductReviews'),
    { ssr: false }
 )
+
+const RecentlyViewed = nextDynamic(
+   () => import('@/components/native/RecentlyViewed'),
+   { ssr: false }
+)
+
+const RecentlyViewedTracker = nextDynamic(
+   () => import('@/components/native/RecentlyViewedTracker'),
+   { ssr: false }
+)
 import { isVariableValid } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import { ProductJsonLd } from '@/app/json-ld'
@@ -150,6 +160,13 @@ export default async function Product({
                <RelatedProductsBlock products={finalRelated} />
             </>
          )}
+
+         {/* Recently Viewed */}
+         <Separator />
+         <RecentlyViewed />
+
+         {/* Track this product view */}
+         <RecentlyViewedTracker productId={params.productId} />
 
       </div>
    )

@@ -11,6 +11,7 @@ const sidebarNavItems = [
    { title: 'Siparislerim', href: '/profile/orders' },
    { title: 'Adreslerim', href: '/profile/addresses' },
    { title: 'Taleplerim', href: '/profile/quote-requests' },
+   { title: 'İade Taleplerim', href: '/profile/returns' },
    { title: 'Bildirimler', href: '/profile/notifications' },
 ]
 

@@ -179,6 +179,34 @@ export async function POST(req: Request) {
          return created
       })
 
+      // Check for low stock after order creation (best-effort)
+      try {
+         const orderProductIds = order.orderItems.map((item) => item.productId)
+         const updatedProducts = await prisma.product.findMany({
+            where: { id: { in: orderProductIds } },
+            select: { id: true, title: true, stock: true },
+         })
+
+         const lowStockProducts = updatedProducts.filter((p) => p.stock < 5)
+         if (lowStockProducts.length > 0) {
+            const admins = await prisma.profile.findMany({
+               where: { role: 'admin' },
+               select: { id: true },
+            })
+            if (admins.length > 0) {
+               const notifications = lowStockProducts.flatMap((product) =>
+                  admins.map((admin) => ({
+                     userId: admin.id,
+                     content: `\u26a0\ufe0f D\u00fc\u015f\u00fck stok: ${product.title} - Kalan: ${product.stock} adet`,
+                  }))
+               )
+               await prisma.notification.createMany({ data: notifications })
+            }
+         }
+      } catch (stockCheckError) {
+         console.error('[LOW_STOCK_CHECK]', stockCheckError)
+      }
+
       // Revalidate product pages so stock changes are reflected immediately
       try {
          revalidatePath('/')

@@ -15,6 +15,8 @@ import {
     FileIcon,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import Link from 'next/link'
+import { useUserContext } from '@/state/User'
 
 interface Color {
     id: string
@@ -37,8 +39,10 @@ interface FormState {
 const STEPS = ['Tasarım', 'Renk', 'Bilgiler', 'Gönder']
 
 export default function AtolyePage() {
+    const { user } = useUserContext()
     const [step, setStep] = useState(0)
     const [submitted, setSubmitted] = useState(false)
+    const [quoteNumber, setQuoteNumber] = useState<number | null>(null)
     const [loading, setLoading] = useState(false)
     const [colors, setColors] = useState<Color[]>([])
     const [dragOver, setDragOver] = useState(false)
@@ -107,6 +111,8 @@ export default function AtolyePage() {
             }))
             const res = await fetch('/api/custom-order', { method: 'POST', body: fd })
             if (!res.ok) throw new Error()
+            const resData = await res.json()
+            if (resData.number) setQuoteNumber(resData.number)
             setSubmitted(true)
         } catch {
             toast.error('Bir hata oluştu, tekrar deneyin.')
@@ -123,14 +129,24 @@ export default function AtolyePage() {
                         <CheckCircleIcon className="w-8 h-8 text-emerald-500" />
                     </div>
                     <h2 className="text-2xl font-black tracking-tight">Talebiniz Alındı!</h2>
+                    {quoteNumber && (
+                        <p className="text-sm font-mono text-muted-foreground">Talep No: #{quoteNumber}</p>
+                    )}
                     <p className="text-muted-foreground leading-relaxed">
                         Tasarımınızı inceledikten sonra <strong>{form.email}</strong> adresinize
                         fiyat teklifi ve tahmini üretim süresiyle birlikte dönüş yapacağız.
                         Bu genellikle <strong>24 saat</strong> içinde gerçekleşir.
                     </p>
-                    <Button asChild className="rounded-full">
-                        <a href="/">Ana Sayfaya Dön</a>
-                    </Button>
+                    <div className="flex items-center justify-center gap-3">
+                        <Button asChild className="rounded-full">
+                            <a href="/">Ana Sayfaya Dön</a>
+                        </Button>
+                        {user && (
+                            <Button asChild variant="outline" className="rounded-full">
+                                <Link href="/profile/quote-requests">Taleplerime Git</Link>
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
         )

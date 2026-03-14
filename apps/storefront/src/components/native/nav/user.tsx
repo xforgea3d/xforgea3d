@@ -19,6 +19,7 @@ import {
    LogOutIcon,
    MapPinIcon,
    MessageSquareQuoteIcon,
+   RotateCcwIcon,
    UserIcon,
 } from 'lucide-react'
 import { ShoppingBasketIcon } from 'lucide-react'
@@ -78,6 +79,12 @@ export function UserNav() {
                   <Link href="/profile/quote-requests">
                      <MessageSquareQuoteIcon className="h-4" />
                      Taleplerim
+                  </Link>
+               </DropdownMenuItem>
+               <DropdownMenuItem className="flex gap-2" asChild>
+                  <Link href="/profile/returns">
+                     <RotateCcwIcon className="h-4" />
+                     İade Taleplerim
                   </Link>
                </DropdownMenuItem>
                <DropdownMenuItem className="flex gap-2" asChild>

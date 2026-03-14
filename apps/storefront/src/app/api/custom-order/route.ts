@@ -74,6 +74,28 @@ export async function POST(req: Request) {
          `Tarih: ${new Date().toLocaleString('tr-TR')}`,
       ].join('\n')
 
+      // Create a QuoteRequest record so the order is trackable
+      const userId = req.headers.get('X-USER-ID') || null
+      const colorName = data.colorName || data.color || '-'
+      const partDesc = [
+         'Atölye Özel Tasarım Siparişi',
+         `Renk: ${colorName}`,
+         data.notes ? `Not: ${data.notes}` : null,
+         `Şehir: ${data.city || '-'}`,
+         `Adres: ${data.address || '-'}`,
+      ].filter(Boolean).join(' | ')
+
+      const quoteRequest = await prisma.quoteRequest.create({
+         data: {
+            email: data.email,
+            name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || null,
+            phone: data.phone || null,
+            userId,
+            partDescription: partDesc.slice(0, 2000),
+            imageUrl: svgUrl,
+         },
+      })
+
       // Notify all admin users
       const admins = await prisma.profile.findMany({
          where: { role: 'admin' },
@@ -84,12 +106,12 @@ export async function POST(req: Request) {
          await prisma.notification.createMany({
             data: admins.map((admin) => ({
                userId: admin.id,
-               content: orderDetails,
+               content: `Yeni atölye talebi #${quoteRequest.number} - ${partDesc.slice(0, 80)}`,
             })),
          })
       }
 
-      return NextResponse.json({ success: true })
+      return NextResponse.json({ success: true, id: quoteRequest.id, number: quoteRequest.number })
    } catch (err: any) {
       console.error('[Custom Order Error]', err)
       logError({

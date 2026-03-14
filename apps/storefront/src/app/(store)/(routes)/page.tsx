@@ -30,6 +30,11 @@ const FeaturedProductsCarousel = nextDynamic(
    { ssr: false }
 )
 
+const RecentlyViewed = nextDynamic(
+   () => import('@/components/native/RecentlyViewed'),
+   { ssr: false }
+)
+
 const ScrollReveal = nextDynamic(
    () => import('@/components/native/ScrollReveal').then(m => ({ default: m.ScrollReveal })),
    { ssr: false }
@@ -100,6 +105,11 @@ export default async function Index() {
                   </Button>
                </Link>
             </div>
+         </section>
+
+         {/* ── 2.5 SON GÖRÜNTÜLENEN ÜRÜNLER ────────────────────── */}
+         <section className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem] py-12 bg-neutral-50/50 dark:bg-neutral-900/50">
+            <RecentlyViewed />
          </section>
 
          {/* ── 3. MÜŞTERİ YORUMLARI ─────────────────────────────── */}

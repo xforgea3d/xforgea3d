@@ -8,9 +8,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
 import { cn } from '@/lib/utils'
-import { AlertCircle, CheckCircle, Clock, Copy, CreditCard, Loader2, MapPin, Package, Printer, RotateCcw, Send, Truck, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Clock, Copy, CreditCard, ExternalLink, Loader2, MapPin, Package, Printer, RotateCcw, Send, Truck, XCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useCallback, useEffect, useState } from 'react'
+
+function getTrackingUrl(company: string, trackingNumber: string): string {
+   const normalized = company.toLowerCase().replace(/\s+/g, '')
+   const urls: Record<string, string> = {
+      'yurtiçikargo': `https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=${trackingNumber}`,
+      'yurticikargo': `https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=${trackingNumber}`,
+      'araskargo': `https://www.araskargo.com.tr/tanimlar/gonderi_takip.aspx?code=${trackingNumber}`,
+      'mngkargo': `https://www.mngkargo.com.tr/gonderi-takip?code=${trackingNumber}`,
+      'pttkargo': `https://gonderitakip.ptt.gov.tr/Track/Verify?q=${trackingNumber}`,
+      'ptt': `https://gonderitakip.ptt.gov.tr/Track/Verify?q=${trackingNumber}`,
+      'süratkargo': `https://www.suratkargo.com.tr/gonderi-takip?code=${trackingNumber}`,
+      'suratkargo': `https://www.suratkargo.com.tr/gonderi-takip?code=${trackingNumber}`,
+      'trendyolexpress': `https://www.trendyolexpress.com/gonderi-takip?code=${trackingNumber}`,
+   }
+   return urls[normalized] || ''
+}
 
 const returnReasons = [
    'Ürün hasarlı',
@@ -219,7 +235,7 @@ function ReturnRequestSection({ order, onReturnCreated }: { order: any; onReturn
    const [description, setDescription] = useState('')
    const [submitting, setSubmitting] = useState(false)
 
-   const isDelivered = order.status === 'Delivered'
+   const isDelivered = order.status === 'Delivered' || order.status === 'TeslimEdildi'
 
    useEffect(() => {
       async function fetchReturn() {
@@ -466,6 +482,15 @@ export default function OrderDetailPage({ params }: { params: { orderId: string 
 
    return (
       <div className="py-8 space-y-6">
+         {/* Print-only styles */}
+         <style>{`
+            @media print {
+               nav, footer, header, .print\\:hidden { display: none !important; }
+               body { background: white !important; }
+               .py-8 { padding: 0 !important; }
+            }
+         `}</style>
+
          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
                <Heading
@@ -477,15 +502,26 @@ export default function OrderDetailPage({ params }: { params: { orderId: string 
                      navigator.clipboard.writeText(order.number)
                      toast.success('Sipariş numarası kopyalandı!')
                   }}
-                  className="inline-flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                  className="inline-flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground transition-colors print:hidden"
                   title="Sipariş numarasını kopyala"
                >
                   <Copy className="h-4 w-4" />
                </button>
             </div>
-            <Badge className={`${status.color} px-3 py-1 text-sm font-medium`}>
-               {status.label}
-            </Badge>
+            <div className="flex items-center gap-2">
+               <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 print:hidden"
+                  onClick={() => window.print()}
+               >
+                  <Printer className="h-4 w-4" />
+                  Yazdır
+               </Button>
+               <Badge className={`${status.color} px-3 py-1 text-sm font-medium`}>
+                  {status.label}
+               </Badge>
+            </div>
          </div>
 
          {/* Order Status Timeline */}
@@ -600,6 +636,19 @@ export default function OrderDetailPage({ params }: { params: { orderId: string 
                               </button>
                            </div>
                         </div>
+                        {order.shippingCompany && getTrackingUrl(order.shippingCompany, order.trackingNumber) && (
+                           <a
+                              href={getTrackingUrl(order.shippingCompany, order.trackingNumber)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="print:hidden"
+                           >
+                              <Button variant="outline" className="w-full gap-2 border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900/30">
+                                 <ExternalLink className="h-4 w-4" />
+                                 Kargoyu Takip Et
+                              </Button>
+                           </a>
+                        )}
                      </CardContent>
                   </Card>
                )}

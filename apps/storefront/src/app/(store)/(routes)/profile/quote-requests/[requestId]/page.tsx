@@ -244,7 +244,7 @@ export default function QuoteRequestDetailPage({
             <Card>
                <CardContent className="py-4">
                   <Link
-                     href={`/profile/orders`}
+                     href={`/profile/orders/${data.order.id}`}
                      className="text-sm text-blue-600 hover:underline"
                   >
                      Sipariş #{data.order.number} — {data.order.isPaid ? 'Ödendi' : 'Ödenmedi'}
