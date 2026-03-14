@@ -66,10 +66,10 @@ export default function ContactPage() {
                             Hafta içi 09:00 - 18:00 arası:
                         </p>
                         <a
-                            href="tel:+905341234567"
+                            href="tel:+905382880738"
                             className="block text-sm font-medium text-orange-500 hover:underline"
                         >
-                            +90 (534) 123 45 67
+                            +90 (538) 288 07 38
                         </a>
                     </div>
 
@@ -95,7 +95,7 @@ export default function ContactPage() {
 
                     {/* WhatsApp */}
                     <a
-                        href="https://wa.me/905341234567"
+                        href="https://wa.me/905382880738"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group rounded-xl border bg-card p-6 space-y-3 transition-all hover:shadow-lg hover:border-green-500/50 hover:-translate-y-1"

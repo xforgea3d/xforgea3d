@@ -18,6 +18,7 @@ export default async function ProductsPage() {
          select: {
             id: true,
             title: true,
+            images: true,
             price: true,
             discount: true,
             isAvailable: true,
@@ -36,10 +37,12 @@ export default async function ProductsPage() {
 
    const formattedProducts: ProductColumn[] = products.map((product) => ({
       id: product.id,
+      image: product.images?.[0] || null,
       title: product.title,
       price: formatter.format(product.price),
       discount: formatter.format(product.discount),
       category: product.categories[0]?.title || '-',
+      brand: product.brand?.title || '-',
       sales: product._count.orders,
       isAvailable: product.isAvailable,
    }))

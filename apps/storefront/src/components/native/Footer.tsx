@@ -228,7 +228,7 @@ function Socials() {
             <span className="sr-only">Twitter sayfası</span>
          </a>
          <a
-            href="https://wa.me/905XXXXXXXXX"
+            href="https://wa.me/905382880738"
             target="_blank"
             rel="noreferrer"
             className="transition-colors hover:text-foreground"

@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { ColumnDef } from '@tanstack/react-table'
-import { CheckIcon, EditIcon, Trash2Icon, XIcon } from 'lucide-react'
+import { CheckIcon, EditIcon, ImageIcon, Trash2Icon, XIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -37,6 +37,24 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
 
    const columns: ColumnDef<ProductColumn>[] = [
       {
+         accessorKey: 'image',
+         header: '',
+         cell: ({ row }) => (
+            row.original.image ? (
+               <img
+                  src={row.original.image}
+                  alt={row.original.title}
+                  className="h-10 w-10 rounded-md object-cover border"
+               />
+            ) : (
+               <div className="h-10 w-10 rounded-md border bg-muted flex items-center justify-center">
+                  <ImageIcon className="h-4 w-4 text-muted-foreground" />
+               </div>
+            )
+         ),
+         enableSorting: false,
+      },
+      {
          accessorKey: 'title',
          header: 'Başlık',
       },
@@ -51,6 +69,15 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
       {
          accessorKey: 'category',
          header: 'Kategori',
+      },
+      {
+         accessorKey: 'brand',
+         header: 'Koleksiyon',
+         cell: ({ row }) => (
+            <span className={row.original.brand === '-' ? 'text-muted-foreground' : ''}>
+               {row.original.brand}
+            </span>
+         ),
       },
       {
          accessorKey: 'sales',
@@ -98,10 +125,12 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
 
 export type ProductColumn = {
    id: string
+   image: string | null
    title: string
    price: string
    discount: string
    category: string
+   brand: string
    sales: number
    isAvailable: boolean
 }

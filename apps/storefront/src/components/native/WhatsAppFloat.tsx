@@ -96,7 +96,7 @@ export default function WhatsAppFloat() {
 
             {/* Button */}
             <a
-               href="https://wa.me/905341234567"
+               href="https://wa.me/905382880738"
                target="_blank"
                rel="noopener noreferrer"
                aria-label="WhatsApp ile iletisime gecin"
