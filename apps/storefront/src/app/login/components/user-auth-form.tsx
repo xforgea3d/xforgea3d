@@ -310,8 +310,8 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
          })
 
          if (error) {
-            if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
-               setErrorMsg('Bu e-posta adresi zaten kullanımda. Giriş yapmayı deneyin.')
+            if (error.message?.includes('already registered') || error.message?.includes('already been registered') || error.message?.includes('User already registered')) {
+               setErrorMsg('already_exists')
             } else if (error.message?.includes('Database error saving new user')) {
                // Supabase auth schema issue — user may already exist in auth.users
                // Try signing in directly; if the user was partially created this recovers the flow
@@ -335,7 +335,7 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
             }
             console.error('SignUp Error:', error.message)
          } else if (data?.user?.identities?.length === 0) {
-            setErrorMsg('Bu e-posta adresi zaten kullanımda. Giriş yapmayı deneyin.')
+            setErrorMsg('already_exists')
          } else if (data.session) {
             setLoggedInCookie()
             setSuccessMsg('welcome')
@@ -445,7 +445,25 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
                minLength={6}
             />
          </div>
-         {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
+         {errorMsg === 'already_exists' ? (
+            <div className="rounded-lg border border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800 p-4 space-y-3">
+               <div className="flex items-start gap-2">
+                  <svg className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                     <p className="text-sm font-medium text-orange-800 dark:text-orange-300">
+                        Bu e-posta adresiyle zaten bir hesap var
+                     </p>
+                     <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                        Yukarıdaki &quot;Giriş Yap&quot; sekmesinden mevcut hesabınıza giriş yapabilirsiniz.
+                     </p>
+                  </div>
+               </div>
+            </div>
+         ) : errorMsg ? (
+            <p className="text-xs text-destructive">{errorMsg}</p>
+         ) : null}
          <Button
             type="submit"
             disabled={isLoading || !isEmailValid(email) || password.length < 6 || !name}
