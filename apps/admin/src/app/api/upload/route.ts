@@ -1,3 +1,4 @@
+import sharp from 'sharp'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, NextRequest } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
@@ -44,10 +45,25 @@ export async function POST(request: NextRequest) {
 
       const buffer = Buffer.from(await file.arrayBuffer())
 
+      // For PNG images, flatten transparency onto white background
+      let processedBuffer: Buffer = buffer
+      let contentType = file.type
+      if (file.type === 'image/png') {
+         try {
+            processedBuffer = await sharp(buffer)
+               .flatten({ background: { r: 255, g: 255, b: 255 } })
+               .png()
+               .toBuffer()
+         } catch (e) {
+            console.warn('Sharp processing failed, using original:', e)
+            // Fall back to original buffer
+         }
+      }
+
       const { error } = await supabase.storage
          .from('ecommerce')
-         .upload(filePath, buffer, {
-            contentType: file.type,
+         .upload(filePath, processedBuffer, {
+            contentType: contentType,
             upsert: false,
          })
 
