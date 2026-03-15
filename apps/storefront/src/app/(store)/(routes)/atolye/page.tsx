@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { CityDistrictSelector } from '@/components/native/CityDistrictSelector'
+import { PhoneInput } from '@/components/native/PhoneInput'
 import { Button } from '@/components/ui/button'
 import {
     UploadCloudIcon,
@@ -289,9 +291,27 @@ export default function AtolyePage() {
                         <Field label="Soyad" value={form.lastName} onChange={v => set('lastName', v)} placeholder="Yılmaz" />
                     </div>
                     <Field label="E-posta" type="email" value={form.email} onChange={v => set('email', v)} placeholder="ahmet@ornek.com" />
-                    <Field label="Telefon" type="tel" value={form.phone} onChange={v => set('phone', v)} placeholder="+90 555 000 0000" />
+                    <div>
+                        <label className="text-sm font-semibold mb-1.5 block">Telefon</label>
+                        <PhoneInput
+                            value={form.phone}
+                            onChange={v => set('phone', v)}
+                            placeholder="05XX XXX XX XX"
+                        />
+                    </div>
                     <Field label="Adres" value={form.address} onChange={v => set('address', v)} placeholder="Mahalle, Cadde, No" />
-                    <Field label="Şehir" value={form.city} onChange={v => set('city', v)} placeholder="İstanbul" />
+                    <div>
+                        <label className="text-sm font-semibold mb-1.5 block">Şehir</label>
+                        <CityDistrictSelector
+                            city={form.city}
+                            district=""
+                            postalCode=""
+                            onCityChange={v => set('city', v)}
+                            onDistrictChange={() => {}}
+                            onPostalCodeChange={() => {}}
+                            cityOnly
+                        />
+                    </div>
 
                     <div>
                         <label className="text-sm font-semibold mb-1.5 block flex items-center gap-1.5">

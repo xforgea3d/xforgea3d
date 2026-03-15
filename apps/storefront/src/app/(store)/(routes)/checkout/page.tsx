@@ -1,6 +1,8 @@
 'use client'
 
+import { CityDistrictSelector } from '@/components/native/CityDistrictSelector'
 import { Heading } from '@/components/native/heading'
+import { PhoneInput } from '@/components/native/PhoneInput'
 import { Separator } from '@/components/native/separator'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -67,7 +69,7 @@ export default function CheckoutPage() {
    const [loading, setLoading] = useState(false)
    const [loadingAddresses, setLoadingAddresses] = useState(true)
    const [showNewAddress, setShowNewAddress] = useState(false)
-   const [newAddress, setNewAddress] = useState({ address: '', city: '', phone: '', postalCode: '' })
+   const [newAddress, setNewAddress] = useState({ address: '', city: '', district: '', phone: '', postalCode: '' })
    const [taxRate, setTaxRate] = useState(20)
    const searchParams = useSearchParams()
    const discountAppliedFromUrl = useRef(false)
@@ -194,7 +196,7 @@ export default function CheckoutPage() {
          setAddresses((prev) => [...prev, created])
          setSelectedAddress(created.id)
          setShowNewAddress(false)
-         setNewAddress({ address: '', city: '', phone: '', postalCode: '' })
+         setNewAddress({ address: '', city: '', district: '', phone: '', postalCode: '' })
          toast.success('Adres eklendi')
       } catch {
          toast.error('Adres eklenirken hata oluştu')
@@ -329,23 +331,16 @@ export default function CheckoutPage() {
 
                      {showNewAddress ? (
                         <div className="space-y-3 rounded-lg border p-4">
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                 <Label>Şehir</Label>
-                                 <Input
-                                    placeholder="İstanbul"
-                                    value={newAddress.city}
-                                    onChange={(e) => setNewAddress((p) => ({ ...p, city: e.target.value }))}
-                                 />
-                              </div>
-                              <div>
-                                 <Label>Posta Kodu</Label>
-                                 <Input
-                                    placeholder="34000"
-                                    value={newAddress.postalCode}
-                                    onChange={(e) => setNewAddress((p) => ({ ...p, postalCode: e.target.value }))}
-                                 />
-                              </div>
+                           <div>
+                              <Label>Şehir / İlçe / Posta Kodu</Label>
+                              <CityDistrictSelector
+                                 city={newAddress.city}
+                                 district={newAddress.district}
+                                 postalCode={newAddress.postalCode}
+                                 onCityChange={(val) => setNewAddress((p) => ({ ...p, city: val, district: '', postalCode: '' }))}
+                                 onDistrictChange={(val) => setNewAddress((p) => ({ ...p, district: val }))}
+                                 onPostalCodeChange={(val) => setNewAddress((p) => ({ ...p, postalCode: val }))}
+                              />
                            </div>
                            <div>
                               <Label>Adres</Label>
@@ -357,10 +352,9 @@ export default function CheckoutPage() {
                            </div>
                            <div>
                               <Label>Telefon</Label>
-                              <Input
-                                 placeholder="05XX XXX XX XX"
+                              <PhoneInput
                                  value={newAddress.phone}
-                                 onChange={(e) => setNewAddress((p) => ({ ...p, phone: e.target.value }))}
+                                 onChange={(val) => setNewAddress((p) => ({ ...p, phone: val }))}
                               />
                            </div>
                            <div className="flex gap-2">

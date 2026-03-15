@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PhoneInput } from '@/components/native/PhoneInput'
 import { Button } from '@/components/ui/button'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useUserContext } from '@/state/User'
@@ -189,12 +190,10 @@ export function QuoteRequestForm({ brands }: { brands: BrandOption[] }) {
             </div>
             <div className="space-y-1.5">
                <label className="text-sm font-medium">Telefon</label>
-               <input
-                  type="tel"
+               <PhoneInput
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={setPhone}
                   placeholder="05XX XXX XX XX"
-                  className="w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40"
                />
             </div>
          </div>

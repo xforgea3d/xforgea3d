@@ -2,6 +2,8 @@
 
 import { AlertModal } from '@/components/modals/alert-modal'
 import { Heading } from '@/components/native/heading'
+import { CityDistrictSelector } from '@/components/native/CityDistrictSelector'
+import { PhoneInput, validateTurkishPhone } from '@/components/native/PhoneInput'
 import { Button } from '@/components/ui/button'
 import {
    Form,
@@ -11,7 +13,6 @@ import {
    FormLabel,
    FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { useCsrf } from '@/hooks/useCsrf'
@@ -25,16 +26,20 @@ import { toast } from 'react-hot-toast'
 import * as z from 'zod'
 
 const formSchema = z.object({
-   city: z.string().min(1),
-   address: z.string().min(1),
-   phone: z.string().min(1),
-   postalCode: z.string().min(1),
+   city: z.string().min(1, 'Şehir seçiniz'),
+   district: z.string().min(1, 'İlçe seçiniz'),
+   address: z.string().min(1, 'Adres giriniz'),
+   phone: z.string().min(1, 'Telefon giriniz').refine(
+      (val) => !validateTurkishPhone(val),
+      (val) => ({ message: validateTurkishPhone(val) || 'Geçersiz telefon numarası' })
+   ),
+   postalCode: z.string().min(1, 'Posta kodu giriniz'),
 })
 
 type AddressFormValues = z.infer<typeof formSchema>
 
 interface AddressFormProps {
-   initialData: Address | null
+   initialData: (Address & { district?: string }) | null
 }
 
 export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
@@ -52,13 +57,26 @@ export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
 
    const form = useForm<AddressFormValues>({
       resolver: zodResolver(formSchema),
-      defaultValues: initialData || {
-         phone: '',
-         city: '',
-         address: '',
-         postalCode: '',
-      },
+      defaultValues: initialData
+         ? {
+              phone: initialData.phone || '',
+              city: initialData.city || '',
+              district: (initialData as any).district || '',
+              address: initialData.address || '',
+              postalCode: initialData.postalCode || '',
+           }
+         : {
+              phone: '',
+              city: '',
+              district: '',
+              address: '',
+              postalCode: '',
+           },
    })
+
+   const watchCity = form.watch('city')
+   const watchDistrict = form.watch('district')
+   const watchPostalCode = form.watch('postalCode')
 
    const onSubmit = async (data: AddressFormValues) => {
       if (!csrfToken) {
@@ -149,23 +167,36 @@ export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
                className="space-y-8 w-full"
             >
                <div className="md:grid md:grid-cols-3 gap-8">
-                  <FormField
-                     control={form.control}
-                     name="city"
-                     render={({ field }) => (
-                        <FormItem>
+                  {/* City / District / Postal Code row */}
+                  <div className="col-span-3">
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
                            <FormLabel>Şehir</FormLabel>
-                           <FormControl>
-                              <Input
-                                 disabled={loading}
-                                 placeholder="İstanbul"
-                                 {...field}
-                              />
-                           </FormControl>
-                           <FormMessage />
-                        </FormItem>
-                     )}
-                  />
+                           <CityDistrictSelector
+                              city={watchCity}
+                              district={watchDistrict}
+                              postalCode={watchPostalCode}
+                              onCityChange={(val) => {
+                                 form.setValue('city', val, { shouldValidate: true })
+                                 form.setValue('district', '')
+                                 form.setValue('postalCode', '')
+                              }}
+                              onDistrictChange={(val) => form.setValue('district', val, { shouldValidate: true })}
+                              onPostalCodeChange={(val) => form.setValue('postalCode', val, { shouldValidate: true })}
+                              disabled={loading}
+                           />
+                           {form.formState.errors.city && (
+                              <p className="text-sm font-medium text-destructive">{form.formState.errors.city.message}</p>
+                           )}
+                           {form.formState.errors.district && (
+                              <p className="text-sm font-medium text-destructive">{form.formState.errors.district.message}</p>
+                           )}
+                           {form.formState.errors.postalCode && (
+                              <p className="text-sm font-medium text-destructive">{form.formState.errors.postalCode.message}</p>
+                           )}
+                        </div>
+                     </div>
+                  </div>
 
                   <FormField
                      control={form.control}
@@ -174,33 +205,17 @@ export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
                         <FormItem>
                            <FormLabel>Telefon</FormLabel>
                            <FormControl>
-                              <Input
+                              <PhoneInput
+                                 value={field.value}
+                                 onChange={field.onChange}
                                  disabled={loading}
-                                 placeholder="05XX XXX XX XX"
-                                 {...field}
                               />
                            </FormControl>
                            <FormMessage />
                         </FormItem>
                      )}
                   />
-                  <FormField
-                     control={form.control}
-                     name="postalCode"
-                     render={({ field }) => (
-                        <FormItem>
-                           <FormLabel>Posta Kodu</FormLabel>
-                           <FormControl>
-                              <Input
-                                 disabled={loading}
-                                 placeholder="34000"
-                                 {...field}
-                              />
-                           </FormControl>
-                           <FormMessage />
-                        </FormItem>
-                     )}
-                  />
+
                   <div className="col-span-2">
                      <FormField
                         control={form.control}
