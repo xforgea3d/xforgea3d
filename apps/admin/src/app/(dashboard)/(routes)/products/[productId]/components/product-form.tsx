@@ -208,7 +208,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                               }
                            />
                         </FormControl>
-                        <p className="text-xs text-muted-foreground">Önerilen boyut: 800×800px (kare format)</p>
+                        <p className="text-xs text-muted-foreground mt-2 space-y-1">
+                           <span className="font-medium text-foreground block">📸 Ürün Görseli Rehberi:</span>
+                           <span className="block">• Boyut: 800×800px (kare format)</span>
+                           <span className="block">• Format: PNG veya JPG</span>
+                           <span className="block">• Arka plan: Beyaz veya şeffaf</span>
+                           <span className="block">• Min. 2 görsel önerilir (ön ve arka)</span>
+                           <span className="block">• Maks. dosya boyutu: 5MB</span>
+                        </p>
                         <FormMessage />
                      </FormItem>
                   )}

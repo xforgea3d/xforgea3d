@@ -10,13 +10,17 @@ interface ImageUploadProps {
    onChange: (value: string) => void
    onRemove: (value: string) => void
    value: string[]
+   hint?: string
 }
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
    disabled,
    onChange,
    onRemove,
    value,
+   hint,
 }) => {
    const [isMounted, setIsMounted] = useState(false)
    const [isUploading, setIsUploading] = useState(false)
@@ -31,6 +35,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
          setIsUploading(true)
          const file = event.target.files?.[0]
          if (!file) return
+
+         if (file.size > MAX_FILE_SIZE) {
+            toast.error('Dosya boyutu 5MB\'dan küçük olmalıdır')
+            setIsUploading(false)
+            return
+         }
 
          const formData = new FormData()
          formData.append('file', file)
@@ -122,6 +132,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             )}
             <p>{isUploading ? 'Yükleniyor...' : 'Görsel Yükle'}</p>
          </Button>
+         {hint && (
+            <p className="text-xs text-muted-foreground mt-2 whitespace-pre-line">{hint}</p>
+         )}
       </div>
    )
 }

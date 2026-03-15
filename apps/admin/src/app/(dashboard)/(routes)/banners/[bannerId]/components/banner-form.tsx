@@ -140,7 +140,14 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
                               onRemove={() => field.onChange('')}
                            />
                         </FormControl>
-                        <p className="text-xs text-muted-foreground">Önerilen boyut: 1920×600px (geniş banner formatı)</p>
+                        <p className="text-xs text-muted-foreground mt-2 space-y-1">
+                           <span className="font-medium text-foreground block">📸 Banner Görseli:</span>
+                           <span className="block">• Boyut: 1920×600px (geniş banner)</span>
+                           <span className="block">• Format: JPG (daha küçük dosya boyutu)</span>
+                           <span className="block">• Yüksek kalite, dikkat çekici görsel</span>
+                           <span className="block">• Ana sayfada carousel olarak gösterilir</span>
+                           <span className="block">• Maks. 5MB</span>
+                        </p>
                         <FormMessage />
                      </FormItem>
                   )}

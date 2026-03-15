@@ -162,6 +162,10 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
    }
 
    const handleUploadImage = async (modelId: string, file: File) => {
+      if (file.size > 5 * 1024 * 1024) {
+         toast.error('Dosya boyutu 5MB\'dan küçük olmalıdır')
+         return
+      }
       try {
          setUploadingId(modelId)
          const formData = new FormData()
@@ -245,7 +249,15 @@ export const ModelForm: React.FC<ModelFormProps> = ({ brandId, brandName, models
                         onChange={(url) => setNewImageUrl(url)}
                         onRemove={() => setNewImageUrl('')}
                      />
-                     <p className="text-xs text-muted-foreground">Önerilen boyut: 600×400px (3:2 en-boy oranı)</p>
+                     <p className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                        <span className="font-medium text-foreground block">📸 Araç Model Görseli:</span>
+                        <span className="block">• Boyut: 800×500px (16:10 yatay)</span>
+                        <span className="block">• Format: PNG (şeffaf veya beyaz arka plan)</span>
+                        <span className="block">• Aracın 3/4 ön görünümü tercih edilir</span>
+                        <span className="block">• Arka plan otomatik beyaza çevrilir</span>
+                        <span className="block">• Tüm modellerde aynı açı önerilir</span>
+                        <span className="block">• Maks. 5MB</span>
+                     </p>
                   </div>
                </div>
                <DialogFooter className="gap-2">

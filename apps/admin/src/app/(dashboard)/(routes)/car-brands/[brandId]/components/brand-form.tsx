@@ -219,6 +219,11 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
                                           onChange={async (e) => {
                                              const file = e.target.files?.[0]
                                              if (!file) return
+                                             if (file.size > 5 * 1024 * 1024) {
+                                                toast.error('Dosya boyutu 5MB\'dan küçük olmalıdır')
+                                                e.target.value = ''
+                                                return
+                                             }
                                              const formData = new FormData()
                                              formData.append('file', file)
                                              try {
@@ -256,6 +261,13 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
                                        )}
                                     </div>
                                  </FormControl>
+                                 <p className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                                    <span className="font-medium text-foreground block">📸 Marka Logosu:</span>
+                                    <span className="block">• Boyut: 200×200px (kare)</span>
+                                    <span className="block">• Format: PNG (şeffaf arka plan)</span>
+                                    <span className="block">• Sadece marka logosu, yazı olmadan</span>
+                                    <span className="block">• Maks. 5MB</span>
+                                 </p>
                                  <FormMessage />
                               </FormItem>
                            )}

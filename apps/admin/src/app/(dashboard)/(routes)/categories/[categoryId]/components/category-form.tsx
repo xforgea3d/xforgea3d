@@ -151,7 +151,14 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                               onRemove={() => field.onChange('')}
                            />
                         </FormControl>
-                        <p className="text-xs text-muted-foreground">Önerilen boyut: 800×400px (2:1 en-boy oranı)</p>
+                        <p className="text-xs text-muted-foreground mt-2 space-y-1">
+                           <span className="font-medium text-foreground block">📸 Kategori Görseli:</span>
+                           <span className="block">• Boyut: 800×400px (2:1 yatay format)</span>
+                           <span className="block">• Format: JPG veya PNG</span>
+                           <span className="block">• Kategoriyi temsil eden net bir görsel</span>
+                           <span className="block">• Navbar'da hover ile gösterilir</span>
+                           <span className="block">• Maks. 5MB</span>
+                        </p>
                         <FormMessage />
                      </FormItem>
                   )}
