@@ -24,13 +24,15 @@ export default function ProfileLayout({
    const router = useRouter()
 
    useEffect(() => {
-      // If auth check completed and user is not authenticated, redirect to login
+      // Only redirect when auth check has COMPLETED and result is false
+      // null = still checking, don't redirect yet
       if (authenticated === false) {
          router.push('/login?redirect=/profile/edit')
       }
    }, [authenticated, router])
 
-   if (!authenticated) {
+   // null (loading) or false (not authenticated) — show loader
+   if (authenticated !== true) {
       return (
          <div className="flex items-center justify-center min-h-[50vh]">
             <Loader />

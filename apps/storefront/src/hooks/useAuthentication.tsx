@@ -34,18 +34,15 @@ function readLoggedInCookie(): boolean {
  *   so the user stays logged in until an explicit sign-out occurs
  */
 export function useAuthenticated() {
-   // Always start false to match SSR — prevents hydration mismatch
-   const [authenticated, setAuthenticated] = useState<boolean>(false)
-   // Track whether we've confirmed auth at least once (prevents premature logout)
+   // null = unknown (loading), false = not authenticated, true = authenticated
+   // Start as null to prevent premature redirects before auth check completes
+   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
    const confirmedRef = useRef(false)
 
-   // Read the cookie hint immediately after mount (before Supabase async check)
-   // This gives a fast visual update without causing hydration errors
+   // Read the cookie hint immediately after mount
    useEffect(() => {
       const cookieHint = readLoggedInCookie()
-      if (cookieHint) {
-         setAuthenticated(true)
-      }
+      setAuthenticated(cookieHint ? true : false)
    }, [])
 
    useEffect(() => {

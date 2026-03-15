@@ -43,12 +43,18 @@ export default function Header() {
                </Button>
                <CommandMenu open={searchOpen} onOpenChange={setSearchOpen} />
                <CartNav />
-               {authenticated && <NotificationBell />}
+               {authenticated === true && <NotificationBell />}
                <div className="hidden md:flex">
                   <ThemeToggle />
                </div>
                <div className="flex-shrink-0">
-                  {authenticated ? <UserNav /> : <LoginButton />}
+                  {authenticated === null ? (
+                     <div className="h-9 w-9" />
+                  ) : authenticated ? (
+                     <UserNav />
+                  ) : (
+                     <LoginButton />
+                  )}
                </div>
             </div>
          </div>
