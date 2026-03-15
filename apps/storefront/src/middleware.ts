@@ -111,7 +111,17 @@ export async function middleware(request: NextRequest) {
       }
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(loginUrl)
+      // IMPORTANT: Copy cookies from supabaseResponse to the redirect response.
+      // updateSession() may have set/cleared auth cookies (e.g. expired token removal).
+      // Creating a fresh NextResponse.redirect() would lose those Set-Cookie headers,
+      // causing stale cookies to persist and potential redirect loops.
+      const redirectResponse = NextResponse.redirect(loginUrl)
+      supabaseResponse.cookies.getAll().forEach(cookie => {
+         redirectResponse.cookies.set(cookie.name, cookie.value, {
+            ...(cookie as any),
+         })
+      })
+      return redirectResponse
    }
 
    // CSRF protection: enforce token presence for authenticated mutating requests

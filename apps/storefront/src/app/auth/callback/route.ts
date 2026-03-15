@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -31,11 +32,48 @@ export async function GET(request: NextRequest) {
     const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/'
 
     if (code) {
-        const supabase = createClient()
+        // We need to create a Supabase client that writes cookies directly onto
+        // the redirect response. The server.ts createClient() uses next/headers
+        // cookies() which sets cookies on the *implicit* response — but since we
+        // return an *explicit* NextResponse.redirect(), those cookies are lost.
+        // Instead, we collect all cookie operations and apply them to the redirect.
+        const cookieStore = cookies()
+        const redirectUrl = new URL(next, origin)
+        const response = NextResponse.redirect(redirectUrl)
+
+        const supabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+                cookies: {
+                    get(name: string) {
+                        return cookieStore.get(name)?.value
+                    },
+                    set(name: string, value: string, options: CookieOptions) {
+                        // Set on both the cookieStore (for subsequent reads in this
+                        // request) and the explicit redirect response
+                        try {
+                            cookieStore.set({ name, value, ...options })
+                        } catch {
+                            // cookieStore.set may throw in some contexts
+                        }
+                        response.cookies.set({ name, value, ...options })
+                    },
+                    remove(name: string, options: CookieOptions) {
+                        try {
+                            cookieStore.set({ name, value: '', ...options })
+                        } catch {
+                            // ignore
+                        }
+                        response.cookies.set({ name, value: '', ...options })
+                    },
+                },
+            }
+        )
+
         const { error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error) {
-            const response = NextResponse.redirect(new URL(next, origin))
             response.cookies.set('logged-in', 'true', { path: '/', maxAge: 31536000, sameSite: 'lax' })
             return response
         }
