@@ -138,9 +138,8 @@ export default async function Index() {
          </section>
 
          {/* ── 2.5 SON GÖRÜNTÜLENEN ÜRÜNLER ────────────────────── */}
-         <section className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem] py-12 bg-neutral-50/50 dark:bg-neutral-900/50">
-            <RecentlyViewed />
-         </section>
+         {/* RecentlyViewed returns null when empty, so no visible gap is shown */}
+         <RecentlyViewed />
 
          {/* ── 3. MÜŞTERİ YORUMLARI ─────────────────────────────── */}
          <section className="py-12 bg-neutral-50/50 dark:bg-neutral-900/50">

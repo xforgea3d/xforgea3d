@@ -51,7 +51,7 @@ export default function RecentlyViewed() {
    if (loading || products.length === 0) return null
 
    return (
-      <section className="space-y-4">
+      <section className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem] py-12 bg-neutral-50/50 dark:bg-neutral-900/50 space-y-4">
          <h2 className="text-2xl font-bold tracking-tight">Son Görüntülenen Ürünler</h2>
          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
             {products.map((product) => {
