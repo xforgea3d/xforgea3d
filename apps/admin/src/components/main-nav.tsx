@@ -22,6 +22,7 @@ import {
    Ticket,
    RotateCcw,
    Bell,
+   CalendarDays,
 } from 'lucide-react'
 
 const navGroups = [
@@ -48,6 +49,7 @@ const navGroups = [
          { href: '/returns', label: 'İade Talepleri', icon: RotateCcw },
          { href: '/payments', label: 'Ödemeler', icon: CreditCard },
          { href: '/discount-codes', label: 'Kuponlar', icon: Ticket },
+         { href: '/campaigns', label: 'Kampanyalar', icon: CalendarDays },
          { href: '/users', label: 'Kullanıcılar', icon: Users },
       ],
    },

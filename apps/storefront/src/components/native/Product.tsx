@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { QuickAddButton } from '@/components/native/QuickAddButton'
 import { WishlistHeart } from '@/components/native/WishlistHeart'
+import { getActiveCampaign } from '@/lib/campaigns'
 
 export const ProductGrid = ({
    products,
@@ -44,6 +45,7 @@ export const Product = ({
    const discountPct = hasDiscount
       ? Math.round((product.discount / product.price) * 100)
       : 0
+   const activeCampaign = getActiveCampaign()
 
    return (
       <div className="group block relative h-full">
@@ -77,6 +79,18 @@ export const Product = ({
                      <div className="absolute top-2 left-2">
                         <span className="inline-flex items-center rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
                            -{discountPct}%
+                        </span>
+                     </div>
+                  )}
+
+                  {/* Campaign badge */}
+                  {hasDiscount && activeCampaign && (
+                     <div className="absolute bottom-2 left-2">
+                        <span
+                           className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm"
+                           style={{ backgroundColor: activeCampaign.theme.primaryColor }}
+                        >
+                           {activeCampaign.theme.emoji} Kampanya
                         </span>
                      </div>
                   )}

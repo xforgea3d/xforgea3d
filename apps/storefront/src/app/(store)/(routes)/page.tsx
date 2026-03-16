@@ -15,7 +15,9 @@ import {
    MapPin,
    Car,
    ArrowRight,
+   Clock,
 } from 'lucide-react'
+import { getActiveCampaign, getCampaignEndDate } from '@/lib/campaigns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import nextDynamic from 'next/dynamic'
@@ -88,8 +90,11 @@ async function fetchHomeData() {
 }
 
 export default async function Index() {
-   const campaignEndDate = process.env.CAMPAIGN_END_DATE ||
-      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+   const activeCampaign = getActiveCampaign()
+   const campaignEndDate = activeCampaign
+      ? getCampaignEndDate(activeCampaign).toISOString()
+      : process.env.CAMPAIGN_END_DATE ||
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
    let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = []
    try {
@@ -105,6 +110,56 @@ export default async function Index() {
          <section className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem] pt-2 pb-6">
             <Hero />
          </section>
+
+         {/* ── 1.5 AKTİF KAMPANYA ─────────────────────────────── */}
+         {activeCampaign && (
+            <section className={`py-10 bg-gradient-to-r ${activeCampaign.theme.gradientFrom} ${activeCampaign.theme.gradientTo}`}>
+               <div className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem]">
+                  <div className="rounded-2xl border bg-background/80 backdrop-blur-sm p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-10 shadow-xl"
+                     style={{ borderColor: `${activeCampaign.theme.primaryColor}30` }}>
+                     <div className="flex-1 text-center md:text-left">
+                        <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                           <span className="text-3xl">{activeCampaign.theme.emoji}</span>
+                           <span
+                              className="text-[10px] font-bold uppercase tracking-widest"
+                              style={{ color: activeCampaign.theme.primaryColor }}
+                           >
+                              Aktif Kampanya
+                           </span>
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+                           {activeCampaign.banner.title}
+                        </h2>
+                        <p className="mt-2 text-muted-foreground max-w-md">
+                           {activeCampaign.banner.subtitle}
+                        </p>
+                        <div className="mt-4 flex items-center gap-3 justify-center md:justify-start">
+                           <Link href={activeCampaign.banner.ctaLink}>
+                              <Button
+                                 size="lg"
+                                 className="rounded-full px-8 font-semibold text-white shadow-lg"
+                                 style={{ backgroundColor: activeCampaign.theme.primaryColor }}
+                              >
+                                 {activeCampaign.banner.ctaText}
+                                 <ArrowRight className="ml-2 h-4 w-4" />
+                              </Button>
+                           </Link>
+                        </div>
+                     </div>
+                     <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                           <Clock className="h-3.5 w-3.5" />
+                           <span>Kampanya bitis:</span>
+                        </div>
+                        <CountdownTimer
+                           endDate={campaignEndDate}
+                           title=""
+                        />
+                     </div>
+                  </div>
+               </div>
+            </section>
+         )}
 
          {/* ── 2. ÖNE ÇIKAN ÜRÜNLER ─────────────────────────────── */}
          <section className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem] py-12 bg-background">

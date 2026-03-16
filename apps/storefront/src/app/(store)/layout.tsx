@@ -22,6 +22,11 @@ const PopupNotification = dynamic(
    { ssr: false }
 )
 
+const CampaignBanner = dynamic(
+   () => import('@/components/native/CampaignBanner'),
+   { ssr: false }
+)
+
 export default async function DashboardLayout({
    children,
 }: {
@@ -45,6 +50,7 @@ export default async function DashboardLayout({
    return (
       <>
          <StoreProviders>
+            <CampaignBanner />
             <Header />
             <main className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem]">
                {children}
