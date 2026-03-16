@@ -2,6 +2,7 @@ import { ModalProvider } from '@/providers/modal-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'
 import GoogleAnalytics from '@/components/native/GoogleAnalytics'
+import ClarityAnalytics from '@/components/native/ClarityAnalytics'
 import { OrganizationJsonLd, WebSiteJsonLd } from './json-ld'
 import { Inter } from 'next/font/google'
 import dynamic from 'next/dynamic'
@@ -99,6 +100,9 @@ export const metadata: Metadata = {
    alternates: {
       canonical: SITE_URL,
    },
+   other: {
+      'instagram:profile': 'https://instagram.com/xforgea3d',
+   },
    verification: {
       google: process.env.GOOGLE_SITE_VERIFICATION ?? undefined,
       yandex: process.env.YANDEX_VERIFICATION ?? undefined,
@@ -115,6 +119,7 @@ export default async function RootLayout({
       <html lang="tr" suppressHydrationWarning>
          <body className={inter.className} suppressHydrationWarning>
             <GoogleAnalytics />
+            <ClarityAnalytics />
             <GlobalErrorHandler />
             <OrganizationJsonLd />
             <WebSiteJsonLd />

@@ -8,6 +8,7 @@ import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
 import { getCountInCart, getLocalCart } from '@/lib/cart'
 import toast from 'react-hot-toast'
+import { trackAddToCart } from '@/lib/gtag'
 
 /**
  * Standalone "Sepete Ekle" button that works directly from the product listing
@@ -73,6 +74,9 @@ export function QuickAddButton({ product }: { product: any }) {
                 }
                 dispatchCart({ ...localCart })
             }
+
+            // Track add to cart event for Google Ads
+            trackAddToCart(product?.id, product?.title || 'Unknown', product?.price ?? 0)
 
             // Animate the cart icon
             window.dispatchEvent(new CustomEvent('cart:added'))

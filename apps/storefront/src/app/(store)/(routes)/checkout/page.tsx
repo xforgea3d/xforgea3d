@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { trackBeginCheckout, trackPurchase } from '@/lib/gtag'
 
 interface Address {
    id: string
@@ -91,6 +92,17 @@ export default function CheckoutPage() {
          })
          .catch(() => {})
    }, [])
+
+   // Track begin_checkout event on mount
+   useEffect(() => {
+      if (cart?.items?.length) {
+         const total = cart.items.reduce(
+            (sum: number, item: any) => sum + item.count * item.product.price,
+            0
+         )
+         trackBeginCheckout(total)
+      }
+   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
    useEffect(() => {
       fetch('/api/addresses')
@@ -231,6 +243,7 @@ export default function CheckoutPage() {
          }
 
          const order = await res.json()
+         trackPurchase(order.id, parseFloat(costs.payable))
          await refreshCart()
          toast.success('Ödeme sayfasına yönlendiriliyorsunuz...')
          router.push(`/payment/${order.id}`)

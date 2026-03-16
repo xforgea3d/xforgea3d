@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 import { sendMail } from '@persepolis/mail'
 import { render } from '@react-email/render'
+import { sendSMS, SMS_TEMPLATES } from '@/lib/sms'
 
 export async function PATCH(
     req: Request,
@@ -30,6 +31,30 @@ export async function PATCH(
                 ...(shippingCompany !== undefined && { shippingCompany: shippingCompany || null }),
             },
         })
+
+        // Send SMS notification on status change (Shipped / Delivered)
+        if (status === 'Shipped' || status === 'Delivered') {
+            try {
+                const smsOrder = await prisma.order.findUnique({
+                    where: { id: params.orderId },
+                    include: {
+                        user: { select: { phone: true } },
+                        address: { select: { phone: true } },
+                    },
+                })
+                const phone = smsOrder?.address?.phone || smsOrder?.user?.phone
+                if (phone) {
+                    const message =
+                        status === 'Shipped'
+                            ? SMS_TEMPLATES.shipped(trackingNumber)
+                            : SMS_TEMPLATES.delivered()
+                    await sendSMS(phone, message)
+                }
+            } catch (smsError) {
+                console.error('[ORDER_SMS]', smsError)
+                // SMS failure should never break the order flow
+            }
+        }
 
         // Send review reminder when order is delivered
         if (status === 'Delivered') {

@@ -47,13 +47,16 @@ export async function generateMetadata(
    try {
       product = await prisma.product.findUnique({
          where: { id: params.productId },
-         include: { brand: true },
+         include: { brand: true, categories: { select: { title: true } } },
       })
    } catch { return {} }
 
    if (!product) return {}
 
    const finalPrice = product.price - product.discount
+
+   const availability = product.isAvailable && product.stock > 0 ? 'in stock' : 'out of stock'
+   const categoryName = product.categories?.[0]?.title ?? '3D Baski Urunleri'
 
    return {
       title: product.title,
@@ -77,6 +80,14 @@ export async function generateMetadata(
       },
       alternates: {
          canonical: `${SITE_URL}/products/${product.id}`,
+      },
+      other: {
+         'product:price:amount': finalPrice.toFixed(2),
+         'product:price:currency': 'TRY',
+         'product:availability': availability,
+         'product:brand': 'xForgea3D',
+         'product:category': categoryName,
+         'instagram:site': '@xforgea3d',
       },
    }
 }
@@ -173,7 +184,11 @@ export default async function Product({
          <RecentlyViewed />
 
          {/* Track this product view */}
-         <RecentlyViewedTracker productId={params.productId} />
+         <RecentlyViewedTracker
+            productId={params.productId}
+            productName={product.title}
+            productPrice={product.price - product.discount}
+         />
 
       </div>
    )
