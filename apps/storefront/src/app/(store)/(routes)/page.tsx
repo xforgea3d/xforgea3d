@@ -64,6 +64,7 @@ async function fetchHomeData() {
          where: { isAvailable: true, isFeatured: true },
          select: {
             id: true, title: true, price: true, discount: true,
+            flashSalePrice: true, flashSaleEndDate: true,
             images: true, isAvailable: true, stock: true, isFeatured: true,
             brand: { select: { id: true, title: true } },
             categories: { select: { id: true, title: true } },
@@ -98,15 +99,32 @@ async function fetchHomeData() {
             _count: { select: { products: true } },
          },
       }),
+      // Flash sale products
+      prisma.product.findMany({
+         where: {
+            isAvailable: true,
+            flashSalePrice: { not: null },
+            flashSaleEndDate: { gte: new Date() },
+         },
+         select: {
+            id: true, title: true, price: true, discount: true,
+            flashSalePrice: true, flashSaleEndDate: true,
+            images: true, isAvailable: true, stock: true, isFeatured: true,
+            brand: { select: { id: true, title: true } },
+            categories: { select: { id: true, title: true } },
+         },
+         take: 8,
+         orderBy: { flashSaleEndDate: 'asc' },
+      }),
    ])
 
    return Promise.race([query, timeout])
 }
 
 export default async function Index() {
-   let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = [], dbCampaigns: any[] = []
+   let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = [], dbCampaigns: any[] = [], flashSaleProducts: any[] = []
    try {
-      ;[featuredProducts, banners, carBrands, dbCampaigns] = await fetchHomeData()
+      ;[featuredProducts, banners, carBrands, dbCampaigns, flashSaleProducts] = await fetchHomeData()
    } catch (e) {
       console.warn('[home] DB unavailable or timed out, rendering empty state:', (e as Error)?.message)
    }
@@ -213,6 +231,71 @@ export default async function Index() {
          {/* ── 2.5 SON GÖRÜNTÜLENEN ÜRÜNLER ────────────────────── */}
          {/* RecentlyViewed returns null when empty, so no visible gap is shown */}
          <RecentlyViewed />
+
+         {/* ── 2.7 ÖZEL FIRSATLAR (Flash Sales) ──────────────────── */}
+         {flashSaleProducts.length > 0 && (
+            <section className="py-12 bg-gradient-to-r from-red-500/5 via-orange-500/5 to-red-500/5 dark:from-red-500/10 dark:via-orange-500/5 dark:to-red-500/10">
+               <div className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem]">
+                  <div className="mb-6 text-center">
+                     <h2 className="text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">
+                        ⚡ Ozel Firsatlar
+                     </h2>
+                     <p className="mt-2 text-sm text-muted-foreground">
+                        Sinirli sureli indirimler — kacirmayin!
+                     </p>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-red-300 dark:scrollbar-thumb-red-700">
+                     {flashSaleProducts.map((product: any) => {
+                        const salePct = Math.round(((product.price - product.flashSalePrice) / product.price) * 100)
+                        const endDiff = new Date(product.flashSaleEndDate).getTime() - Date.now()
+                        const daysLeft = Math.floor(endDiff / (1000 * 60 * 60 * 24))
+                        const hoursLeft = Math.floor((endDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+                        return (
+                           <Link
+                              key={product.id}
+                              href={`/products/${product.id}`}
+                              className="flex-shrink-0 w-[260px] snap-start group"
+                           >
+                              <div className="rounded-xl border-2 border-red-400/40 dark:border-red-500/30 bg-background overflow-hidden transition-all hover:shadow-lg hover:shadow-red-500/10 hover:-translate-y-1">
+                                 <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                                    {product.images?.[0] && (
+                                       <img
+                                          src={product.images[0]}
+                                          alt={product.title}
+                                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                          loading="lazy"
+                                       />
+                                    )}
+                                    <div className="absolute top-2 left-2">
+                                       <span className="inline-flex items-center rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm animate-pulse">
+                                          ⚡ -{salePct}%
+                                       </span>
+                                    </div>
+                                    <div className="absolute bottom-2 left-2 right-2">
+                                       <span className="inline-flex items-center rounded-md bg-black/70 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold text-white w-full justify-center">
+                                          {daysLeft > 0 ? `${daysLeft}g ${hoursLeft}s kaldi` : `${hoursLeft}s kaldi`}
+                                       </span>
+                                    </div>
+                                 </div>
+                                 <div className="p-3 space-y-1.5">
+                                    <h3 className="text-sm font-semibold line-clamp-2">{product.title}</h3>
+                                    <div className="flex items-baseline gap-2">
+                                       <span className="text-lg font-bold text-red-600 dark:text-red-400">
+                                          {product.flashSalePrice.toFixed(2)} ₺
+                                       </span>
+                                       <span className="text-sm text-muted-foreground line-through">
+                                          {product.price.toFixed(2)} ₺
+                                       </span>
+                                    </div>
+                                 </div>
+                              </div>
+                           </Link>
+                        )
+                     })}
+                  </div>
+               </div>
+            </section>
+         )}
 
          {/* ── 3. MÜŞTERİ YORUMLARI ─────────────────────────────── */}
          <section className="py-12 bg-neutral-50/50 dark:bg-neutral-900/50">

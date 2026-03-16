@@ -25,6 +25,8 @@ export async function POST(req: Request) {
             productType: ['READY', 'CUSTOM'].includes(body.productType) ? body.productType : 'READY',
             metadata: body.metadata,
             customOptions: body.customOptions,
+            flashSalePrice: body.flashSalePrice ? Number(body.flashSalePrice) : null,
+            flashSaleEndDate: body.flashSaleEndDate ? new Date(body.flashSaleEndDate) : null,
             brand: { connect: { id: body.brandId } },
             ...(body.categoryIds?.length && {
                categories: { connect: body.categoryIds.map((id: string) => ({ id })) },

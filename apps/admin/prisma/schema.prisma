@@ -131,6 +131,9 @@ model Product {
   discount Float @default(0)
   stock    Int   @default(1)
 
+  flashSalePrice    Float?
+  flashSaleEndDate  DateTime?
+
   isPhysical  Boolean @default(true)
   isAvailable Boolean @default(true)
   isFeatured  Boolean @default(false)

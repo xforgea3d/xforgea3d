@@ -50,7 +50,11 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
 
    const form = useForm<BannerFormValues>({
       resolver: zodResolver(formSchema),
-      defaultValues: initialData || {
+      defaultValues: initialData ? {
+         label: initialData.label,
+         image: initialData.image,
+         link: initialData.link || '',
+      } : {
          label: '',
          image: '',
          link: '',

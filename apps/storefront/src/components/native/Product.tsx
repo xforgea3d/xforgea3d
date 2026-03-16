@@ -32,6 +32,26 @@ export const ProductSkeletonGrid = () => {
    )
 }
 
+function getFlashSaleTimeLeft(endDate: string | Date | null | undefined): string | null {
+   if (!endDate) return null
+   const diff = new Date(endDate).getTime() - Date.now()
+   if (diff <= 0) return null
+   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+   if (days > 0) return `${days}g ${hours}s kaldi`
+   const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+   return `${hours}s ${mins}dk kaldi`
+}
+
+function isFlashSaleActive(product: any): boolean {
+   return !!(
+      product?.flashSalePrice &&
+      product?.flashSalePrice > 0 &&
+      product?.flashSaleEndDate &&
+      new Date(product.flashSaleEndDate).getTime() > Date.now()
+   )
+}
+
 export const Product = ({
    product,
    priority = false,
@@ -39,17 +59,27 @@ export const Product = ({
    product: ProductWithIncludes
    priority?: boolean
 }) => {
+   const flashActive = isFlashSaleActive(product)
    const hasDiscount = product?.discount > 0
-   const displayPrice = hasDiscount ? product.price - product.discount : product.price
-   const discountPct = hasDiscount
-      ? Math.round((product.discount / product.price) * 100)
-      : 0
+   const displayPrice = flashActive
+      ? (product as any).flashSalePrice
+      : hasDiscount
+         ? product.price - product.discount
+         : product.price
+   const discountPct = flashActive
+      ? Math.round(((product.price - (product as any).flashSalePrice) / product.price) * 100)
+      : hasDiscount
+         ? Math.round((product.discount / product.price) * 100)
+         : 0
+   const flashTimeLeft = flashActive ? getFlashSaleTimeLeft((product as any).flashSaleEndDate) : null
+
    return (
       <div className="group block relative h-full">
          <div className={cn(
             "relative flex flex-col h-full overflow-hidden rounded-xl border bg-card transition-all duration-300",
             "group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] group-hover:-translate-y-1",
-            "dark:group-hover:shadow-[0_8px_30px_rgba(249,115,22,0.12)] dark:group-hover:border-orange-500/25"
+            "dark:group-hover:shadow-[0_8px_30px_rgba(249,115,22,0.12)] dark:group-hover:border-orange-500/25",
+            flashActive && "border-red-400/50 dark:border-red-500/30"
          )}>
             <Link href={`/products/${product.id}`} className="block">
                {/* Image container */}
@@ -71,8 +101,22 @@ export const Product = ({
                   {/* Wishlist heart */}
                   <WishlistHeart productId={product.id} />
 
-                  {/* Discount badge overlay */}
-                  {hasDiscount && (
+                  {/* Flash sale badge */}
+                  {flashActive && (
+                     <div className="absolute top-2 left-2 flex flex-col gap-1">
+                        <span className="inline-flex items-center rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm animate-pulse">
+                           ⚡ Ozel Firsat
+                        </span>
+                        {flashTimeLeft && (
+                           <span className="inline-flex items-center rounded-full bg-orange-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                              {flashTimeLeft}
+                           </span>
+                        )}
+                     </div>
+                  )}
+
+                  {/* Discount badge overlay (only when no flash sale) */}
+                  {!flashActive && hasDiscount && (
                      <div className="absolute top-2 left-2">
                         <span className="inline-flex items-center rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
                            -{discountPct}%
@@ -103,12 +147,17 @@ export const Product = ({
                   </h3>
 
                   <div className="flex items-baseline gap-2 pt-1 mt-auto">
-                     <span className="text-lg font-bold tracking-tight">
+                     <span className={cn("text-lg font-bold tracking-tight", flashActive && "text-red-600 dark:text-red-400")}>
                         {displayPrice.toFixed(2)} ₺
                      </span>
-                     {hasDiscount && (
+                     {(hasDiscount || flashActive) && (
                         <span className="text-sm text-muted-foreground line-through">
                            {product.price.toFixed(2)} ₺
+                        </span>
+                     )}
+                     {flashActive && (
+                        <span className="text-xs font-semibold text-red-600 dark:text-red-400">
+                           -{discountPct}%
                         </span>
                      )}
                   </div>

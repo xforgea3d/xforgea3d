@@ -61,6 +61,7 @@ export default async function Products({ searchParams }) {
             take: PAGE_SIZE,
             select: {
                id: true, title: true, price: true, discount: true,
+               flashSalePrice: true, flashSaleEndDate: true,
                images: true, isAvailable: true, stock: true, isFeatured: true,
                brand: { select: { id: true, title: true } },
                categories: { select: { id: true, title: true } },

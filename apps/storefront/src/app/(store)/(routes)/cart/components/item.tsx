@@ -210,6 +210,26 @@ export const Item = ({ cartItem }) => {
    }
 
    function Price() {
+      // Flash sale check
+      const hasFlashSale = product?.flashSalePrice != null &&
+         product?.flashSalePrice > 0 &&
+         product?.flashSaleEndDate &&
+         new Date(product.flashSaleEndDate).getTime() > Date.now()
+
+      if (hasFlashSale) {
+         const salePct = ((product.price - product.flashSalePrice) / product.price * 100).toFixed(0)
+         return (
+            <div className="flex gap-2 items-center">
+               <Badge className="flex gap-2 bg-red-600" variant="destructive">
+                  <span>⚡ Ozel Firsat</span>
+                  <span>%{salePct}</span>
+               </Badge>
+               <h2 className="text-red-600 dark:text-red-400 font-bold">{product.flashSalePrice.toFixed(2)} &#8378;</h2>
+               <span className="text-sm text-muted-foreground line-through">{product.price.toFixed(2)} &#8378;</span>
+            </div>
+         )
+      }
+
       if ((product?.discount ?? 0) > 0) {
          const price = (product?.price ?? 0) - (product?.discount ?? 0)
          const percentage = (product?.price ?? 0) > 0 ? ((product?.discount ?? 0) / (product?.price ?? 0)) * 100 : 0

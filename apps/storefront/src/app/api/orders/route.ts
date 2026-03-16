@@ -158,12 +158,22 @@ export async function POST(req: Request) {
                   discountCode: { connect: { code: discountCode } },
                }),
                orderItems: {
-                  create: cart.items.map((item) => ({
-                     count: item.count,
-                     price: item.product.price,
-                     discount: item.product.discount,
-                     product: { connect: { id: item.productId } },
-                  })),
+                  create: cart.items.map((item) => {
+                     const product = productMap.get(item.productId)!
+                     const now = new Date()
+                     const hasFlashSale = product.flashSalePrice != null &&
+                        product.flashSaleEndDate != null &&
+                        product.flashSalePrice > 0 &&
+                        new Date(product.flashSaleEndDate) > now
+                     const effectivePrice = hasFlashSale ? product.flashSalePrice! : product.price
+                     const effectiveDiscount = hasFlashSale ? 0 : product.discount
+                     return {
+                        count: item.count,
+                        price: effectivePrice,
+                        discount: effectiveDiscount,
+                        product: { connect: { id: item.productId } },
+                     }
+                  }),
                },
             },
             include: { orderItems: true, address: true },
@@ -321,16 +331,26 @@ function calculateCosts({
    discountCodeData,
    taxRate = 20,
 }: {
-   cart: { items: Array<{ count: number; product: { price: number; discount: number } }> }
+   cart: { items: Array<{ count: number; product: { price: number; discount: number; flashSalePrice?: number | null; flashSaleEndDate?: Date | null } }> }
    discountCodeData?: { percent: number; maxDiscountAmount: number | null } | null
    taxRate?: number
 }) {
    let total = 0
    let discount = 0
+   const now = new Date()
 
    for (const item of cart.items) {
-      total += item.count * item.product.price
-      discount += item.count * item.product.discount
+      const hasFlashSale = item.product.flashSalePrice != null &&
+         item.product.flashSaleEndDate != null &&
+         item.product.flashSalePrice > 0 &&
+         new Date(item.product.flashSaleEndDate) > now
+      if (hasFlashSale) {
+         total += item.count * item.product.flashSalePrice!
+         // No per-product discount when flash sale is active
+      } else {
+         total += item.count * item.product.price
+         discount += item.count * item.product.discount
+      }
    }
 
    // Apply discount code on top of per-product discounts

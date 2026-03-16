@@ -67,6 +67,22 @@ function getEstimatedDeliveryRange(): string {
    return `${fmt(minDate)} - ${fmt(maxDate)}`
 }
 
+function getFlashSaleCountdown(endDate: string | Date | null | undefined): { active: boolean; text: string; days: number; hours: number; minutes: number } {
+   if (!endDate) return { active: false, text: '', days: 0, hours: 0, minutes: 0 }
+   const diff = new Date(endDate).getTime() - Date.now()
+   if (diff <= 0) return { active: false, text: 'Sure doldu!', days: 0, hours: 0, minutes: 0 }
+   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+   return {
+      active: true,
+      text: `Bu firsat ${days} gun ${hours} saat ${minutes} dk sonra bitiyor!`,
+      days,
+      hours,
+      minutes,
+   }
+}
+
 export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
    const csrfToken = useCsrf()
    const isCustomProduct = (product as any)?.productType === 'CUSTOM'
@@ -83,18 +99,29 @@ export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
    const [uploading, setUploading] = useState(false)
    const fileRef = useRef<HTMLInputElement>(null)
 
+   // Flash sale detection
+   const flashSalePrice = (product as any)?.flashSalePrice
+   const flashSaleEndDate = (product as any)?.flashSaleEndDate
+   const flashSale = getFlashSaleCountdown(flashSaleEndDate)
+   const isFlashActive = !!(flashSalePrice && flashSalePrice > 0 && flashSale.active)
+   const flashDiscountPct = isFlashActive
+      ? Math.round(((product.price - flashSalePrice) / product.price) * 100)
+      : 0
+
    const basePrice = product?.price ?? 0
    const discount = product?.discount ?? 0
    const discountPct = discount > 0 ? ((discount / basePrice) * 100).toFixed(0) : null
 
-   const finalPrice = calculateCustomPrice(
-      basePrice,
-      discount,
-      isCustomized,
-      customOptions,
-      selectedColor,
-      selectedSize
-   )
+   const finalPrice = isFlashActive
+      ? flashSalePrice
+      : calculateCustomPrice(
+         basePrice,
+         discount,
+         isCustomized,
+         customOptions,
+         selectedColor,
+         selectedSize
+      )
 
    const productionTime = isCustomized ? CUSTOM_PRODUCTION_DAYS : STANDARD_PRODUCTION_DAYS
 
@@ -154,15 +181,40 @@ export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
                )}
             </div>
 
-            <h1 className="text-2xl font-bold tracking-tight leading-snug">
-               {product.title}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+               <h1 className="text-2xl font-bold tracking-tight leading-snug">
+                  {product.title}
+               </h1>
+               {isFlashActive && (
+                  <Badge className="bg-red-600 text-white text-xs animate-pulse">
+                     ⚡ Ozel Firsat
+                  </Badge>
+               )}
+            </div>
+
+            {/* Flash Sale Countdown */}
+            {isFlashActive && (
+               <div className="rounded-lg bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-3 text-sm font-semibold flex items-center gap-2">
+                  <ClockIcon className="h-4 w-4 flex-shrink-0" />
+                  <span>{flashSale.text}</span>
+               </div>
+            )}
 
             <div className="flex items-baseline gap-3">
-               <span className="text-3xl font-extrabold tracking-tight">
+               <span className={`text-3xl font-extrabold tracking-tight ${isFlashActive ? 'text-red-600 dark:text-red-400' : ''}`}>
                   {finalPrice.toFixed(2)} ₺
                </span>
-               {discount > 0 && !isCustomized && (
+               {isFlashActive && (
+                  <>
+                     <span className="text-sm line-through text-muted-foreground">
+                        {basePrice.toFixed(2)} ₺
+                     </span>
+                     <Badge variant="destructive" className="text-xs">
+                        %{flashDiscountPct} Indirim
+                     </Badge>
+                  </>
+               )}
+               {!isFlashActive && discount > 0 && !isCustomized && (
                   <>
                      <span className="text-sm line-through text-muted-foreground">
                         {basePrice.toFixed(2)} ₺

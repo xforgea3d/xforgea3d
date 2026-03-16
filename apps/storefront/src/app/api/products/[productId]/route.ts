@@ -21,6 +21,8 @@ export async function GET(
             images: true,
             price: true,
             discount: true,
+            flashSalePrice: true,
+            flashSaleEndDate: true,
             stock: true,
             isAvailable: true,
             isFeatured: true,

@@ -46,6 +46,9 @@ const formSchema = z.object({
    customOptions: z.string().optional(),
    isFeatured: z.boolean().default(false).optional(),
    isAvailable: z.boolean().default(false).optional(),
+   flashSaleActive: z.boolean().default(false).optional(),
+   flashSalePrice: z.coerce.number().min(0).optional(),
+   flashSaleEndDate: z.string().optional(),
 })
 
 type ProductFormValues = z.infer<typeof formSchema>
@@ -72,6 +75,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
    const toastMessage = initialData ? 'Ürün güncellendi.' : 'Ürün oluşturuldu.'
    const action = initialData ? 'Kaydet' : 'Oluştur'
 
+   const hasFlashSale = !!(initialData as any)?.flashSalePrice && !!(initialData as any)?.flashSaleEndDate
+
    const defaultValues = initialData
       ? {
          ...initialData,
@@ -82,6 +87,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          productType: (initialData as any)?.productType ?? 'READY',
          customOptions: (initialData as any)?.customOptions
             ? JSON.stringify((initialData as any).customOptions, null, 2)
+            : '',
+         flashSaleActive: hasFlashSale,
+         flashSalePrice: (initialData as any)?.flashSalePrice ?? 0,
+         flashSaleEndDate: (initialData as any)?.flashSaleEndDate
+            ? new Date((initialData as any).flashSaleEndDate).toISOString().slice(0, 16)
             : '',
       }
       : {
@@ -96,6 +106,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          customOptions: '',
          isFeatured: false,
          isAvailable: false,
+         flashSaleActive: false,
+         flashSalePrice: 0,
+         flashSaleEndDate: '',
       }
 
    const form = useForm<ProductFormValues>({
@@ -112,6 +125,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             customOptions: formData.customOptions
                ? JSON.parse(formData.customOptions)
                : null,
+            flashSalePrice: formData.flashSaleActive && formData.flashSalePrice ? Number(formData.flashSalePrice) : null,
+            flashSaleEndDate: formData.flashSaleActive && formData.flashSaleEndDate ? new Date(formData.flashSaleEndDate).toISOString() : null,
          }
          if (initialData) {
             const res = await fetch(`/api/products/${params.productId}`, {
@@ -422,6 +437,99 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                         </FormItem>
                      )}
                   />
+
+                  {/* ── Özel Fırsat (Flash Sale) ─────────────────────── */}
+                  <div className="col-span-1 md:col-span-3">
+                     <div className="rounded-lg border-2 border-orange-400/50 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 p-5 space-y-4">
+                        <FormField
+                           control={form.control}
+                           name="flashSaleActive"
+                           render={({ field }) => (
+                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                 <FormControl>
+                                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                 </FormControl>
+                                 <div className="space-y-1 leading-none">
+                                    <FormLabel className="text-orange-700 dark:text-orange-400 font-bold text-base">
+                                       ⚡ Özel Fırsat Aktif
+                                    </FormLabel>
+                                    <FormDescription>Sınırlı süreli indirim uygula.</FormDescription>
+                                 </div>
+                              </FormItem>
+                           )}
+                        />
+
+                        {form.watch('flashSaleActive') && (
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <FormField
+                                 control={form.control}
+                                 name="flashSalePrice"
+                                 render={({ field }) => (
+                                    <FormItem>
+                                       <FormLabel className="text-orange-700 dark:text-orange-400">Fırsat Fiyatı (₺)</FormLabel>
+                                       <FormControl>
+                                          <Input
+                                             type="number"
+                                             step="0.01"
+                                             disabled={loading}
+                                             placeholder="199.99"
+                                             className="border-orange-300 dark:border-orange-700"
+                                             {...field}
+                                          />
+                                       </FormControl>
+                                       <FormMessage />
+                                    </FormItem>
+                                 )}
+                              />
+                              <FormField
+                                 control={form.control}
+                                 name="flashSaleEndDate"
+                                 render={({ field }) => (
+                                    <FormItem>
+                                       <FormLabel className="text-orange-700 dark:text-orange-400">Bitiş Tarihi</FormLabel>
+                                       <FormControl>
+                                          <Input
+                                             type="datetime-local"
+                                             disabled={loading}
+                                             className="border-orange-300 dark:border-orange-700"
+                                             {...field}
+                                          />
+                                       </FormControl>
+                                       <FormMessage />
+                                    </FormItem>
+                                 )}
+                              />
+
+                              {/* Flash Sale Preview */}
+                              {(() => {
+                                 const salePrice = Number(form.watch('flashSalePrice')) || 0
+                                 const normalPrice = Number(form.watch('price')) || 0
+                                 const endDateStr = form.watch('flashSaleEndDate')
+                                 if (salePrice > 0 && normalPrice > 0 && salePrice < normalPrice) {
+                                    const pct = Math.round(((normalPrice - salePrice) / normalPrice) * 100)
+                                    let timeLeft = ''
+                                    if (endDateStr) {
+                                       const diff = new Date(endDateStr).getTime() - Date.now()
+                                       if (diff > 0) {
+                                          const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+                                          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+                                          timeLeft = ` - ${days} gün ${hours} saat kaldı`
+                                       } else {
+                                          timeLeft = ' - Süre dolmuş!'
+                                       }
+                                    }
+                                    return (
+                                       <div className="col-span-1 md:col-span-2 rounded-md bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-3 text-sm font-medium">
+                                          Normal: ₺{normalPrice.toFixed(2)} → Fırsat: ₺{salePrice.toFixed(2)} ({pct}% indirim){timeLeft}
+                                       </div>
+                                    )
+                                 }
+                                 return null
+                              })()}
+                           </div>
+                        )}
+                     </div>
+                  </div>
                </div>
                <Button disabled={loading} className="ml-auto" type="submit">
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

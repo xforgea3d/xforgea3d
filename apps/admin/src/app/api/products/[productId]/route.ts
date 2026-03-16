@@ -56,7 +56,7 @@ export async function PATCH(
          return new NextResponse('Product Id is required', { status: 400 })
       }
 
-      const { title, description, price, discount, stock, isFeatured, isAvailable, images, keywords, categoryIds, carModelIds, brandId, productType, customOptions } = await req.json()
+      const { title, description, price, discount, stock, isFeatured, isAvailable, images, keywords, categoryIds, carModelIds, brandId, productType, customOptions, flashSalePrice, flashSaleEndDate } = await req.json()
 
       // Validate numeric fields
       if (price !== undefined) {
@@ -87,6 +87,8 @@ export async function PATCH(
             ...(brandId !== undefined && { brand: { connect: { id: brandId } } }),
             ...(productType !== undefined && ['READY', 'CUSTOM'].includes(productType) && { productType }),
             ...(customOptions !== undefined && { customOptions }),
+            ...(flashSalePrice !== undefined && { flashSalePrice: flashSalePrice ? Number(flashSalePrice) : null }),
+            ...(flashSaleEndDate !== undefined && { flashSaleEndDate: flashSaleEndDate ? new Date(flashSaleEndDate) : null }),
             ...(categoryIds !== undefined && {
                categories: { set: categoryIds.map((id: string) => ({ id })) },
             }),
