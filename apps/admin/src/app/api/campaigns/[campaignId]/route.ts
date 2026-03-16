@@ -71,6 +71,13 @@ export async function PATCH(
          productIds,
       } = body
 
+      if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+         return NextResponse.json(
+            { error: 'Bitis tarihi baslangictan sonra olmali' },
+            { status: 400 }
+         )
+      }
+
       // Build the update data conditionally
       const updateData: any = {}
       if (name !== undefined) updateData.name = name

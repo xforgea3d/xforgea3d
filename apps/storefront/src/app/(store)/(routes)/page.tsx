@@ -1,4 +1,4 @@
-export const revalidate = 300
+export const revalidate = 60
 
 import Carousel from '@/components/native/Carousel'
 import Hero from '@/components/native/Hero'

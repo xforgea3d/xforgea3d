@@ -186,7 +186,6 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
          })
          if (!res.ok) throw new Error(await res.text())
          toast.success(toastMessage)
-         router.refresh()
          window.location.href = '/campaigns'
       } catch (error: any) {
          toast.error('Bir hata olustu: ' + (error?.message || ''))
@@ -650,6 +649,11 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
                   <p className="text-sm text-muted-foreground mb-4">
                      Bu kampanyaya dahil edilecek urunleri secin ({selectedProductIds.length} secili)
                   </p>
+                  {selectedProductIds.length === 0 && (
+                     <div className="mb-3 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+                        Kampanyaya henuz urun eklenmedi. Urun eklemeden kampanya aktif olmaz.
+                     </div>
+                  )}
                   <Input
                      placeholder="Urun ara..."
                      value={productSearch}

@@ -2,20 +2,28 @@
 
 import { useEffect, useState } from 'react'
 import { getActiveCampaign, type Campaign, type DBCampaign, dbCampaignToLegacy } from '@/lib/campaigns'
-import { X } from 'lucide-react'
+import { X, Copy, Check } from 'lucide-react'
 import Link from 'next/link'
 
 const DISMISS_KEY = 'campaign-banner-dismissed'
 
+interface DiscountInfo {
+   code: string
+   percent: number
+}
+
 export default function CampaignBanner() {
    const [campaign, setCampaign] = useState<Campaign | null>(null)
+   const [discountInfo, setDiscountInfo] = useState<DiscountInfo | null>(null)
    const [dismissed, setDismissed] = useState(true)
    const [mounted, setMounted] = useState(false)
+   const [copied, setCopied] = useState(false)
 
    useEffect(() => {
       // Try DB campaigns first, then fall back to hardcoded
       async function loadCampaign() {
          let active: Campaign | null = null
+         let discount: DiscountInfo | null = null
 
          try {
             const res = await fetch('/api/campaigns/active')
@@ -23,6 +31,12 @@ export default function CampaignBanner() {
                const dbCampaigns: DBCampaign[] = await res.json()
                if (dbCampaigns.length > 0) {
                   active = dbCampaignToLegacy(dbCampaigns[0])
+                  if (dbCampaigns[0].discountCode) {
+                     discount = {
+                        code: dbCampaigns[0].discountCode.code,
+                        percent: dbCampaigns[0].discountCode.percent,
+                     }
+                  }
                }
             }
          } catch {
@@ -39,6 +53,7 @@ export default function CampaignBanner() {
          if (dismissedId === active.id) return
 
          setCampaign(active)
+         setDiscountInfo(discount)
          setDismissed(false)
          requestAnimationFrame(() => {
             setMounted(true)
@@ -61,13 +76,20 @@ export default function CampaignBanner() {
    async function handleClick() {
       // Track click event for DB campaigns
       if (campaign) {
-         try {
-            // Fire-and-forget click tracking
-            fetch(`/api/campaigns/active?click=${campaign.id}`, { method: 'HEAD' }).catch(() => {})
-         } catch {
-            // ignore
-         }
+         fetch('/api/campaigns/active', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ campaignId: campaign.id }),
+         }).catch(() => {})
       }
+   }
+
+   function handleCopyCode() {
+      if (!discountInfo) return
+      navigator.clipboard.writeText(discountInfo.code).then(() => {
+         setCopied(true)
+         setTimeout(() => setCopied(false), 2000)
+      }).catch(() => {})
    }
 
    if (dismissed || !campaign) return null
@@ -94,6 +116,24 @@ export default function CampaignBanner() {
                   {campaign.banner.subtitle}
                </span>
             </div>
+
+            {/* Discount code */}
+            {discountInfo && (
+               <button
+                  onClick={handleCopyCode}
+                  className="flex-shrink-0 flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-xs font-semibold transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                  style={{ borderColor: campaign.theme.primaryColor, color: campaign.theme.primaryColor }}
+                  title="Kodu kopyala"
+               >
+                  <span>Kod: {discountInfo.code}</span>
+                  <span className="text-[10px] opacity-75">%{discountInfo.percent}</span>
+                  {copied ? (
+                     <Check className="h-3 w-3" />
+                  ) : (
+                     <Copy className="h-3 w-3" />
+                  )}
+               </button>
+            )}
 
             {/* CTA */}
             <Link

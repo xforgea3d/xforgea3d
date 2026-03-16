@@ -54,6 +54,13 @@ export async function POST(req: Request) {
          )
       }
 
+      if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+         return NextResponse.json(
+            { error: 'Bitis tarihi baslangictan sonra olmali' },
+            { status: 400 }
+         )
+      }
+
       const campaign = await prisma.campaign.create({
          data: {
             name,
