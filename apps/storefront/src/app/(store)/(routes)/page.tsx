@@ -1,6 +1,5 @@
 export const revalidate = 60
 
-import Carousel from '@/components/native/Carousel'
 import Hero from '@/components/native/Hero'
 import { ProductSkeletonGrid } from '@/components/native/Product'
 import prisma from '@/lib/prisma'
@@ -289,7 +288,15 @@ export default async function Index() {
                   Yeni koleksiyonumuza göz atın, size ilham verecek ürünler sizi bekliyor.
                </p>
             </div>
-            <Carousel images={banners.map((obj) => obj.image)} disableZoom />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               {banners.map((banner: any) => (
+                  <Link key={banner.id} href={banner.link || '/products'}>
+                     <div className="rounded-xl overflow-hidden border hover:shadow-lg transition-shadow">
+                        <img src={banner.image} alt={banner.label || ''} className="w-full h-auto object-cover" />
+                     </div>
+                  </Link>
+               ))}
+            </div>
          </section>
          )}
 

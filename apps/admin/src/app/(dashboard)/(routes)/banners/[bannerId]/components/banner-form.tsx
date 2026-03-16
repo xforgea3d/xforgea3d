@@ -27,6 +27,7 @@ import ImageUpload from '@/components/ui/image-upload'
 const formSchema = z.object({
    label: z.string().min(1),
    image: z.string().min(1),
+   link: z.string().optional().or(z.literal('')),
 })
 
 type BannerFormValues = z.infer<typeof formSchema>
@@ -52,6 +53,7 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
       defaultValues: initialData || {
          label: '',
          image: '',
+         link: '',
       },
    })
 
@@ -166,6 +168,26 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
                                  {...field}
                               />
                            </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="link"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Bağlantı URL</FormLabel>
+                           <FormControl>
+                              <Input
+                                 disabled={loading}
+                                 placeholder="https://xforgea3d.com/products veya /products"
+                                 {...field}
+                              />
+                           </FormControl>
+                           <p className="text-xs text-muted-foreground">
+                              Banner tıklandığında yönlendirilecek sayfa. Boş bırakılırsa /products sayfasına yönlendirilir.
+                           </p>
                            <FormMessage />
                         </FormItem>
                      )}

@@ -447,6 +447,7 @@ model Banner {
 
   label String
   image String
+  link  String?
 
   categories Category[]
 

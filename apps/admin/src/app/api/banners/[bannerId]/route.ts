@@ -32,7 +32,7 @@ export async function PATCH(
     try {
         const body = await req.json()
 
-        const { label, image } = body
+        const { label, image, link } = body
 
         if (!label) {
             return new NextResponse('Label is required', { status: 400 })
@@ -53,6 +53,7 @@ export async function PATCH(
             data: {
                 label,
                 image,
+                link: link || null,
             },
         })
 
