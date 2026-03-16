@@ -26,6 +26,8 @@ export const Item = ({ cartItem }) => {
    const { loading, cart, refreshCart, dispatchCart } = useCartContext()
    const [fetchingCart, setFetchingCart] = useState(false)
 
+   if (!cartItem || !cartItem.product) return null
+
    const { product, productId, count } = cartItem
 
    function findLocalCartIndexById(cart, productId) {

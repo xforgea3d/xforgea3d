@@ -10,6 +10,15 @@ export async function POST(req: Request) {
       if (!body.title) return new NextResponse('Title is required', { status: 400 })
       if (!body.brandId) return new NextResponse('Brand is required', { status: 400 })
 
+      // Validate flash sale price: must be > 0 and less than the product price
+      if (body.flashSalePrice !== undefined && body.flashSalePrice !== null) {
+         const fsPrice = Number(body.flashSalePrice)
+         const productPrice = Number(body.price ?? 0)
+         if (isNaN(fsPrice) || fsPrice <= 0 || fsPrice >= productPrice) {
+            return new NextResponse('Fırsat fiyatı 0\'dan büyük ve normal fiyattan küçük olmalıdır', { status: 400 })
+         }
+      }
+
       const product = await prisma.product.create({
          data: {
             title: body.title,

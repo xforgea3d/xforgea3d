@@ -27,7 +27,10 @@ import ImageUpload from '@/components/ui/image-upload'
 const formSchema = z.object({
    label: z.string().min(1),
    image: z.string().min(1),
-   link: z.string().optional().or(z.literal('')),
+   link: z.string().optional().or(z.literal('')).refine(
+      (val) => !val || val.startsWith('/') || val.startsWith('http://') || val.startsWith('https://'),
+      { message: 'Geçersiz URL formatı. URL "/" veya "http(s)://" ile başlamalıdır' }
+   ),
 })
 
 type BannerFormValues = z.infer<typeof formSchema>

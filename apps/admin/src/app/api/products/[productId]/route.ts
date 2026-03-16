@@ -72,6 +72,18 @@ export async function PATCH(
          if (isNaN(n) || n < 0 || !Number.isInteger(n)) return new NextResponse('Invalid stock', { status: 400 })
       }
 
+      // Validate flash sale price: must be > 0 and less than the product's current price
+      if (flashSalePrice !== undefined) {
+         if (flashSalePrice !== null) {
+            const fsPrice = Number(flashSalePrice)
+            // Resolve effective price: use incoming price if provided, otherwise fetch existing
+            const effectivePrice = price !== undefined ? Number(price) : (await prisma.product.findUnique({ where: { id: params.productId }, select: { price: true } }))?.price ?? 0
+            if (isNaN(fsPrice) || fsPrice <= 0 || fsPrice >= effectivePrice) {
+               return new NextResponse('Fırsat fiyatı 0\'dan büyük ve normal fiyattan küçük olmalıdır', { status: 400 })
+            }
+         }
+      }
+
       const product = await prisma.product.update({
          where: { id: params.productId },
          data: {

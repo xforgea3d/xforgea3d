@@ -10,6 +10,11 @@ export async function GET(request: Request) {
 
       // Preview mode: return specific campaign regardless of dates/isActive
       if (previewId) {
+         const previewSecret = searchParams.get('secret')
+         if (previewSecret !== process.env.CAMPAIGN_PREVIEW_SECRET) {
+            return NextResponse.json({ error: 'Invalid preview' }, { status: 403 })
+         }
+
          const campaign = await prisma.campaign.findUnique({
             where: { id: previewId },
             include: {

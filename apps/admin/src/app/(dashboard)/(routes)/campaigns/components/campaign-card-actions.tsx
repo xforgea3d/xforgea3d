@@ -22,7 +22,8 @@ export function CampaignCardActions({
    function handleTestClick(e: React.MouseEvent) {
       e.preventDefault()
       e.stopPropagation()
-      const url = `${storefrontUrl}?campaign_preview=${campaignId}`
+      const previewSecret = process.env.NEXT_PUBLIC_CAMPAIGN_PREVIEW_SECRET || ''
+      const url = `${storefrontUrl}?campaign_preview=${campaignId}&secret=${previewSecret}`
       window.open(url, '_blank')
    }
 
