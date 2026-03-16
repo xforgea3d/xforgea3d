@@ -1,24 +1,61 @@
 'use client'
 
 import { useAuthenticated } from '@/hooks/useAuthentication'
+import { useUserContext } from '@/state/User'
 import { useCsrf } from '@/hooks/useCsrf'
 import { useCallback, useEffect, useState } from 'react'
 
 const STORAGE_KEY = 'onboarding-completed'
 
+const features = [
+   {
+      icon: (
+         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+         </svg>
+      ),
+      title: 'Kişiye Özel 3D Baskı',
+      desc: 'Hayalinizdeki ürünü birlikte tasarlayalım',
+   },
+   {
+      icon: (
+         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+            <rect x="1" y="3" width="15" height="13" rx="2" />
+            <path d="M16 8h4l3 3v5a2 2 0 0 1-2 2h-1" />
+            <circle cx="5.5" cy="18.5" r="2.5" />
+            <circle cx="18.5" cy="18.5" r="2.5" />
+         </svg>
+      ),
+      title: 'Türkiye Geneli Kargo',
+      desc: 'Hızlı ve güvenli teslimat',
+   },
+   {
+      icon: (
+         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+         </svg>
+      ),
+      title: '14 Gün İade Garantisi',
+      desc: 'Koşulsuz iade hakkı',
+   },
+]
+
+const INSTAGRAM_URL = 'https://www.instagram.com/xforgea3d'
+
 export default function WelcomeOnboarding() {
    const { authenticated } = useAuthenticated()
+   const { user } = useUserContext()
    const csrfToken = useCsrf()
    const [visible, setVisible] = useState(false)
-   const [step, setStep] = useState(1)
-   const [kvkkChecked, setKvkkChecked] = useState(false)
-   const [privacyChecked, setPrivacyChecked] = useState(false)
    const [marketingChecked, setMarketingChecked] = useState(false)
-   const [smsChecked, setSmsChecked] = useState(false)
    const [saving, setSaving] = useState(false)
 
    useEffect(() => {
-      if (authenticated && typeof window !== 'undefined') {
+      // Only show when auth has resolved to true (not null/loading)
+      if (authenticated === true && typeof window !== 'undefined') {
          const completed = localStorage.getItem(STORAGE_KEY)
          if (!completed) {
             setVisible(true)
@@ -36,9 +73,7 @@ export default function WelcomeOnboarding() {
                ...(csrfToken && { 'x-csrf-token': csrfToken }),
             },
             body: JSON.stringify({
-               kvkkAccepted: true,
                marketingConsent: marketingChecked,
-               smsConsent: smsChecked,
                csrfToken,
             }),
          })
@@ -48,175 +83,120 @@ export default function WelcomeOnboarding() {
       localStorage.setItem(STORAGE_KEY, 'true')
       setVisible(false)
       setSaving(false)
-   }, [csrfToken, marketingChecked, smsChecked])
+   }, [csrfToken, marketingChecked])
 
    if (!visible) return null
+
+   const userName = user?.name
 
    return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
          <div className="relative w-full max-w-md rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900">
-            {/* Step Content */}
             <div className="p-6 sm:p-8">
-               {step === 1 && (
-                  <div className="flex flex-col items-center text-center space-y-5">
-                     {/* Logo / Gradient Icon */}
-                     <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg">
-                        <svg
-                           viewBox="0 0 24 24"
-                           fill="none"
-                           stroke="white"
-                           strokeWidth="1.5"
-                           strokeLinecap="round"
-                           strokeLinejoin="round"
-                           className="h-10 w-10"
-                        >
-                           <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                           <path d="M2 17l10 5 10-5" />
-                           <path d="M2 12l10 5 10-5" />
-                        </svg>
-                     </div>
+               <div className="flex flex-col items-center text-center space-y-5">
+                  {/* Logo / Gradient Icon */}
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg">
+                     <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-10 w-10"
+                     >
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                        <path d="M2 17l10 5 10-5" />
+                        <path d="M2 12l10 5 10-5" />
+                     </svg>
+                  </div>
 
-                     <div>
-                        <h2 className="text-2xl font-bold text-foreground">
-                           Hos Geldiniz! <span aria-hidden="true">&#127881;</span>
-                        </h2>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                           xForgea3D ailesine katildiginiz icin tesekkurler.
+                  <div>
+                     <h2 className="text-2xl font-bold text-foreground">
+                        Ho&#x15F; Geldiniz! <span aria-hidden="true">&#127881;</span>
+                     </h2>
+                     {userName && (
+                        <p className="mt-1 text-base font-medium text-foreground">
+                           Merhaba, {userName}!
                         </p>
-                     </div>
-
-                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        3D baski urunler, kisiye ozel tasarimlar ve arac aksesuarlari ile
-                        tanisin. Size en uygun urunleri kesfetmeye hazir misiniz?
+                     )}
+                     <p className="mt-2 text-sm text-muted-foreground">
+                        xForgea3D ailesine kat&#x131;ld&#x131;&#x11F;&#x131;n&#x131;z i&ccedil;in te&#x15F;ekk&uuml;rler.
                      </p>
-
-                     <button
-                        onClick={() => setStep(2)}
-                        className="mt-2 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
-                     >
-                        Devam Et
-                     </button>
                   </div>
-               )}
 
-               {step === 2 && (
-                  <div className="space-y-5">
-                     <div className="text-center">
-                        <h2 className="text-xl font-bold text-foreground">KVKK &amp; Gizlilik Onayi</h2>
-                        <p className="mt-1 text-xs text-red-500 font-medium">* Zorunlu</p>
-                     </div>
-
-                     <div className="space-y-4">
-                        <label className="flex items-start gap-3 cursor-pointer group">
-                           <input
-                              type="checkbox"
-                              checked={kvkkChecked}
-                              onChange={(e) => setKvkkChecked(e.target.checked)}
-                              className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-orange-500 focus:ring-orange-500 accent-orange-500 flex-shrink-0"
-                           />
-                           <span className="text-sm text-muted-foreground leading-relaxed">
-                              Kisisel Verilerin Korunmasi Kanunu (KVKK) kapsaminda{' '}
-                              <a
-                                 href="/policies/kvkk-aydinlatma-metni"
-                                 target="_blank"
-                                 rel="noopener noreferrer"
-                                 className="text-orange-500 underline underline-offset-2 hover:text-orange-600 font-medium"
-                              >
-                                 aydinlatma metnini
-                              </a>{' '}
-                              okudum ve kabul ediyorum.
-                           </span>
-                        </label>
-
-                        <label className="flex items-start gap-3 cursor-pointer group">
-                           <input
-                              type="checkbox"
-                              checked={privacyChecked}
-                              onChange={(e) => setPrivacyChecked(e.target.checked)}
-                              className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-orange-500 focus:ring-orange-500 accent-orange-500 flex-shrink-0"
-                           />
-                           <span className="text-sm text-muted-foreground leading-relaxed">
-                              <a
-                                 href="/policies/gizlilik-ve-cerez-politikasi"
-                                 target="_blank"
-                                 rel="noopener noreferrer"
-                                 className="text-orange-500 underline underline-offset-2 hover:text-orange-600 font-medium"
-                              >
-                                 Gizlilik ve Cerez Politikasini
-                              </a>{' '}
-                              okudum ve kabul ediyorum.
-                           </span>
-                        </label>
-                     </div>
-
-                     <button
-                        onClick={() => setStep(3)}
-                        disabled={!kvkkChecked || !privacyChecked}
-                        className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:brightness-100"
-                     >
-                        Devam Et
-                     </button>
+                  {/* Feature Highlights */}
+                  <div className="w-full space-y-3">
+                     {features.map((feature) => (
+                        <div
+                           key={feature.title}
+                           className="flex items-center gap-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 px-4 py-3 text-left"
+                        >
+                           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white flex-shrink-0">
+                              {feature.icon}
+                           </div>
+                           <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground">{feature.title}</p>
+                              <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                           </div>
+                        </div>
+                     ))}
                   </div>
-               )}
 
-               {step === 3 && (
-                  <div className="space-y-5">
-                     <div className="text-center">
-                        <h2 className="text-xl font-bold text-foreground">Iletisim Tercihleri</h2>
-                        <p className="mt-1 text-xs text-muted-foreground">Opsiyonel</p>
+                  {/* Marketing Consent */}
+                  <label className="flex items-start gap-3 cursor-pointer w-full text-left">
+                     <input
+                        type="checkbox"
+                        checked={marketingChecked}
+                        onChange={(e) => setMarketingChecked(e.target.checked)}
+                        className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-orange-500 focus:ring-orange-500 accent-orange-500 flex-shrink-0"
+                     />
+                     <span className="text-sm text-muted-foreground leading-relaxed">
+                        Kampanya ve indirimlerden haberdar olmak istiyorum
+                     </span>
+                  </label>
+
+                  {/* Instagram Follow CTA */}
+                  <div className="w-full rounded-xl border border-orange-200 dark:border-orange-800/40 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 p-3">
+                     <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 text-white flex-shrink-0">
+                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                           </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                           <p className="text-sm font-semibold text-foreground">Bizi Instagram&apos;da Takip Edin</p>
+                           <a
+                              href={INSTAGRAM_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
+                           >
+                              @xforgea3d
+                           </a>
+                        </div>
+                        <a
+                           href={INSTAGRAM_URL}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="flex-shrink-0 inline-flex items-center rounded-lg bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 px-3 py-1.5 text-xs font-semibold text-white hover:brightness-110 transition-all"
+                        >
+                           Takip Et
+                        </a>
                      </div>
-
-                     <div className="space-y-4">
-                        <label className="flex items-start gap-3 cursor-pointer group">
-                           <input
-                              type="checkbox"
-                              checked={marketingChecked}
-                              onChange={(e) => setMarketingChecked(e.target.checked)}
-                              className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-orange-500 focus:ring-orange-500 accent-orange-500 flex-shrink-0"
-                           />
-                           <span className="text-sm text-muted-foreground leading-relaxed">
-                              Kampanya ve indirimlerden e-posta ile haberdar olmak istiyorum.
-                           </span>
-                        </label>
-
-                        <label className="flex items-start gap-3 cursor-pointer group">
-                           <input
-                              type="checkbox"
-                              checked={smsChecked}
-                              onChange={(e) => setSmsChecked(e.target.checked)}
-                              className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-orange-500 focus:ring-orange-500 accent-orange-500 flex-shrink-0"
-                           />
-                           <span className="text-sm text-muted-foreground leading-relaxed">
-                              Siparis durum guncellemelerini SMS ile almak istiyorum.
-                           </span>
-                        </label>
-                     </div>
-
-                     <button
-                        onClick={handleComplete}
-                        disabled={saving}
-                        className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
-                     >
-                        {saving ? 'Kaydediliyor...' : 'Tamamla'}
-                     </button>
                   </div>
-               )}
-            </div>
 
-            {/* Step Indicator Dots */}
-            <div className="flex items-center justify-center gap-2 pb-6">
-               {[1, 2, 3].map((s) => (
-                  <div
-                     key={s}
-                     className={`h-2 rounded-full transition-all duration-300 ${
-                        s === step
-                           ? 'w-6 bg-gradient-to-r from-orange-500 to-amber-500'
-                           : s < step
-                           ? 'w-2 bg-orange-300'
-                           : 'w-2 bg-neutral-300 dark:bg-neutral-600'
-                     }`}
-                  />
-               ))}
+                  {/* CTA Button */}
+                  <button
+                     onClick={handleComplete}
+                     disabled={saving}
+                     className="mt-2 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+                  >
+                     {saving ? 'Kaydediliyor...' : 'Alışverişe Başla'}
+                  </button>
+               </div>
             </div>
          </div>
       </div>

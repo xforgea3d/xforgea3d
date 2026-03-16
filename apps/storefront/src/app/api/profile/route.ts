@@ -34,6 +34,7 @@ export async function GET(req: Request) {
                   id: userId,
                   email: user.email || '',
                   name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                  avatar: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
                   role: 'customer',
                },
                include: {
@@ -65,6 +66,30 @@ export async function GET(req: Request) {
             } else {
                throw createError
             }
+         }
+      }
+
+      // Backfill name/avatar for existing profiles created before OAuth data capture
+      if (profile && !profile.name) {
+         const supabaseForBackfill = createClient()
+         const { data: { user: authUser } } = await supabaseForBackfill.auth.getUser()
+         if (authUser?.user_metadata?.full_name || authUser?.user_metadata?.name) {
+            profile = await prisma.profile.update({
+               where: { id: userId },
+               data: {
+                  name: authUser.user_metadata.full_name || authUser.user_metadata.name,
+                  avatar: profile.avatar || authUser.user_metadata.avatar_url || authUser.user_metadata.picture || null,
+               },
+               include: {
+                  cart: {
+                     include: {
+                        items: { include: { product: true } },
+                     },
+                  },
+                  addresses: true,
+                  wishlist: true,
+               },
+            })
          }
       }
 

@@ -1,5 +1,6 @@
 'use client'
 
+import InstagramCTA from '@/components/native/InstagramCTA'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
 import { Camera, ImageIcon, Star, X, ZoomIn } from 'lucide-react'
@@ -201,6 +202,7 @@ function ReviewForm({
    const [hoverRating, setHoverRating] = useState(0)
    const [text, setText] = useState('')
    const [submitting, setSubmitting] = useState(false)
+   const [submitted, setSubmitted] = useState(false)
    const [uploadedImages, setUploadedImages] = useState<string[]>([])
    const [uploading, setUploading] = useState(false)
    const [canReview, setCanReview] = useState<boolean | null>(null)
@@ -270,6 +272,17 @@ function ReviewForm({
             <p className="text-sm text-muted-foreground">
                Bu ürünü değerlendirebilmek için satın almış olmanız gerekiyor.
             </p>
+         </div>
+      )
+   }
+
+   if (submitted) {
+      return (
+         <div className="rounded-xl border p-6 space-y-4 text-center">
+            <p className="text-sm font-medium text-foreground">
+               De&#x11F;erlendirmeniz i&ccedil;in te&#x15F;ekk&uuml;rler!
+            </p>
+            <InstagramCTA compact message="&#128248; Bizi Instagram'da takip edin &#x2192;" />
          </div>
       )
    }
@@ -366,6 +379,7 @@ function ReviewForm({
          setRating(0)
          setText('')
          setUploadedImages([])
+         setSubmitted(true)
          toast.success('Değerlendirmeniz eklendi!')
       } catch (err: any) {
          toast.error(err?.message || 'Değerlendirme gönderilemedi')

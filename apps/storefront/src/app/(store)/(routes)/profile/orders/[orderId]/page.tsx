@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
 import { cn } from '@/lib/utils'
+import InstagramCTA from '@/components/native/InstagramCTA'
 import { AlertCircle, CheckCircle, Clock, Copy, CreditCard, ExternalLink, Loader2, MapPin, Package, Printer, RotateCcw, Send, Star, Truck, XCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useCallback, useEffect, useState } from 'react'
@@ -531,6 +532,14 @@ export default function OrderDetailPage({ params }: { params: { orderId: string 
                <OrderTimeline status={order.status} />
             </CardContent>
          </Card>
+
+         {/* Instagram CTA — shown for paid orders */}
+         {order.isPaid && (
+            <InstagramCTA
+               message="&#128248; Ürününüzü paylaşın! @xforgea3d'yi etiketleyin, sonraki siparişinizde %5 indirim kazanın!"
+               className="print:hidden"
+            />
+         )}
 
          <div className="grid lg:grid-cols-3 gap-6">
             {/* Ürünler */}
