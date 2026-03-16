@@ -14,7 +14,7 @@ model Profile {
   role  RoleEnum @default(customer)
 
   name     String?
-  phone    String? @unique
+  phone    String?
   avatar   String?
 
   cart     Cart?
@@ -91,7 +91,7 @@ model CartItem {
 model Author {
   id     String  @id @default(cuid())
   email  String  @unique
-  phone  String? @unique
+  phone  String?
   name   String?
   avatar String?
   OTP    String?

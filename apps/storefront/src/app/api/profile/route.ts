@@ -116,7 +116,7 @@ export async function PATCH(req: Request) {
          where: { id: userId },
          data: {
             ...(name !== undefined && { name: name.trim() }),
-            ...(phone !== undefined && { phone: phone.trim() }),
+            ...(phone !== undefined && { phone: phone.trim() || null }),
             ...(avatar !== undefined && { avatar }),
             ...(kvkkAccepted !== undefined && {
                kvkkAccepted: !!kvkkAccepted,
