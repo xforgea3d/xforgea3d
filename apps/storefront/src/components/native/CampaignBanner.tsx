@@ -49,7 +49,7 @@ export default function CampaignBanner() {
 
          if (!active) return
 
-         const dismissedId = sessionStorage.getItem(DISMISS_KEY)
+         const dismissedId = localStorage.getItem(DISMISS_KEY)
          if (dismissedId === active.id) return
 
          setCampaign(active)
@@ -68,7 +68,7 @@ export default function CampaignBanner() {
       setTimeout(() => {
          setDismissed(true)
          if (campaign) {
-            sessionStorage.setItem(DISMISS_KEY, campaign.id)
+            localStorage.setItem(DISMISS_KEY, campaign.id)
          }
       }, 300)
    }

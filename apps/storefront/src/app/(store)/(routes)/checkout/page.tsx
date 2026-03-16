@@ -74,6 +74,7 @@ export default function CheckoutPage() {
    const [taxRate, setTaxRate] = useState(20)
    const searchParams = useSearchParams()
    const discountAppliedFromUrl = useRef(false)
+   const discountValidatedRef = useRef(false)
 
    // Task 3: Auto-fill discount code from URL param
    useEffect(() => {
@@ -117,8 +118,10 @@ export default function CheckoutPage() {
 
    // Task 3: Auto-validate discount code from URL after it's been set
    useEffect(() => {
+      if (discountValidatedRef.current) return
       const urlDiscount = searchParams.get('discount')
       if (urlDiscount && discountCode === urlDiscount.toUpperCase() && !discountInfo && !validatingDiscount && !discountError) {
+         discountValidatedRef.current = true
          handleValidateDiscount()
       }
    }, [discountCode, searchParams])

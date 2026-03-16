@@ -240,14 +240,14 @@ export default function QuoteRequestDetailPage({
          )}
 
          {/* Order link */}
-         {data.order && (
+         {data.order?.id && (
             <Card>
                <CardContent className="py-4">
                   <Link
                      href={`/profile/orders/${data.order.id}`}
                      className="text-sm text-blue-600 hover:underline"
                   >
-                     Sipariş #{data.order.number} — {data.order.isPaid ? 'Ödendi' : 'Ödenmedi'}
+                     Sipariş #{data.order?.number ?? '—'} — {data.order?.isPaid ? 'Ödendi' : 'Ödenmedi'}
                   </Link>
                </CardContent>
             </Card>

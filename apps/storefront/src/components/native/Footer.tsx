@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useCsrf } from '@/hooks/useCsrf'
 import { Separator } from '@/components/native/separator'
 import config from '@/config/site'
 import { InstagramIcon, TwitterIcon, Mail, ShieldCheck, CreditCard, Lock, Send, MapPin, Phone } from 'lucide-react'
@@ -109,6 +110,7 @@ export default function Footer() {
 
 function Newsletter() {
    const [email, setEmail] = useState('')
+   const csrfToken = useCsrf()
    const { toast } = useToast()
 
    const handleSubmit = async (e: React.FormEvent) => {
@@ -117,8 +119,11 @@ function Newsletter() {
       try {
          const res = await fetch('/api/subscription/email', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
+            headers: {
+               'Content-Type': 'application/json',
+               ...(csrfToken && { 'x-csrf-token': csrfToken }),
+            },
+            body: JSON.stringify({ email, ...(csrfToken && { csrfToken }) }),
          })
          if (!res.ok) throw new Error('Subscription failed')
          toast({

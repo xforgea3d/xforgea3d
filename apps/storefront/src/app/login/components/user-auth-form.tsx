@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from '@/lib/utils'
-import { isEmailValid } from '@persepolis/regex'
 import { validateEmail } from '@/lib/email-validation'
 import { Loader } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -218,7 +217,7 @@ function SignInForm({ isLoading, setIsLoading, supabase }) {
             {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
             <Button
                type="submit"
-               disabled={forgotLoading || !isEmailValid(email)}
+               disabled={forgotLoading || !!validateEmail(email)}
             >
                {forgotLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
                Sifre Sifirlama Baglantisi Gonder
@@ -281,7 +280,7 @@ function SignInForm({ isLoading, setIsLoading, supabase }) {
          {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
          <Button
             type="submit"
-            disabled={isLoading || !isEmailValid(email) || !!validateEmail(email) || password.length < 6}
+            disabled={isLoading || !!validateEmail(email) || password.length < 6}
          >
             {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             Giris Yap
@@ -489,7 +488,7 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
          ) : null}
          <Button
             type="submit"
-            disabled={isLoading || !isEmailValid(email) || !!validateEmail(email) || password.length < 6 || !name}
+            disabled={isLoading || !!validateEmail(email) || password.length < 6 || !name}
          >
             {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
             Hesap Oluştur

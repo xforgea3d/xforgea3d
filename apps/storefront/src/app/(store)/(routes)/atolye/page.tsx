@@ -92,7 +92,11 @@ export default function AtolyePage() {
 
     function canAdvance() {
         if (step === 0) return !!form.svgFile
-        if (step === 1) return !!form.selectedColor
+        if (step === 1) {
+            // If no colors loaded (API failed and no fallback rendered), skip color requirement
+            if (colors.length === 0) return true
+            return !!form.selectedColor
+        }
         if (step === 2) return form.firstName && form.lastName && form.email && form.phone && form.address && form.city
         return true
     }

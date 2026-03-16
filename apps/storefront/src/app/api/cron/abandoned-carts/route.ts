@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import config from '@/config/site'
 import AbandonedCartEmail from '@/emails/abandoned_cart_reminder'
 import prisma from '@/lib/prisma'
@@ -6,11 +7,19 @@ import { render } from '@react-email/render'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
-   // Verify cron secret
+   // Verify cron secret with timing-safe comparison
    const authHeader = req.headers.get('authorization')
    const cronSecret = process.env.CRON_SECRET
 
-   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+   if (!cronSecret || !authHeader) {
+      return new NextResponse('Unauthorized', { status: 401 })
+   }
+
+   const expected = `Bearer ${cronSecret}`
+   if (
+      authHeader.length !== expected.length ||
+      !crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))
+   ) {
       return new NextResponse('Unauthorized', { status: 401 })
    }
 

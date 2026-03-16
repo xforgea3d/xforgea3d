@@ -52,6 +52,8 @@ export function QuickAddButton({ product }: { product: any }) {
             setLoading(true)
 
             if (authenticated) {
+                const controller = new AbortController()
+                const timeoutId = setTimeout(() => controller.abort(), 15000)
                 const res = await fetch('/api/cart', {
                     method: 'POST',
                     body: JSON.stringify({ productId: product?.id, count: inCart + 1, csrfToken }),
@@ -60,7 +62,9 @@ export function QuickAddButton({ product }: { product: any }) {
                         ...(csrfToken && { 'x-csrf-token': csrfToken }),
                     },
                     cache: 'no-store',
+                    signal: controller.signal,
                 })
+                clearTimeout(timeoutId)
                 if (!res.ok) throw new Error('Cart API error')
                 const json = await res.json()
                 dispatchCart(json)
@@ -89,9 +93,13 @@ export function QuickAddButton({ product }: { product: any }) {
 
             setAdded(true)
             setTimeout(() => setAdded(false), 2000)
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
-            toast.error('Bir hata oluştu, tekrar deneyin.')
+            if (err?.name === 'AbortError') {
+                toast.error('İstek zaman aşımına uğradı. Lütfen tekrar deneyin.')
+            } else {
+                toast.error('Bir hata oluştu, tekrar deneyin.')
+            }
         } finally {
             setLoading(false)
         }

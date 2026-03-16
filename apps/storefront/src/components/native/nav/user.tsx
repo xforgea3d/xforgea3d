@@ -39,7 +39,12 @@ export function UserNav() {
          document.cookie = 'logged-in=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
 
          // Also call server-side logout to clear server cookies
-         await fetch('/api/auth/logout', { cache: 'no-store' })
+         // If this fails, still proceed with client-side redirect
+         try {
+            await fetch('/api/auth/logout', { cache: 'no-store' })
+         } catch {
+            // Server logout failed, but client-side logout already done above
+         }
 
          // Redirect to home
          window.location.assign('/')

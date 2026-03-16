@@ -210,9 +210,9 @@ export const Item = ({ cartItem }) => {
    }
 
    function Price() {
-      if (product?.discount > 0) {
-         const price = product?.price - product?.discount
-         const percentage = product?.price > 0 ? (product?.discount / product?.price) * 100 : 0
+      if ((product?.discount ?? 0) > 0) {
+         const price = (product?.price ?? 0) - (product?.discount ?? 0)
+         const percentage = (product?.price ?? 0) > 0 ? ((product?.discount ?? 0) / (product?.price ?? 0)) * 100 : 0
          return (
             <div className="flex gap-2 items-center">
                <Badge className="flex gap-4" variant="destructive">
@@ -224,7 +224,7 @@ export const Item = ({ cartItem }) => {
          )
       }
 
-      return <h2>{product?.price} &#8378;</h2>
+      return <h2>{product?.price ?? 0} &#8378;</h2>
    }
    return (
       <Card>
@@ -233,7 +233,7 @@ export const Item = ({ cartItem }) => {
                <Link href={`/products/${product?.id}`}>
                   <img
                      className="absolute inset-0 h-full w-full rounded-t-lg object-cover"
-                     src={product?.images[0]}
+                     src={product?.images?.[0] ?? ''}
                      alt="product image"
                      loading="lazy"
                   />
@@ -245,7 +245,7 @@ export const Item = ({ cartItem }) => {
                <Link href={`/products/${product?.id}`}>
                   <img
                      className="absolute inset-0 h-full w-full rounded-lg object-cover"
-                     src={product?.images[0]}
+                     src={product?.images?.[0] ?? ''}
                      alt="item image"
                      loading="lazy"
                   />

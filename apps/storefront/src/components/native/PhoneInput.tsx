@@ -25,17 +25,13 @@ function stripNonDigits(val: string): string {
 }
 
 export function validateTurkishPhone(value: string): string | null {
-   const digits = stripNonDigits(value)
+   let digits = stripNonDigits(value)
    if (!digits) return null // empty is not an error (use required validation separately)
-   if (digits.length < 10) return 'Telefon numarası 10 haneli olmalıdır'
-   if (digits.length > 11) return 'Telefon numarası çok uzun'
    if (digits.length === 11 && digits.startsWith('90')) {
-      const rest = digits.slice(1)
-      if (!rest.startsWith('05')) return 'Telefon numarası 05 ile başlamalıdır'
-      return null
+      digits = '0' + digits.slice(2) // convert 905xx to 05xx
    }
+   if (digits.length !== 10) return 'Telefon numarası 10 haneli olmalıdır (05XX XXX XX XX)'
    if (!digits.startsWith('05')) return 'Telefon numarası 05 ile başlamalıdır'
-   if (digits.length !== 10) return 'Telefon numarası 10 haneli olmalıdır'
    return null
 }
 

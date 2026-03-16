@@ -33,7 +33,7 @@ const formSchema = z.object({
    endDate: z.string().min(1, 'Bitis tarihi zorunlu'),
 }).refine((data) => {
    if (data.startDate && data.endDate) {
-      return new Date(data.endDate) > new Date(data.startDate)
+      return new Date(data.endDate) >= new Date(data.startDate)
    }
    return true
 }, {
