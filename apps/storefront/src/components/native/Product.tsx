@@ -2,6 +2,7 @@ import { ImageSkeleton } from '@/components/native/icons'
 import SafeImage from '@/components/native/SafeImage'
 import { ProductWithIncludes } from '@/types/prisma'
 import Link from 'next/link'
+import { isFlashSaleActive } from '@/lib/flash-sale'
 import { cn } from '@/lib/utils'
 import { QuickAddButton } from '@/components/native/QuickAddButton'
 import { WishlistHeart } from '@/components/native/WishlistHeart'
@@ -43,14 +44,7 @@ function getFlashSaleTimeLeft(endDate: string | Date | null | undefined): string
    return `${hours}s ${mins}dk kaldi`
 }
 
-function isFlashSaleActive(product: any): boolean {
-   return !!(
-      product?.flashSalePrice &&
-      product?.flashSalePrice > 0 &&
-      product?.flashSaleEndDate &&
-      new Date(product.flashSaleEndDate).getTime() > Date.now()
-   )
-}
+// isFlashSaleActive is now imported from @/lib/flash-sale
 
 export const Product = ({
    product,

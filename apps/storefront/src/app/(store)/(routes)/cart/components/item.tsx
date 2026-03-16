@@ -14,6 +14,7 @@ import {
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
 import { getCountInCart, getLocalCart, writeLocalCart } from '@/lib/cart'
+import { isFlashSaleActive } from '@/lib/flash-sale'
 import { useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, X } from 'lucide-react'
 import Link from 'next/link'
@@ -211,10 +212,7 @@ export const Item = ({ cartItem }) => {
 
    function Price() {
       // Flash sale check
-      const hasFlashSale = product?.flashSalePrice != null &&
-         product?.flashSalePrice > 0 &&
-         product?.flashSaleEndDate &&
-         new Date(product.flashSaleEndDate).getTime() > Date.now()
+      const hasFlashSale = isFlashSaleActive(product)
 
       if (hasFlashSale) {
          const salePct = ((product.price - product.flashSalePrice) / product.price * 100).toFixed(0)

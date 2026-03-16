@@ -4,6 +4,7 @@ import { Separator } from '@/components/native/separator'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { useAuthenticated } from '@/hooks/useAuthentication'
+import { isFlashSaleActive } from '@/lib/flash-sale'
 import { isVariableValid } from '@/lib/utils'
 import { useCartContext } from '@/state/Cart'
 import Link from 'next/link'
@@ -26,11 +27,20 @@ export function Receipt() {
    const costs = useMemo(() => {
       let totalAmount = 0,
          discountAmount = 0
+      const now = Date.now()
 
       if (isVariableValid(cart?.items)) {
          for (const item of cart?.items) {
-            totalAmount += item?.count * item?.product?.price
-            discountAmount += item?.count * item?.product?.discount
+            const p = item?.product
+            const hasFlashSale = isFlashSaleActive(p)
+
+            if (hasFlashSale) {
+               totalAmount += item?.count * p.flashSalePrice
+               // No per-product discount during flash sale
+            } else {
+               totalAmount += item?.count * (p?.price ?? 0)
+               discountAmount += item?.count * (p?.discount ?? 0)
+            }
          }
       }
 

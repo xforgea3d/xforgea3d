@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { isFlashSaleActive } from '@/lib/flash-sale'
 import { trackBeginCheckout, trackPurchase } from '@/lib/gtag'
 
 interface Address {
@@ -102,7 +103,10 @@ export default function CheckoutPage() {
    useEffect(() => {
       if (cart?.items?.length) {
          const total = cart.items.reduce(
-            (sum: number, item: any) => sum + item.count * item.product.price,
+            (sum: number, item: any) => {
+               const price = isFlashSaleActive(item.product) ? item.product.flashSalePrice : item.product.price
+               return sum + item.count * price
+            },
             0
          )
          trackBeginCheckout(total)
@@ -134,8 +138,14 @@ export default function CheckoutPage() {
       let total = 0, productDiscount = 0
       if (cart?.items) {
          for (const item of cart.items) {
-            total += item.count * item.product.price
-            productDiscount += item.count * item.product.discount
+            const hasFlashSale = isFlashSaleActive(item.product)
+
+            if (hasFlashSale) {
+               total += item.count * item.product.flashSalePrice
+            } else {
+               total += item.count * item.product.price
+               productDiscount += item.count * item.product.discount
+            }
          }
       }
       const couponDiscount = discountInfo?.discountAmount ?? 0
@@ -461,7 +471,10 @@ export default function CheckoutPage() {
                   <CardContent className="text-sm">
                      {/* Item list with thumbnails */}
                      <div className="space-y-3">
-                        {cart?.items?.map((item: any, i: number) => (
+                        {cart?.items?.map((item: any, i: number) => {
+                           const itemFlashSale = isFlashSaleActive(item.product)
+                           const itemPrice = itemFlashSale ? item.product.flashSalePrice : item.product.price
+                           return (
                            <div key={i} className="flex items-center gap-3">
                               <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md border bg-muted">
                                  {item.product.images?.[0] ? (
@@ -477,23 +490,36 @@ export default function CheckoutPage() {
                                  )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                 <p className="truncate font-medium text-sm">{item.product.title}</p>
+                                 <p className="truncate font-medium text-sm">
+                                    {item.product.title}
+                                    {itemFlashSale && (
+                                       <span className="ml-1.5 inline-flex items-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white align-middle">
+                                          Flash
+                                       </span>
+                                    )}
+                                 </p>
                                  <p className="text-xs text-muted-foreground">
-                                    {item.count} x {item.product.price.toFixed(2)} TL
+                                    {item.count} x {itemPrice.toFixed(2)} TL
+                                    {itemFlashSale && (
+                                       <span className="ml-1 line-through text-muted-foreground/60">
+                                          {item.product.price.toFixed(2)} TL
+                                       </span>
+                                    )}
                                  </p>
                               </div>
                               <div className="text-right flex-shrink-0">
-                                 <p className="font-semibold text-sm">
-                                    {(item.product.price * item.count).toFixed(2)} TL
+                                 <p className={`font-semibold text-sm ${itemFlashSale ? 'text-red-600 dark:text-red-400' : ''}`}>
+                                    {(itemPrice * item.count).toFixed(2)} TL
                                  </p>
-                                 {item.product.discount > 0 && (
+                                 {!itemFlashSale && item.product.discount > 0 && (
                                     <p className="text-xs text-green-600">
                                        -{(item.product.discount * item.count).toFixed(2)} TL
                                     </p>
                                  )}
                               </div>
                            </div>
-                        ))}
+                           )
+                        })}
                      </div>
 
                      <Separator className="my-4" />
@@ -662,17 +688,21 @@ export default function CheckoutPage() {
                      {/* Urun Bilgileri */}
                      <div className="rounded-lg border p-3 space-y-2">
                         <h3 className="font-semibold text-foreground">Siparis Edilen Urunler</h3>
-                        {cart?.items?.map((item: any, i: number) => (
+                        {cart?.items?.map((item: any, i: number) => {
+                           const modalFlashSale = isFlashSaleActive(item.product)
+                           const modalPrice = modalFlashSale ? item.product.flashSalePrice : item.product.price
+                           return (
                            <div key={i} className="flex justify-between items-center py-1 border-b border-dashed last:border-0">
                               <div className="flex-1 min-w-0">
                                  <p className="truncate font-medium text-xs">{item.product.title}</p>
                                  <p className="text-xs text-muted-foreground">{item.count} adet</p>
                               </div>
                               <span className="text-xs font-semibold ml-2">
-                                 {(item.product.price * item.count).toFixed(2)} TL
+                                 {(modalPrice * item.count).toFixed(2)} TL
                               </span>
                            </div>
-                        ))}
+                           )
+                        })}
                      </div>
 
                      {/* Toplam Fiyat */}
