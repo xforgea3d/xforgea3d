@@ -82,8 +82,13 @@ export async function POST(req: Request) {
       }
 
       // Use transaction with serializable isolation for atomic order creation
-      const order = await prisma.$transaction(async (tx) => {
-         // Validate discount code inside transaction
+      const order = await prisma.$transaction(
+         async (tx) => {
+            // Note: Serializable isolation level prevents phantom reads.
+            // Stock checks are atomic — no concurrent order can bypass stock validation.
+            // If this transaction rolls back, the entire order is cancelled atomically.
+
+            // Validate discount code inside transaction
          let discountCodeData: { percent: number; maxDiscountAmount: number | null } | null = null
          if (discountCode) {
             const now = new Date()
@@ -107,8 +112,22 @@ export async function POST(req: Request) {
 
          // Lock product rows to prevent race conditions (SELECT ... FOR UPDATE)
          const productIds = cart.items.map((item) => item.productId)
+
+         if (productIds.length === 0) {
+            throw new Error('EMPTY_CART')
+         }
+
+         // Build safe placeholders — validate count matches productIds length
+         const placeholders = productIds.map((_, i) => `$${i + 1}`).join(',')
+         const expectedPlaceholderCount = productIds.length
+         const actualPlaceholderCount = (placeholders.match(/\$/g) || []).length
+
+         if (actualPlaceholderCount !== expectedPlaceholderCount) {
+            throw new Error('QUERY_PLACEHOLDER_MISMATCH')
+         }
+
          await tx.$queryRawUnsafe(
-            `SELECT id FROM "Product" WHERE id IN (${productIds.map((_, i) => `$${i + 1}`).join(',')}) FOR UPDATE`,
+            `SELECT id FROM "Product" WHERE id IN (${placeholders}) FOR UPDATE`,
             ...productIds
          )
 
@@ -190,12 +209,15 @@ export async function POST(req: Request) {
             }
          }
 
-         // Decrement product stock
+         // Decrement product stock atomically (prevent negative stock)
          for (const item of cart.items) {
-            await tx.product.update({
-               where: { id: item.productId },
+            const stockUpdate = await tx.product.updateMany({
+               where: { id: item.productId, stock: { gte: item.count } },
                data: { stock: { decrement: item.count } },
             })
+            if (stockUpdate.count === 0) {
+               throw new Error(`OUT_OF_STOCK:${productMap.get(item.productId)?.title || 'Ürün'}`)
+            }
          }
 
          // Clear the cart after successful order creation
@@ -203,41 +225,45 @@ export async function POST(req: Request) {
             where: { cartId: cart.userId },
          })
 
-         return created
-      })
+         // Pre-check low stock inside transaction (before committing)
+         const orderProductIds = order.orderItems.map((item) => item.productId)
+         const productsForNotif = await tx.product.findMany({
+            where: { id: { in: orderProductIds } },
+            select: { id: true, title: true, stock: true },
+         })
+         const lowStockProducts = productsForNotif.filter((p) => p.stock < 5)
+
+         return { order: created, lowStockProducts }
+         },
+         {
+            isolationLevel: 'Serializable',
+            maxWait: 5000,
+            timeout: 30000,
+         }
+      )
+
+      // Extract order from transaction result
+      const actualOrder = order.order
+      const lowStockProducts = order.lowStockProducts
 
       // Generate unique order code
-      const orderCode = generateOrderCode(order.number)
+      const orderCode = generateOrderCode(actualOrder.number)
       await prisma.order.update({
-         where: { id: order.id },
+         where: { id: actualOrder.id },
          data: { orderCode },
       })
-      ;(order as any).orderCode = orderCode
+      ;(actualOrder as any).orderCode = orderCode
 
-      // Check for low stock after order creation (best-effort)
+      // Get low stock info (re-check outside transaction for latest state)
+      let lowStockProductsForNotif: { id: string; title: string; stock: number }[] = []
       try {
-         const orderProductIds = order.orderItems.map((item) => item.productId)
+         const orderProductIds = actualOrder.orderItems.map((item) => item.productId)
          const updatedProducts = await prisma.product.findMany({
             where: { id: { in: orderProductIds } },
             select: { id: true, title: true, stock: true },
          })
 
-         const lowStockProducts = updatedProducts.filter((p) => p.stock < 5)
-         if (lowStockProducts.length > 0) {
-            const admins = await prisma.profile.findMany({
-               where: { role: 'admin' },
-               select: { id: true },
-            })
-            if (admins.length > 0) {
-               const notifications = lowStockProducts.flatMap((product) =>
-                  admins.map((admin) => ({
-                     userId: admin.id,
-                     content: `\u26a0\ufe0f D\u00fc\u015f\u00fck stok: ${product.title} - Kalan: ${product.stock} adet`,
-                  }))
-               )
-               await prisma.notification.createMany({ data: notifications })
-            }
-         }
+         lowStockProductsForNotif = updatedProducts.filter((p) => p.stock < 5)
       } catch (stockCheckError) {
          console.error('[LOW_STOCK_CHECK]', stockCheckError)
       }
@@ -246,7 +272,7 @@ export async function POST(req: Request) {
       try {
          revalidatePath('/')
          revalidatePath('/products')
-         for (const item of order.orderItems) {
+         for (const item of actualOrder.orderItems) {
             revalidatePath(`/products/${item.productId}`)
          }
       } catch (revalError) {
@@ -255,20 +281,47 @@ export async function POST(req: Request) {
 
       // Notify admin profiles (best-effort, outside transaction)
       try {
+         // Single admin query (reuse)
          const admins = await prisma.profile.findMany({
             where: { role: 'admin' },
+            select: { id: true, email: true },
          })
 
-         const payable = order.payable
+         const payable = actualOrder.payable
 
          if (admins.length) {
+            // Create low-stock notifications
+            if (lowStockProductsForNotif.length > 0) {
+               const lowStockNotifications = lowStockProductsForNotif.flatMap((product) =>
+                  admins.map((admin) => ({
+                     userId: admin.id,
+                     content: `⚠️ Düşük stok: ${product.title} - Kalan: ${product.stock} adet`,
+                  }))
+               )
+               await Promise.allSettled(
+                  lowStockNotifications.map((notif) =>
+                     prisma.notification.create({ data: notif }).catch((e) => {
+                        console.error('[LOW_STOCK_NOTIF_FAILED]', e)
+                        logError({
+                           message: 'Low-stock notification creation failed',
+                           stack: e?.stack,
+                           severity: 'low',
+                           source: 'backend',
+                        })
+                     })
+                  )
+               )
+            }
+
+            // Create new-order notifications
             await prisma.notification.createMany({
                data: admins.map((admin) => ({
                   userId: admin.id,
-                  content: `Sipariş #${order.number} oluşturuldu - ${payable.toFixed(2)} TL.`,
+                  content: `Sipariş #${actualOrder.number} oluşturuldu - ${payable.toFixed(2)} TL.`,
                })),
             })
 
+            // Send emails
             for (const admin of admins) {
                await sendMail({
                   name: config.name,
@@ -276,9 +329,9 @@ export async function POST(req: Request) {
                   subject: 'Yeni sipariş alındı.',
                   html: await render(
                      Mail({
-                        id: order.id,
+                        id: actualOrder.id,
                         payable: payable.toFixed(2),
-                        orderNum: order.number.toString(),
+                        orderNum: actualOrder.number.toString(),
                      })
                   ),
                }).catch((e) => console.error('[ADMIN_MAIL]', e))

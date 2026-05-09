@@ -8,6 +8,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Heading } from '@/components/ui/heading'
 import prisma from '@/lib/prisma'
+import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 
 import type { OrderColumn } from '../../orders/components/table'
@@ -15,24 +16,29 @@ import { OrderTable } from '../../orders/components/table'
 import { UserForm } from './components/user-form'
 
 const UserPage = async ({ params }: { params: { userId: string } }) => {
-   const user = await prisma.profile.findUnique({
-      where: {
-         id: params.userId,
-      },
-      include: {
-         addresses: true,
-         payments: true,
-         orders: {
-            include: {
-               orderItems: {
-                  include: {
-                     product: true,
+   try {
+      const user = await prisma.profile.findUnique({
+         where: {
+            id: params.userId,
+         },
+         include: {
+            addresses: true,
+            payments: true,
+            orders: {
+               include: {
+                  orderItems: {
+                     include: {
+                        product: true,
+                     },
                   },
                },
             },
          },
-      },
-   })
+      })
+
+      if (!user) {
+         notFound()
+      }
 
    function OrdersCard() {
       const { orders } = user!
@@ -72,10 +78,10 @@ const UserPage = async ({ params }: { params: { userId: string } }) => {
                      <AccordionTrigger>
                         <div className="block">
                            <h2 className="text-lg font-bold tracking-wider text-left">
-                              ORDER HISTORY
+                              SİPARİŞ GEÇMİŞİ
                            </h2>
                            <p className="text-sm font-light text-foreground/70 text-left">
-                              User in this order.
+                              Bu siparişte kullanıcı.
                            </p>
                         </div>
                      </AccordionTrigger>
@@ -98,10 +104,10 @@ const UserPage = async ({ params }: { params: { userId: string } }) => {
                      <AccordionTrigger>
                         <div className="block">
                            <h2 className="text-lg font-bold tracking-wider text-left">
-                              USER
+                              KULLANICI
                            </h2>
                            <p className="text-sm font-light text-foreground/70">
-                              User in this order.
+                              Bu siparişte kullanıcı.
                            </p>
                         </div>
                      </AccordionTrigger>
@@ -115,20 +121,23 @@ const UserPage = async ({ params }: { params: { userId: string } }) => {
       )
    }
 
-   return (
-      <div className="flex-col">
-         <div className="flex-1 pt-6 pb-12">
-            <div className="flex items-center justify-between">
-               <Heading
-                  title="User Data"
-                  description="Items in this order and data about the user."
-               />
+      return (
+         <div className="flex-col">
+            <div className="flex-1 pt-6 pb-12">
+               <div className="flex items-center justify-between">
+                  <Heading
+                     title="Kullanıcı Verileri"
+                     description="Bu siparişteki ürünler ve kullanıcı hakkındaki veriler."
+                  />
+               </div>
+               <UserCard />
+               <OrdersCard />
             </div>
-            <UserCard />
-            <OrdersCard />
          </div>
-      </div>
-   )
+      )
+   } catch (error) {
+      notFound()
+   }
 }
 
 export default UserPage

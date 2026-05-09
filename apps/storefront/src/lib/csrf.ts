@@ -25,7 +25,8 @@ export function verifyCsrfToken(token: string, userId: string): boolean {
       const [timestamp, hmac] = token.split('.')
       const ts = parseInt(timestamp, 36)
 
-      if (Date.now() - ts > 1 * 60 * 60 * 1000) return false // 1 hour expiry
+      // 24-hour expiry window (checkout sessions can take time on mobile)
+      if (Date.now() - ts > 24 * 60 * 60 * 1000) return false // 24 hours
 
       const expectedHmac = crypto
          .createHmac('sha256', secret)

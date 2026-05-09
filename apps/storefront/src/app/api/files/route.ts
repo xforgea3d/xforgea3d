@@ -43,9 +43,25 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Sadece resim dosyalari yuklenebilir (JPEG, PNG, WebP, GIF)' }, { status: 400 })
         }
 
-        const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png'
-        const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'].includes(fileExt) ? fileExt : 'png'
-        const fileName = `${uuidv4()}.${safeExt}`
+        // Validate file extension against MIME type to prevent polyglot attacks
+        const fileExt = file.name.split('.').pop()?.toLowerCase() || ''
+        const mimeToExt: Record<string, Set<string>> = {
+            'image/jpeg': new Set(['jpg', 'jpeg']),
+            'image/png': new Set(['png']),
+            'image/webp': new Set(['webp']),
+            'image/gif': new Set(['gif']),
+            'image/avif': new Set(['avif']),
+        }
+
+        const allowedExts = mimeToExt[file.type]
+        if (!allowedExts || !allowedExts.has(fileExt)) {
+            return NextResponse.json(
+                { error: 'Dosya tipi ve uzantisi eslesmiyor' },
+                { status: 400 }
+            )
+        }
+
+        const fileName = `${uuidv4()}.${fileExt}`
         const filePath = `uploads/${fileName}`
 
         const arrayBuffer = await file.arrayBuffer()

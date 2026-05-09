@@ -2,44 +2,18 @@ import { sendEmailViaResend } from '@/lib/resend'
 import OtpEmail from '@/emails/otp'
 import { render } from '@react-email/render'
 import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 /**
  * POST /api/auth/send-otp
  *
- * Generates a 6-digit OTP, stores it via globalThis (shared with verify-otp),
+ * Generates a 6-digit OTP, stores it in Prisma DB,
  * and sends it via Resend.
  *
  * Body: { email: string, type?: 'verify' | 'reset', name?: string }
- *
- * NOTE: This is a standalone OTP flow using Resend. If you are using
- * Supabase Auth's built-in OTP (signInWithOtp), you can configure
- * Supabase to use a custom SMTP (Resend SMTP) instead.
- * This route is for cases where you want full control over the OTP flow.
  */
-
-// Shared in-memory OTP store via globalThis (accessible from verify-otp route too)
-// For production with serverless, replace with Redis or DB
-function getOtpStore(): Map<string, { code: string; expiresAt: number; type: string }> {
-    const g = globalThis as any
-    if (!g.__otpStore) {
-        g.__otpStore = new Map()
-    }
-    return g.__otpStore
-}
-
-// Cleanup expired OTPs every 5 minutes
-if (typeof globalThis !== 'undefined') {
-    const g = globalThis as any
-    if (!g.__otpCleanup) {
-        g.__otpCleanup = setInterval(() => {
-            const now = Date.now()
-            const store = getOtpStore()
-            for (const [key, val] of store) {
-                if (val.expiresAt < now) store.delete(key)
-            }
-        }, 300_000)
-    }
-}
 
 function generateOTP(): string {
     // Crypto-safe 6-digit code
@@ -57,39 +31,41 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'E-posta adresi gerekli.' }, { status: 400 })
         }
 
-        const store = getOtpStore()
-
         // Rate limit: max 3 OTPs per email per 10 minutes
-        const recentKey = `rate:${email}`
-        const existing = store.get(recentKey)
-        if (existing && existing.expiresAt > Date.now()) {
-            const attempts = parseInt(existing.code) || 0
-            if (attempts >= 3) {
-                return NextResponse.json(
-                    { error: 'Cok fazla deneme. Lutfen birkas dakika bekleyin.' },
-                    { status: 429 }
-                )
-            }
-            store.set(recentKey, {
-                code: String(attempts + 1),
-                expiresAt: existing.expiresAt,
-                type: 'rate',
-            })
-        } else {
-            store.set(recentKey, {
-                code: '1',
-                expiresAt: Date.now() + 10 * 60 * 1000,
-                type: 'rate',
-            })
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000)
+        const recentCount = await prisma.otp.count({
+            where: {
+                email,
+                createdAt: { gte: tenMinutesAgo },
+            },
+        })
+
+        if (recentCount >= 3) {
+            return NextResponse.json(
+                { error: 'Cok fazla deneme. Lutfen birkas dakika bekleyin.' },
+                { status: 429 }
+            )
         }
+
+        // Delete expired OTPs for this email
+        await prisma.otp.deleteMany({
+            where: {
+                email,
+                expiresAt: { lt: new Date() },
+            },
+        })
 
         // Generate and store OTP
         const code = generateOTP()
-        const otpKey = `otp:${email}:${type}`
-        store.set(otpKey, {
-            code,
-            expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
-            type,
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+
+        await prisma.otp.create({
+            data: {
+                email,
+                type,
+                code,
+                expiresAt,
+            },
         })
 
         // Render email
@@ -121,5 +97,7 @@ export async function POST(req: NextRequest) {
             { error: 'Beklenmeyen bir hata olustu.' },
             { status: 500 }
         )
+    } finally {
+        await prisma.$disconnect()
     }
 }

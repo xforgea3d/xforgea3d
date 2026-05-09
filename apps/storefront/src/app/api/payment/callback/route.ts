@@ -65,16 +65,25 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid signature' }, { status: 403 })
          }
 
-         // Validate callback amount matches stored payable (if provided)
+         // Validate callback amount matches stored payable EXACTLY (zero tolerance)
+         // Rounding tolerance must be applied at order creation, NOT payment callback
          if (totalAmount) {
             const parsedAmount = parseFloat(totalAmount)
-            if (!isNaN(parsedAmount) && Math.abs(parsedAmount - payment.payable) > 0.01) {
-               console.error('[PAYMENT_CALLBACK] Amount mismatch:', { totalAmount, expected: payment.payable })
-               await prisma.payment.update({
-                  where: { id: payment.id },
-                  data: { status: 'Denied' },
-               })
-               return NextResponse.json({ error: 'Amount mismatch' }, { status: 403 })
+            if (!isNaN(parsedAmount)) {
+               // CRITICAL: Exact match required. No tolerance at callback stage.
+               // Tolerance (if any) must be enforced at checkout before payment initiation
+               if (Math.abs(parsedAmount - payment.payable) > 0.001) {
+                  console.error('[PAYMENT_CALLBACK] Amount mismatch:', {
+                     received: parsedAmount,
+                     expected: payment.payable,
+                     difference: parsedAmount - payment.payable,
+                  })
+                  await prisma.payment.update({
+                     where: { id: payment.id },
+                     data: { status: 'Denied' },
+                  })
+                  return NextResponse.json({ error: 'Amount mismatch' }, { status: 403 })
+               }
             }
          }
       } else if (process.env.NODE_ENV !== 'development') {

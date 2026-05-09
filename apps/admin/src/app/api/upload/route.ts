@@ -3,8 +3,10 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, NextRequest } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 
+// CRITICAL: SVG is deliberately excluded due to embedded script attack vector
+// SVG files can contain <script> tags or event handlers that execute when displayed
 const ALLOWED_TYPES = new Set([
-   'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/svg+xml',
+   'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
 ])
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
@@ -39,7 +41,8 @@ export async function POST(request: NextRequest) {
       )
 
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png'
-      const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg'].includes(fileExt) ? fileExt : 'png'
+      // Only allow safe raster image extensions (no SVG)
+      const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'].includes(fileExt) ? fileExt : 'png'
       const fileName = `${uuidv4()}.${safeExt}`
       const filePath = `uploads/${fileName}`
 

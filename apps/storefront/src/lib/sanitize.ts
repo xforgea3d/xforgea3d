@@ -1,7 +1,19 @@
-import DOMPurify from 'isomorphic-dompurify'
+import { JSDOM } from 'jsdom'
+import DOMPurify from 'dompurify'
+
+let purify: ReturnType<typeof DOMPurify> | null = null
+
+function getPurify() {
+   if (!purify) {
+      const jsdomWindow = new JSDOM('').window as any
+      purify = DOMPurify(jsdomWindow)
+   }
+   return purify
+}
 
 export function sanitizeHtml(dirty: string): string {
-   return DOMPurify.sanitize(dirty, {
+   const sanitizer = getPurify()
+   return sanitizer.sanitize(dirty, {
       ALLOWED_TAGS: [
          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
          'p', 'br', 'hr',

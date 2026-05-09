@@ -1,6 +1,12 @@
 export const revalidate = 60
 
+import { Metadata } from 'next'
 import { ProductGrid, ProductSkeletonGrid } from '@/components/native/Product'
+
+export const metadata: Metadata = {
+   title: 'Ürünler',
+   description: '3D baskı ürünleri, figürler, heykeller ve dekoratif objeler. xForgea3D koleksiyonunu keşfedin.',
+}
 import { Heading } from '@/components/native/heading'
 import { Separator } from '@/components/native/separator'
 import { Button } from '@/components/ui/button'

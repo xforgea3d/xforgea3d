@@ -1,29 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 /**
  * POST /api/auth/verify-otp
  *
- * Verifies an OTP code against the in-memory store.
+ * Verifies an OTP code against the database.
  *
  * Body: { email: string, code: string, type?: 'verify' | 'reset' }
  *
  * Returns: { success: true, verified: true } on match
  */
-
-// Import the shared OTP store
-// NOTE: In a serverless/edge environment, the in-memory store won't persist
-// across different function invocations. For production, use a database or Redis.
-// This works in a single-process Node.js environment (e.g., `next start`).
-
-// We need to access the same module-level Map
-// In Next.js API routes, we can use globalThis for cross-route module state
-function getOtpStore(): Map<string, { code: string; expiresAt: number; type: string }> {
-    const g = globalThis as any
-    if (!g.__otpStore) {
-        g.__otpStore = new Map()
-    }
-    return g.__otpStore
-}
 
 export async function POST(req: NextRequest) {
     try {
@@ -37,34 +25,46 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        const otpStore = getOtpStore()
-        const otpKey = `otp:${email}:${type}`
-        const stored = otpStore.get(otpKey)
+        const otp = await prisma.otp.findFirst({
+            where: {
+                email,
+                type,
+                code,
+                used: false,
+            },
+        })
 
-        if (!stored) {
+        if (!otp) {
             return NextResponse.json(
                 { error: 'Dogrulama kodu bulunamadi. Yeni bir kod isteyin.' },
                 { status: 400 }
             )
         }
 
-        if (stored.expiresAt < Date.now()) {
-            otpStore.delete(otpKey)
+        if (otp.expiresAt < new Date()) {
+            // Delete expired OTP
+            await prisma.otp.delete({ where: { id: otp.id } })
             return NextResponse.json(
                 { error: 'Dogrulama kodunun suresi doldu. Yeni bir kod isteyin.' },
                 { status: 400 }
             )
         }
 
-        if (stored.code !== code) {
-            return NextResponse.json(
-                { error: 'Dogrulama kodu hatali.' },
-                { status: 400 }
-            )
-        }
+        // Mark as used
+        await prisma.otp.update({
+            where: { id: otp.id },
+            data: { used: true },
+        })
 
-        // OTP is valid - delete it so it can't be reused
-        otpStore.delete(otpKey)
+        // Clean up old used/expired OTPs
+        await prisma.otp.deleteMany({
+            where: {
+                OR: [
+                    { used: true, createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+                    { expiresAt: { lt: new Date() } },
+                ],
+            },
+        })
 
         return NextResponse.json({ success: true, verified: true })
     } catch (error) {
@@ -73,5 +73,7 @@ export async function POST(req: NextRequest) {
             { error: 'Beklenmeyen bir hata olustu.' },
             { status: 500 }
         )
+    } finally {
+        await prisma.$disconnect()
     }
 }

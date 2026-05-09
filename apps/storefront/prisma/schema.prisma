@@ -39,6 +39,8 @@ model Profile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([role, createdAt])
 }
 
 enum RoleEnum {
@@ -65,7 +67,7 @@ model SiteSettings {
 }
 
 model Cart {
-  user   Profile    @relation(fields: [userId], references: [id])
+  user   Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String     @id
   items  CartItem[]
 
@@ -75,9 +77,9 @@ model Cart {
 
 model CartItem {
   id             String  @id @default(cuid())
-  cart           Cart    @relation(fields: [cartId], references: [userId])
+  cart           Cart    @relation(fields: [cartId], references: [userId], onDelete: Cascade)
   cartId         String
-  product        Product @relation(fields: [productId], references: [id])
+  product        Product @relation(fields: [productId], references: [id], onDelete: Restrict)
   productId      String
   count          Int
   isCustom       Boolean @default(false)
@@ -118,7 +120,7 @@ enum ProductTypeEnum {
 
 model Product {
   id          String          @id @default(cuid())
-  title       String
+  title       String          @unique
   description String?
   images      String[]
   keywords    String[]
@@ -156,6 +158,7 @@ model Product {
   @@index([brandId])
   @@index([isAvailable, isFeatured])  // homepage featured products query
   @@index([isAvailable, createdAt])   // newest available products listing
+  @@index([title])                    // product lookup by name
 }
 
 model Category {
@@ -178,9 +181,9 @@ model ProductReview {
   rating Int
   images String[] @default([])
 
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
-  user      Profile    @relation(fields: [userId], references: [id])
+  user      Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
 
   createdAt DateTime @default(now())
@@ -219,7 +222,7 @@ model Order {
   discountCodeId String?
   address        Address?      @relation(fields: [addressId], references: [id])
   addressId      String?
-  user           Profile          @relation(fields: [userId], references: [id])
+  user           Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
 
   createdAt DateTime @default(now())
@@ -229,14 +232,15 @@ model Order {
   @@index([addressId])
   @@index([discountCodeId])
   @@index([userId, status])           // admin order tracking filter
+  @@index([userId, createdAt, status]) // combined query: "orders by user, date, status"
   @@index([createdAt])
 }
 
 model OrderItem {
   id             String  @id @default(cuid())
-  order          Order   @relation(fields: [orderId], references: [id])
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId        String
-  product        Product @relation(fields: [productId], references: [id])
+  product        Product @relation(fields: [productId], references: [id], onDelete: Restrict)
   productId      String
   count          Int
   price          Float
@@ -270,13 +274,14 @@ model Address {
   phone      String
   postalCode String
 
-  user   Profile    @relation(fields: [userId], references: [id])
+  user   Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
   orders Order[]
 
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@index([userId, createdAt])  // User's address history
 }
 
 model Notification {
@@ -285,13 +290,15 @@ model Notification {
   type    String  @default("notification") // "notification" | "popup"
   isRead  Boolean @default(false)
 
-  user   Profile   @relation(fields: [userId], references: [id])
+  user   Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([userId, isRead])  // Admin dashboard: "unread count by user"
+  @@index([createdAt])       // Recent notifications query
 }
 
 model DiscountCode {
@@ -317,7 +324,7 @@ model Refund {
   amount Float
   reason String
 
-  order   Order  @relation(fields: [orderId], references: [id])
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId String @unique
 
   createdAt DateTime @default(now())
@@ -341,9 +348,9 @@ model Payment {
 
   provider   PaymentProvider @relation(fields: [providerId], references: [id])
   providerId String
-  user       Profile            @relation(fields: [userId], references: [id])
+  user       Profile            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
-  order      Order           @relation(fields: [orderId], references: [id])
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId    String
 
   createdAt DateTime @default(now())
@@ -386,7 +393,7 @@ model Error {
   metadata  Json?
   resolved  Boolean  @default(false)
 
-  user      Profile? @relation(fields: [userId], references: [id])
+  user      Profile? @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String?
 
   createdAt DateTime @default(now())
@@ -418,7 +425,7 @@ model File {
 
   url String
 
-  user   Profile   @relation(fields: [userId], references: [id])
+  user   Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   createdAt DateTime @default(now())
@@ -586,7 +593,7 @@ model QuoteRequest {
   name  String?
   phone String?
 
-  user   Profile? @relation(fields: [userId], references: [id])
+  user   Profile? @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String?
 
   carBrand   CarBrand? @relation(fields: [carBrandId], references: [id])
@@ -609,6 +616,8 @@ model QuoteRequest {
 
   @@index([userId])
   @@index([status])
+  @@index([createdAt])         // Recent quote list
+  @@index([status, createdAt]) // "Pending quotes by date"
 }
 
 // ── Return / Refund Request System ────────────────────────────
@@ -631,9 +640,9 @@ model ReturnRequest {
   adminNote     String?
   returnTrackingNumber String?
   refundAmount  Float?
-  order         Order            @relation(fields: [orderId], references: [id])
+  order         Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId       String
-  user          Profile          @relation(fields: [userId], references: [id])
+  user          Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
@@ -684,4 +693,21 @@ model Campaign {
   updatedAt DateTime @updatedAt
 
   @@index([startDate, endDate, isActive])
+}
+
+// ── OTP (One-Time Password) ───────────────────────────────────
+
+model Otp {
+  id        String   @id @default(cuid())
+  email     String
+  type      String   @default("verify") // "verify" | "reset"
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@unique([email, type, code])
+  @@index([email, type])
+  @@index([expiresAt])
 }

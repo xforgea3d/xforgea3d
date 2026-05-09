@@ -18,6 +18,9 @@ function getSupabaseClient() {
  */
 export async function POST(req: Request) {
    try {
+      const userId = req.headers.get('X-USER-ID')
+      if (!userId) return new NextResponse('Unauthorized', { status: 401 })
+
       const formData = await req.formData()
       const svgFile = formData.get('svg') as File | null
       const rawData = formData.get('data') as string
@@ -75,7 +78,6 @@ export async function POST(req: Request) {
       ].join('\n')
 
       // Create a QuoteRequest record so the order is trackable
-      const userId = req.headers.get('X-USER-ID') || null
       const colorName = data.colorName || data.color || '-'
       const partDesc = [
          'Atölye Özel Tasarım Siparişi',

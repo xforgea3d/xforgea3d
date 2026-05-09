@@ -22,7 +22,7 @@
    },
    "homepage": "https://github.com/sesto-dev/next-prisma-tailwind-ecommerce#readme",
    "devDependencies": {
-      "@types/nodemailer": "^6.4.16",
+      "@types/nodemailer": "^6.4.23",
       "@types/react": "^18.3.11",
       "typescript": "^5.6.3"
    },

@@ -46,6 +46,31 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login?error=not_admin', request.url))
    }
 
+   // Check 2FA requirement for sensitive operations
+   const sensitivePathPatterns = [
+      '/api/products/',
+      '/api/orders/',
+      '/api/payments/',
+      '/api/users/',
+      '/api/categories/',
+   ]
+   const isSensitiveOperation =
+      sensitivePathPatterns.some(pattern => request.nextUrl.pathname.startsWith(pattern)) &&
+      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)
+
+   if (isSensitiveOperation) {
+      const twoFaVerified = request.headers.get('x-2fa-verified') === 'true'
+      if (!twoFaVerified) {
+         if (isTargetingAPI()) {
+            return NextResponse.json(
+               { error: 'TWO_FA_REQUIRED', redirect: '/api/admin/require-2fa' },
+               { status: 403 }
+            )
+         }
+         return NextResponse.redirect(new URL('/verify-2fa?next=' + encodeURIComponent(request.nextUrl.pathname), request.url))
+      }
+   }
+
    const requestHeaders = new Headers(request.headers)
    requestHeaders.set('X-USER-ID', user.id)
 
