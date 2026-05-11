@@ -16,6 +16,8 @@ import { Heading } from '@/components/ui/heading'
 import ImageUpload from '@/components/ui/image-upload'
 import { CustomOptionsEditor } from './custom-options-editor'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { adminPath } from '@/lib/base-path'
 import {
    Select,
    SelectContent,
@@ -36,6 +38,8 @@ import * as z from 'zod'
 
 const formSchema = z.object({
    title: z.string().min(1),
+   description: z.string().optional(),
+   keywords: z.string().optional(),
    images: z.string().array(),
    price: z.coerce.number().min(1),
    discount: z.coerce.number().min(0),
@@ -81,6 +85,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       ? {
          ...initialData,
          price: parseFloat(String(initialData?.price.toFixed(2))),
+         description: (initialData as any)?.description ?? '',
+         keywords: Array.isArray((initialData as any)?.keywords)
+            ? (initialData as any).keywords.join(', ')
+            : '',
          discount: parseFloat(String(initialData?.discount.toFixed(2))),
          brandId: (initialData as any)?.brandId ?? '',
          categoryId: (initialData as any)?.categories?.[0]?.id ?? '',
@@ -96,16 +104,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       }
       : {
          title: '',
+         description: '',
+         keywords: '',
          images: [],
-         price: 0,
+         price: 100,
          discount: 0,
-         stock: 0,
+         stock: 1,
          brandId: '',
          categoryId: '',
          productType: 'READY',
          customOptions: '',
          isFeatured: false,
-         isAvailable: false,
+         isAvailable: true,
          flashSaleActive: false,
          flashSalePrice: 0,
          flashSaleEndDate: '',
@@ -122,6 +132,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          const payload = {
             ...formData,
             categoryIds: [formData.categoryId],
+            keywords: formData.keywords
+               ? formData.keywords.split(',').map((keyword) => keyword.trim()).filter(Boolean)
+               : [],
             customOptions: formData.customOptions
                ? JSON.parse(formData.customOptions)
                : null,
@@ -129,14 +142,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             flashSaleEndDate: formData.flashSaleActive && formData.flashSaleEndDate ? new Date(formData.flashSaleEndDate).toISOString() : null,
          }
          if (initialData) {
-            const res = await fetch(`/api/products/${params.productId}`, {
+            const res = await fetch(adminPath(`/api/products/${params.productId}`), {
                method: 'PATCH',
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify(payload),
             })
             if (!res.ok) throw new Error(await res.text())
          } else {
-            const res = await fetch(`/api/products`, {
+            const res = await fetch(adminPath('/api/products'), {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify(payload),
@@ -144,7 +157,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             if (!res.ok) throw new Error(await res.text())
          }
          router.refresh()
-         window.location.href = '/products'
+         window.location.href = adminPath('/products')
          toast.success(toastMessage)
       } catch (error: any) {
          toast.error('Bir hata oluştu: ' + (error?.message || ''))
@@ -157,14 +170,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       try {
          setLoading(true)
 
-         const res = await fetch(`/api/products/${params.productId}`, {
+         const res = await fetch(adminPath(`/api/products/${params.productId}`), {
             method: 'DELETE',
             cache: 'no-store',
          })
          if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
-         window.location.href = '/products'
+         window.location.href = adminPath('/products')
          toast.success('Ürün silindi.')
       } catch (error: any) {
          toast.error('Bir hata oluştu.')
@@ -249,6 +262,43 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                  {...field}
                               />
                            </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="description"
+                     render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                           <FormLabel>Açıklama</FormLabel>
+                           <FormControl>
+                              <Textarea
+                                 disabled={loading}
+                                 rows={4}
+                                 placeholder="Malzeme, ölçü, kullanım alanı ve müşterinin bilmesi gereken detaylar"
+                                 {...field}
+                              />
+                           </FormControl>
+                           <FormDescription>Ürün detay sayfası ve SEO için kullanılır.</FormDescription>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="keywords"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Anahtar Kelimeler</FormLabel>
+                           <FormControl>
+                              <Input
+                                 disabled={loading}
+                                 placeholder="figür, heykel, 3d baskı"
+                                 {...field}
+                              />
+                           </FormControl>
+                           <FormDescription>Virgülle ayırın.</FormDescription>
                            <FormMessage />
                         </FormItem>
                      )}

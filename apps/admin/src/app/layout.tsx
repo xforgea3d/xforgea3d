@@ -1,6 +1,7 @@
 import { ModalProvider } from '@/providers/modal-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { ToastProvider } from '@/providers/toast-provider'
+import { BasePathProvider } from '@/providers/base-path-provider'
 import { NavigationProgressBar } from '@/components/NavigationProgressBar'
 import { Inter } from 'next/font/google'
 import { Suspense } from 'react'
@@ -28,6 +29,7 @@ export default async function RootLayout({
                </Suspense>
                <ToastProvider />
                <ModalProvider />
+               <BasePathProvider />
                {children}
             </ThemeProvider>
          </body>

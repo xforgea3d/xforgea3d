@@ -113,7 +113,7 @@ export default async function Products({ searchParams }) {
             <PriceRangeFilter initialMin={minPrice} initialMax={maxPrice} />
          </div>
          <Separator />
-         {isVariableValid(products) ? (
+         {products.length > 0 ? (
             <>
                <ProductGrid products={products} />
                {totalPages > 1 && (

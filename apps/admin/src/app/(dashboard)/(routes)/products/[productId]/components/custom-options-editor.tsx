@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PlusIcon, TrashIcon } from 'lucide-react'
@@ -73,6 +74,25 @@ export const CustomOptionsEditor = ({ value, onChange, disabled }: CustomOptions
                             onChange={e => triggerChange({ ...data, basePriceAddition: Number(e.target.value) })}
                         />
                     </div>
+                    <div className="space-y-2">
+                        <Label>Özel Metin Karakter Limiti</Label>
+                        <Input
+                            type="number"
+                            min={0}
+                            disabled={disabled}
+                            value={data.maxTextLength}
+                            onChange={e => triggerChange({ ...data, maxTextLength: Number(e.target.value) })}
+                        />
+                        <p className="text-xs text-muted-foreground">0 bırakırsanız müşteriden metin alınmaz.</p>
+                    </div>
+                    <label className="col-span-2 flex items-center gap-3 rounded-md border bg-white p-3 text-sm">
+                        <Checkbox
+                            checked={data.allowFileUpload}
+                            disabled={disabled}
+                            onCheckedChange={(checked) => triggerChange({ ...data, allowFileUpload: checked === true })}
+                        />
+                        <span>Müşteri dosya yükleyebilsin (logo, görsel, SVG, STL vb.)</span>
+                    </label>
                 </div>
             </div>
 

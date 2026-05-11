@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_GEMINI_API_KEY
 const GEMINI_MODEL = 'gemini-2.0-flash'
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`
+const POLLINATIONS_TEXT_URL = 'https://gen.pollinations.ai/text'
 
 // ── Topic pools ──────────────────────────────────────────────
 const TOPIC_POOLS: Record<string, string[]> = {
@@ -78,6 +79,10 @@ function slugify(text: string): string {
 }
 
 async function callGemini(prompt: string): Promise<string> {
+   if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not configured')
+   }
+
    const res = await fetch(GEMINI_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,6 +104,60 @@ async function callGemini(prompt: string): Promise<string> {
    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 }
 
+async function callPollinations(prompt: string): Promise<string> {
+   const strengthenedPrompt = `${prompt}
+
+KALITE KONTROL:
+- Cevap tek bir parse edilebilir JSON nesnesi olmalı.
+- body_html boş, kısa veya yüzeysel olamaz; en az 800 kelimeye yakın, özgün, satışa dönük ama güven veren bilgi içermeli.
+- Türkiye'deki 3D baskı müşterisinin karar sürecine yardımcı olacak ölçü, malzeme, kullanım, bakım ve teslimat detayları ekle.
+- Uydurma garanti, sertifika, marka iş birliği veya teknik özellik yazma.
+- Markdown, açıklama, code fence veya JSON dışı metin yazma.`
+
+   const url = `${POLLINATIONS_TEXT_URL}/${encodeURIComponent(strengthenedPrompt)}?model=openai&json=true`
+   const res = await fetch(url, {
+      headers: { Accept: 'application/json, text/plain;q=0.9' },
+      cache: 'no-store',
+   })
+
+   if (!res.ok) {
+      const errText = await res.text()
+      throw new Error(`Pollinations API error ${res.status}: ${errText}`)
+   }
+
+   return await res.text()
+}
+
+async function generateText(prompt: string): Promise<{ raw: string; provider: 'gemini' | 'pollinations' }> {
+   try {
+      return { raw: await callGemini(prompt), provider: 'gemini' }
+   } catch (error) {
+      console.warn('[AUTO_BLOG] Gemini failed, using Pollinations fallback:', (error as Error).message)
+      return { raw: await callPollinations(prompt), provider: 'pollinations' }
+   }
+}
+
+function parseGeneratedJson(raw: string) {
+   let jsonStr = raw.trim()
+   if (jsonStr.startsWith('```')) {
+      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+   }
+   const firstBrace = jsonStr.indexOf('{')
+   const lastBrace = jsonStr.lastIndexOf('}')
+   if (firstBrace > -1 && lastBrace > firstBrace) {
+      jsonStr = jsonStr.slice(firstBrace, lastBrace + 1)
+   }
+
+   return JSON.parse(jsonStr) as {
+      title: string
+      excerpt: string
+      body_html: string
+      tags: string[]
+      seo_title: string
+      seo_description: string
+   }
+}
+
 // ── Main handler ─────────────────────────────────────────────
 export async function GET(req: NextRequest) {
    // Auth check: Vercel Cron sends this header, or manual calls must provide it
@@ -111,10 +170,6 @@ export async function GET(req: NextRequest) {
    }
    if (cronSecret !== envSecret && headerSecret !== envSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-   }
-
-   if (!GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 500 })
    }
 
    const type = req.nextUrl.searchParams.get('type') ?? '3d'
@@ -146,22 +201,8 @@ KURALLAR:
 - xForgea3D'den doğal şekilde bahset (reklam gibi olmasın)
 - JSON dışında hiçbir şey yazma (markdown code fence da yazma)`
 
-      const raw = await callGemini(prompt)
-
-      // Parse JSON from response (handle potential markdown wrapping)
-      let jsonStr = raw.trim()
-      if (jsonStr.startsWith('```')) {
-         jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-      }
-
-      const parsed = JSON.parse(jsonStr) as {
-         title: string
-         excerpt: string
-         body_html: string
-         tags: string[]
-         seo_title: string
-         seo_description: string
-      }
+      const { raw, provider } = await generateText(prompt)
+      const parsed = parseGeneratedJson(raw)
 
       // Step 2: Create unique slug
       const baseSlug = slugify(parsed.title)
@@ -212,6 +253,7 @@ KURALLAR:
          title: post.title_tr,
          type,
          topic,
+         provider,
       })
    } catch (error) {
       console.error('[AUTO_BLOG]', error)

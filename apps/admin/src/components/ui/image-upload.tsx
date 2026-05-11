@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { adminPath } from '@/lib/base-path'
 import { ImagePlus, Trash, Loader2 } from 'lucide-react'
 import { useEffect, useState, useRef } from 'react'
 import { toast } from 'react-hot-toast'
@@ -45,7 +46,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
          const formData = new FormData()
          formData.append('file', file)
 
-         const response = await fetch('/api/upload', {
+         const response = await fetch(adminPath('/api/upload'), {
             method: 'POST',
             body: formData,
          })

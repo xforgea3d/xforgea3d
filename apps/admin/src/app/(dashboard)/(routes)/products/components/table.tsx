@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { Input } from '@/components/ui/input'
+import { adminPath } from '@/lib/base-path'
 import { ColumnDef } from '@tanstack/react-table'
 import { CheckIcon, EditIcon, ImageIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -97,7 +98,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
       if (!deleteId) return
       try {
          setLoading(true)
-         const res = await fetch(`/api/products/${deleteId}`, { method: 'DELETE' })
+         const res = await fetch(adminPath(`/api/products/${deleteId}`), { method: 'DELETE' })
          if (!res.ok) throw new Error('Silme başarısız')
          toast.success('Ürün silindi.')
          window.location.reload()
@@ -114,7 +115,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
       if (ids.length === 0) return
       try {
          setLoading(true)
-         const res = await fetch('/api/products/bulk-delete', {
+         const res = await fetch(adminPath('/api/products/bulk-delete'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids }),
@@ -136,7 +137,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
       if (ids.length === 0) return
       try {
          setLoading(true)
-         const res = await fetch('/api/products/bulk-move', {
+         const res = await fetch(adminPath('/api/products/bulk-move'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids, brandId }),
