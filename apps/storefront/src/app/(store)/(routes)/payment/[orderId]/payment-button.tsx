@@ -27,7 +27,7 @@ export function PaymentButton({
 
          if (!res.ok) {
             const data = await res.json().catch(() => ({}))
-            alert(data.error || 'Odeme baslatilamadi')
+            alert(data.error || 'Ödeme başlatılamadı')
             setLoading(false)
             return
          }
@@ -37,7 +37,7 @@ export function PaymentButton({
             window.location.href = data.paymentUrl
          }
       } catch {
-         alert('Bir hata olustu')
+         alert('Bir hata oluştu')
          setLoading(false)
       }
    }
@@ -53,10 +53,10 @@ export function PaymentButton({
          }`}
       >
          {loading
-            ? 'Isleniyor...'
+            ? 'İşleniyor...'
             : isTest
-               ? `Test Odemesi Yap (${amount.toFixed(2)} TL)`
-               : `${amount.toFixed(2)} TL Ode`}
+               ? `Test Ödemesi Yap (${amount.toFixed(2)} TL)`
+               : `${amount.toFixed(2)} TL Öde`}
       </button>
    )
 }

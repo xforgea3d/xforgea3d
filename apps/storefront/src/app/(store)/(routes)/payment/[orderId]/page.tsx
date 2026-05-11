@@ -150,9 +150,10 @@ export default async function PaymentPage({ params, searchParams }: Props) {
 
          {/* Payment Action */}
          <div className="rounded-xl border p-6 space-y-4">
-            <h2 className="font-semibold text-lg">Kartla Öde</h2>
+            <h2 className="font-semibold text-lg">Online Ödeme</h2>
             <p className="text-sm text-muted-foreground">
-               Güvenli ödeme sayfasına yönlendirileceksiniz. Kart bilgileriniz sitemizde saklanmaz.
+               Yapı Kredi Sanal POS entegrasyonu tamamlandığında güvenli ödeme sayfasına yönlendirileceksiniz.
+               Kart bilgileriniz sitemizde saklanmayacaktır.
             </p>
             <PaymentButton orderId={order.id} amount={order.payable} />
          </div>
@@ -169,4 +170,3 @@ export default async function PaymentPage({ params, searchParams }: Props) {
       </div>
    )
 }
-

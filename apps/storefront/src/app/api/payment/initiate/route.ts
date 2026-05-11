@@ -183,8 +183,22 @@ export async function POST(req: NextRequest) {
             )
          }
       } else {
-         // ── MOCK/TEST MODE ─────────────────────────────────
-         // No payment keys configured — return a mock payment URL
+         if (process.env.NODE_ENV === 'production') {
+            await prisma.payment.update({
+               where: { id: payment.id },
+               data: { status: 'Failed' },
+            })
+
+            return NextResponse.json(
+               {
+                  error: 'Online ödeme altyapısı hazırlanıyor. Yapı Kredi Sanal POS entegrasyonu tamamlandığında ödeme alınabilecektir.',
+               },
+               { status: 503 }
+            )
+         }
+
+         // ── LOCAL MOCK/TEST MODE ───────────────────────────
+         // No payment keys configured in development — return a mock payment URL.
          const mockPaymentUrl = `${SITE_URL}/api/payment/success?refId=${refId}&mock=true`
 
          return NextResponse.json({
