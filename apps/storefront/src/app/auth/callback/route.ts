@@ -3,20 +3,11 @@ import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
- * Determines the correct site origin, preferring NEXT_PUBLIC_SITE_URL
- * so that Supabase OAuth callbacks always redirect to the right domain
- * (not localhost or another project).
+ * Determines the correct site origin for OAuth callbacks.
+ * Keep the callback on the same host where the OAuth flow started so the
+ * Supabase PKCE verifier cookie is available during code exchange.
  */
 function getSiteOrigin(request: NextRequest): string {
-    // 1. Explicit env var (most reliable for production)
-    if (process.env.NEXT_PUBLIC_SITE_URL) {
-        return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
-    }
-    // 2. Vercel deployment URL
-    if (process.env.VERCEL_URL) {
-        return `https://${process.env.VERCEL_URL}`
-    }
-    // 3. Fall back to the request origin
     return new URL(request.url).origin
 }
 

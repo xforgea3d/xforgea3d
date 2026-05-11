@@ -31,14 +31,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
    const supabase = createClient()
    const searchParams = useSearchParams()
 
-   /**
-    * Returns the site origin for auth redirects.
-    * Uses NEXT_PUBLIC_SITE_URL if available (production),
-    * otherwise falls back to window.location.origin (dev).
-    */
    function getSiteOrigin(): string {
-      const envUrl = process.env.NEXT_PUBLIC_SITE_URL
-      if (envUrl) return envUrl.replace(/\/$/, '')
+      // OAuth PKCE stores a verifier cookie on the current host. If a user
+      // starts on www and the callback is forced to the apex domain, Supabase
+      // cannot exchange the code for a session.
       return window.location.origin
    }
 
@@ -317,7 +313,7 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
 
       try {
          setIsLoading(true)
-         const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || window.location.origin
+         const origin = window.location.origin
          const { data, error } = await supabase.auth.signUp({
             email,
             password,
