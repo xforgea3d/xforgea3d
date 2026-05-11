@@ -1,6 +1,13 @@
 import { updateSession } from '@/lib/supabase/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '/admin07'
+
+function adminUrl(path: string, requestUrl: string) {
+   const normalizedPath = path.startsWith('/') ? path : `/${path}`
+   return new URL(`${BASE_PATH}${normalizedPath}`, requestUrl)
+}
+
 export async function middleware(request: NextRequest) {
    if (request.nextUrl.pathname.startsWith('/api/auth')) return NextResponse.next()
 
@@ -18,7 +25,7 @@ export async function middleware(request: NextRequest) {
    // If user is on /login and already authenticated as admin, redirect to dashboard
    if (isLoginPage) {
       if (user && ALLOWED_ADMIN_EMAIL && user.email?.toLowerCase() === ALLOWED_ADMIN_EMAIL.toLowerCase()) {
-         const response = NextResponse.redirect(new URL('/', request.url))
+         const response = NextResponse.redirect(adminUrl('/', request.url))
          supabaseResponse.cookies.getAll().forEach((cookie) => {
             response.cookies.set(cookie.name, cookie.value, cookie as any)
          })
@@ -36,14 +43,14 @@ export async function middleware(request: NextRequest) {
       if (isTargetingAPI()) {
          return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
       }
-      return NextResponse.redirect(new URL('/login', request.url))
+      return NextResponse.redirect(adminUrl('/login', request.url))
    }
 
    if (user.email?.toLowerCase() !== ALLOWED_ADMIN_EMAIL.toLowerCase()) {
       if (isTargetingAPI()) {
          return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
       }
-      return NextResponse.redirect(new URL('/login?error=not_admin', request.url))
+      return NextResponse.redirect(adminUrl('/login?error=not_admin', request.url))
    }
 
    // Check 2FA requirement for sensitive operations
@@ -67,7 +74,7 @@ export async function middleware(request: NextRequest) {
                { status: 403 }
             )
          }
-         return NextResponse.redirect(new URL('/verify-2fa?next=' + encodeURIComponent(request.nextUrl.pathname), request.url))
+         return NextResponse.redirect(adminUrl('/verify-2fa?next=' + encodeURIComponent(request.nextUrl.pathname), request.url))
       }
    }
 
