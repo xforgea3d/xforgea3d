@@ -15,7 +15,7 @@ export function UserAuthForm({ className }: { className?: string }) {
    const [focusedField, setFocusedField] = React.useState<string | null>(null)
    const supabase = createClient()
 
-   const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || ''
+   const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').trim()
    const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ''
 
    async function onSubmit(e: React.FormEvent) {
