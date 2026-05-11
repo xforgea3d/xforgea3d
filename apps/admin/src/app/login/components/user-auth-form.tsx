@@ -16,6 +16,7 @@ export function UserAuthForm({ className }: { className?: string }) {
    const supabase = createClient()
 
    const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || ''
+   const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ''
 
    async function onSubmit(e: React.FormEvent) {
       e.preventDefault()
@@ -31,11 +32,11 @@ export function UserAuthForm({ className }: { className?: string }) {
             setSuccess(true)
             // Force server-side cookie refresh, then redirect
             try {
-               await fetch('/api/auth/session', { method: 'POST', credentials: 'same-origin' })
+               await fetch(`${BASE_PATH}/api/auth/session`, { method: 'POST', credentials: 'same-origin' })
             } catch {}
             // Small delay for success animation, then hard navigate
             await new Promise((r) => setTimeout(r, 600))
-            window.location.replace('/')
+            window.location.replace(`${BASE_PATH}/products`)
          }
       } catch {
          setErrorMsg('Bir hata oluştu.')

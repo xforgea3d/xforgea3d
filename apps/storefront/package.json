@@ -61,6 +61,7 @@
       "embla-carousel-react": "^8.3.0",
       "isomorphic-dompurify": "^3.0.0",
       "jose": "^5.9.4",
+      "jsdom": "^28.1.0",
       "lucide-react": "^0.452.0",
       "next": "^14.2.35",
       "next-cloudinary": "^6.14.1",

@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 module.exports = {
+   basePath: '/admin07',
    compress: true,
    poweredByHeader: false,
    transpilePackages: [

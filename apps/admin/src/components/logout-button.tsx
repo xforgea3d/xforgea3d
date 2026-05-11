@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button'
 import { LogOutIcon } from 'lucide-react'
 
 export function LogoutButton() {
+   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
+
    async function onLogout() {
       try {
-         const response = await fetch('/api/auth/logout', {
+         const response = await fetch(`${basePath}/api/auth/logout`, {
             cache: 'no-store',
          })
 
