@@ -66,4 +66,18 @@ module.exports = {
             },
         ]
     },
+    async rewrites() {
+        return {
+            beforeFiles: [
+                {
+                    source: '/admin07',
+                    destination: 'https://xforgea-admin.vercel.app/admin07/login',
+                },
+                {
+                    source: '/admin07/:path*',
+                    destination: 'https://xforgea-admin.vercel.app/admin07/:path*',
+                },
+            ],
+        }
+    },
 }
