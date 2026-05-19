@@ -36,7 +36,7 @@ export async function PATCH(
     try {
         const body = await req.json()
 
-        const { label, image, link } = body
+        const { label, image, link, altText, displayOrder, isActive, startDate, endDate } = body
 
         if (!label) {
             return new NextResponse('Label is required', { status: 400 })
@@ -58,6 +58,11 @@ export async function PATCH(
                 label,
                 image,
                 link: link || null,
+                altText: altText || null,
+                displayOrder: typeof displayOrder === 'number' ? displayOrder : 0,
+                isActive: isActive !== false,
+                startDate: startDate ? new Date(startDate) : null,
+                endDate: endDate ? new Date(endDate) : null,
             },
         })
 

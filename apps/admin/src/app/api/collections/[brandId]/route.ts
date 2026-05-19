@@ -40,7 +40,7 @@ export async function DELETE(
          where: { id: params.brandId },
       })
 
-      revalidatePath('/brands')
+      revalidatePath('/collections')
       revalidatePath('/', 'layout')
       await revalidateAllStorefront()
 
@@ -81,7 +81,7 @@ export async function PATCH(
          data,
       })
 
-      revalidatePath('/brands')
+      revalidatePath('/collections')
       revalidatePath('/', 'layout')
       await revalidateAllStorefront()
 

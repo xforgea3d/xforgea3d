@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
+import { RichEditor } from '@/components/ui/rich-editor'
+import ImageUpload from '@/components/ui/image-upload'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { BlogPost } from '@prisma/client'
 import { Loader2, Trash } from 'lucide-react'
@@ -30,13 +32,22 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import * as z from 'zod'
 
+function toSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+        .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+}
+
 const formSchema = z.object({
-    slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Sadece küçük harf, rakam ve tire'),
+    slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Sadece kucuk harf, rakam ve tire'),
     title_tr: z.string().min(1),
     excerpt_tr: z.string().optional(),
     body_html_tr: z.string().optional(),
     cover_image_url: z.string().optional(),
-    tags: z.string().optional(), // comma-separated, split on save
+    tags: z.string().optional(),
     status: z.enum(['draft', 'published']),
     seo_title_tr: z.string().optional(),
     seo_description_tr: z.string().optional(),
@@ -57,12 +68,12 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
                 slug: initialData.slug,
                 title_tr: initialData.title_tr,
                 status: initialData.status,
-                excerpt_tr: initialData.excerpt_tr ?? undefined,
-                body_html_tr: initialData.body_html_tr ?? undefined,
-                cover_image_url: initialData.cover_image_url ?? undefined,
+                excerpt_tr: initialData.excerpt_tr ?? '',
+                body_html_tr: initialData.body_html_tr ?? '',
+                cover_image_url: initialData.cover_image_url ?? '',
                 tags: initialData.tags?.join(', ') ?? '',
-                seo_title_tr: initialData.seo_title_tr ?? undefined,
-                seo_description_tr: initialData.seo_description_tr ?? undefined,
+                seo_title_tr: initialData.seo_title_tr ?? '',
+                seo_description_tr: initialData.seo_description_tr ?? '',
             }
             : { slug: '', title_tr: '', excerpt_tr: '', body_html_tr: '', cover_image_url: '', tags: '', status: 'draft' as const, seo_title_tr: '', seo_description_tr: '' },
     })
@@ -80,19 +91,19 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
                     method: 'POST', body: JSON.stringify(payload),
                     headers: { 'Content-Type': 'application/json' },
                 })
-                if (!res.ok) throw new Error('Oluşturma başarısız')
+                if (!res.ok) throw new Error('Olusturma basarisiz')
             } else {
                 const res = await fetch(adminPath(`/api/content/blog/${params.postId}`), {
                     method: 'PATCH', body: JSON.stringify(payload),
                     headers: { 'Content-Type': 'application/json' },
                 })
-                if (!res.ok) throw new Error('Güncelleme başarısız')
+                if (!res.ok) throw new Error('Guncelleme basarisiz')
             }
             router.refresh()
             router.push(adminPath('/content/blog'))
-            toast.success(isNew ? 'Yazı oluşturuldu.' : 'Yazı güncellendi.')
+            toast.success(isNew ? 'Yazi olusturuldu.' : 'Yazi guncellendi.')
         } catch {
-            toast.error('Bir hata oluştu.')
+            toast.error('Bir hata olustu.')
         } finally {
             setLoading(false)
         }
@@ -102,12 +113,12 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
         try {
             setLoading(true)
             const res = await fetch(adminPath(`/api/content/blog/${params.postId}`), { method: 'DELETE' })
-            if (!res.ok) throw new Error('Silme başarısız')
+            if (!res.ok) throw new Error('Silme basarisiz')
             router.refresh()
             router.push(adminPath('/content/blog'))
-            toast.success('Yazı silindi.')
+            toast.success('Yazi silindi.')
         } catch {
-            toast.error('Bir hata oluştu.')
+            toast.error('Bir hata olustu.')
         } finally {
             setLoading(false)
         }
@@ -117,8 +128,8 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
         <>
             <div className="flex items-center justify-between">
                 <Heading
-                    title={isNew ? 'Yeni Blog Yazısı' : 'Yazıyı Düzenle'}
-                    description="Başlık, içerik, kapak görseli ve SEO."
+                    title={isNew ? 'Yeni Blog Yazisi' : 'Yaziyi Duzenle'}
+                    description="Baslik, icerik, kapak gorseli ve SEO."
                 />
                 {!isNew && (
                     <Button variant="destructive" size="sm" disabled={loading} onClick={onDelete}>
@@ -130,11 +141,22 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-3xl">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={form.control} name="title_tr" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Başlık</FormLabel>
-                                <FormControl><Input disabled={loading} {...field} /></FormControl>
+                                <FormLabel>Baslik</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        disabled={loading}
+                                        {...field}
+                                        onChange={(e) => {
+                                            field.onChange(e)
+                                            if (isNew) {
+                                                form.setValue('slug', toSlug(e.target.value))
+                                            }
+                                        }}
+                                    />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
@@ -149,15 +171,22 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
 
                     <FormField control={form.control} name="cover_image_url" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Kapak Görseli URL</FormLabel>
-                            <FormControl><Input disabled={loading} placeholder="https://..." {...field} /></FormControl>
+                            <FormLabel>Kapak Gorseli</FormLabel>
+                            <FormControl>
+                                <ImageUpload
+                                    value={field.value ? [field.value] : []}
+                                    disabled={loading}
+                                    onChange={(url) => field.onChange(url)}
+                                    onRemove={() => field.onChange('')}
+                                />
+                            </FormControl>
                             <FormMessage />
                         </FormItem>
                     )} />
 
                     <FormField control={form.control} name="excerpt_tr" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Özet</FormLabel>
+                            <FormLabel>Ozet</FormLabel>
                             <FormControl><Textarea disabled={loading} rows={2} {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
@@ -165,14 +194,13 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
 
                     <FormField control={form.control} name="body_html_tr" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>İçerik (HTML)</FormLabel>
+                            <FormLabel>Icerik</FormLabel>
                             <FormControl>
-                                <Textarea
+                                <RichEditor
+                                    value={field.value || ''}
+                                    onChange={field.onChange}
                                     disabled={loading}
-                                    rows={18}
-                                    className="font-mono text-xs"
-                                    placeholder="<h2>Başlık</h2><p>Paragraf...</p>"
-                                    {...field}
+                                    placeholder="Blog yazinizi buraya yazin..."
                                 />
                             </FormControl>
                             <FormMessage />
@@ -181,8 +209,8 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
 
                     <FormField control={form.control} name="tags" render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Etiketler (virgülle ayırın)</FormLabel>
-                            <FormControl><Input disabled={loading} placeholder="3d-baski, figür, reçine" {...field} /></FormControl>
+                            <FormLabel>Etiketler (virgulle ayirin)</FormLabel>
+                            <FormControl><Input disabled={loading} placeholder="3d-baski, figur, recine" {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
                     )} />
@@ -191,14 +219,14 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
                         <p className="text-sm font-semibold">SEO</p>
                         <FormField control={form.control} name="seo_title_tr" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>SEO Başlığı</FormLabel>
+                                <FormLabel>SEO Basligi</FormLabel>
                                 <FormControl><Input disabled={loading} {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         <FormField control={form.control} name="seo_description_tr" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>SEO Açıklaması</FormLabel>
+                                <FormLabel>SEO Aciklamasi</FormLabel>
                                 <FormControl><Textarea disabled={loading} rows={2} {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -216,7 +244,7 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
                                 </FormControl>
                                 <SelectContent>
                                     <SelectItem value="draft">Taslak</SelectItem>
-                                    <SelectItem value="published">Yayında</SelectItem>
+                                    <SelectItem value="published">Yayinda</SelectItem>
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -230,7 +258,7 @@ export function BlogPostForm({ initialData }: { initialData: BlogPost | null }) 
                                 Kaydediliyor...
                             </>
                         ) : (
-                            isNew ? 'Oluştur' : 'Kaydet'
+                            isNew ? 'Olustur' : 'Kaydet'
                         )}
                     </Button>
                 </form>

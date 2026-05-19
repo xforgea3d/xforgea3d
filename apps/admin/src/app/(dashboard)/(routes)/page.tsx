@@ -1,16 +1,13 @@
 export const revalidate = 0
 
+import { getDashboardStats } from '@/actions/get-dashboard-stats'
 import { getGraphRevenue } from '@/actions/get-graph-revenue'
-import { getSalesCount } from '@/actions/get-sales-count'
-import { getStockCount } from '@/actions/get-stock-count'
-import { getTotalRevenue } from '@/actions/get-total-revenue'
 import { Overview } from '@/components/overview'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Heading } from '@/components/ui/heading'
 import { Separator } from '@/components/ui/separator'
 import { formatter } from '@/lib/utils'
-import prisma from '@/lib/prisma'
 import {
    Activity, AlertTriangle, CheckCircle2, ClipboardList, CreditCard,
    Database, FileText, Package, PlusCircle, ShoppingCart, TrendingUp,
@@ -18,104 +15,10 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-async function getSystemHealth() {
-   try {
-      const start = Date.now()
-      const [
-         errorCount,
-         pendingOrders,
-         pendingQuotes,
-         pendingReturns,
-         totalUsers,
-         totalProducts,
-         totalOrders,
-         lowStockProducts,
-      ] = await Promise.all([
-         prisma.error.count({ where: { resolved: false, severity: { in: ['critical', 'high'] } } }),
-         prisma.order.count({ where: { status: 'OnayBekleniyor', isPaid: true } }),
-         prisma.quoteRequest.count({ where: { status: 'Pending' } }),
-         prisma.returnRequest.count({ where: { status: 'Pending' } }),
-         prisma.profile.count({ where: { role: 'customer' } }),
-         prisma.product.count({ where: { id: { not: 'quote-request-product' } } }),
-         prisma.order.count(),
-         prisma.product.count({ where: { stock: { lte: 5 }, isAvailable: true, id: { not: 'quote-request-product' } } }),
-      ])
-      const dbLatency = Date.now() - start
-
-      return {
-         dbLatency,
-         errorCount,
-         pendingOrders,
-         pendingQuotes,
-         pendingReturns,
-         totalUsers,
-         totalProducts,
-         totalOrders,
-         lowStockProducts,
-         dbStatus: dbLatency < 3000 ? 'healthy' : dbLatency < 5000 ? 'slow' : 'critical',
-      }
-   } catch {
-      return {
-         dbLatency: -1,
-         errorCount: -1,
-         pendingOrders: 0,
-         pendingQuotes: 0,
-         pendingReturns: 0,
-         totalUsers: 0,
-         totalProducts: 0,
-         totalOrders: 0,
-         lowStockProducts: 0,
-         dbStatus: 'down' as const,
-      }
-   }
-}
-
-async function getGuidanceTips() {
-   try {
-      const [
-         productsWithoutImages,
-         productsWithLowStock,
-         campaignsWithoutProducts,
-         campaignsWithoutDiscount,
-         noBanners,
-         pendingQuotes,
-      ] = await Promise.all([
-         prisma.product.count({ where: { images: { isEmpty: true }, id: { not: 'quote-request-product' } } }),
-         prisma.product.count({ where: { stock: { lte: 3 }, isAvailable: true, id: { not: 'quote-request-product' } } }),
-         prisma.campaign.count({ where: { isActive: true, products: { none: {} } } }),
-         prisma.campaign.count({ where: { isActive: true, discountCodeId: null } }),
-         prisma.banner.count(),
-         prisma.quoteRequest.count({ where: { status: 'Pending' } }),
-      ])
-
-      return {
-         productsWithoutImages,
-         productsWithLowStock,
-         campaignsWithoutProducts,
-         campaignsWithoutDiscount,
-         noBanners,
-         pendingQuotes,
-      }
-   } catch {
-      return {
-         productsWithoutImages: 0,
-         productsWithLowStock: 0,
-         campaignsWithoutProducts: 0,
-         campaignsWithoutDiscount: 0,
-         noBanners: 0,
-         pendingQuotes: 0,
-      }
-   }
-}
-
 export default async function DashboardPage() {
-   const [totalRevenue, graphRevenue, salesCount, stockCount, health, tips] = await Promise.all([
-      getTotalRevenue(),
+   const [stats, graphRevenue] = await Promise.all([
+      getDashboardStats(),
       getGraphRevenue(),
-      getSalesCount(),
-      getStockCount(),
-      getSystemHealth(),
-      getGuidanceTips(),
    ])
 
    const statusColor = {
@@ -142,9 +45,9 @@ export default async function DashboardPage() {
       linkText: string
    }[] = [
       {
-         show: tips.productsWithoutImages > 0,
+         show: stats.productsWithoutImages > 0,
          icon: <Camera className="h-4 w-4 text-orange-500 flex-shrink-0" />,
-         text: `${tips.productsWithoutImages} urunun gorseli eksik. Gorselsiz urunler %40 daha az satilir.`,
+         text: `${stats.productsWithoutImages} urunun gorseli eksik. Gorselsiz urunler %40 daha az satilir.`,
          borderColor: 'border-l-orange-500',
          bgColor: 'bg-orange-50 dark:bg-orange-950/20',
          textColor: 'text-orange-800 dark:text-orange-300',
@@ -152,9 +55,9 @@ export default async function DashboardPage() {
          linkText: 'Urunleri Gor',
       },
       {
-         show: tips.productsWithLowStock > 0,
+         show: stats.productsWithLowStock > 0,
          icon: <Archive className="h-4 w-4 text-orange-500 flex-shrink-0" />,
-         text: `${tips.productsWithLowStock} urunun stogu 3'un altinda. Stok guncellemesi yapin.`,
+         text: `${stats.productsWithLowStock} urunun stogu 3'un altinda. Stok guncellemesi yapin.`,
          borderColor: 'border-l-orange-500',
          bgColor: 'bg-orange-50 dark:bg-orange-950/20',
          textColor: 'text-orange-800 dark:text-orange-300',
@@ -162,9 +65,9 @@ export default async function DashboardPage() {
          linkText: 'Urunleri Gor',
       },
       {
-         show: tips.campaignsWithoutProducts > 0,
+         show: stats.campaignsWithoutProducts > 0,
          icon: <Target className="h-4 w-4 text-blue-500 flex-shrink-0" />,
-         text: `${tips.campaignsWithoutProducts} aktif kampanyaya urun eklenmemis. Kampanyalara urun baglayarak donusumu artirin.`,
+         text: `${stats.campaignsWithoutProducts} aktif kampanyaya urun eklenmemis. Kampanyalara urun baglayarak donusumu artirin.`,
          borderColor: 'border-l-blue-500',
          bgColor: 'bg-blue-50 dark:bg-blue-950/20',
          textColor: 'text-blue-800 dark:text-blue-300',
@@ -172,9 +75,9 @@ export default async function DashboardPage() {
          linkText: 'Kampanyalara Git',
       },
       {
-         show: tips.campaignsWithoutDiscount > 0,
+         show: stats.campaignsWithoutDiscount > 0,
          icon: <Tag className="h-4 w-4 text-blue-500 flex-shrink-0" />,
-         text: `${tips.campaignsWithoutDiscount} kampanyada kupon kodu yok. Kupon kodu baglayarak musteri sadakati olusturun.`,
+         text: `${stats.campaignsWithoutDiscount} kampanyada kupon kodu yok. Kupon kodu baglayarak musteri sadakati olusturun.`,
          borderColor: 'border-l-blue-500',
          bgColor: 'bg-blue-50 dark:bg-blue-950/20',
          textColor: 'text-blue-800 dark:text-blue-300',
@@ -182,7 +85,7 @@ export default async function DashboardPage() {
          linkText: 'Kampanyalara Git',
       },
       {
-         show: tips.noBanners === 0,
+         show: stats.noBanners,
          icon: <ImageIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />,
          text: 'Henuz banner eklenmemis. Ana sayfada dikkat cekici bannerlar satisi %25 artirir.',
          borderColor: 'border-l-blue-500',
@@ -192,9 +95,9 @@ export default async function DashboardPage() {
          linkText: 'Banner Ekle',
       },
       {
-         show: tips.pendingQuotes > 0,
+         show: stats.pendingQuotes > 0,
          icon: <Clock className="h-4 w-4 text-orange-500 flex-shrink-0" />,
-         text: `${tips.pendingQuotes} parca talebi yanit bekliyor. Hizli yanit musteri memnuniyetini artirir.`,
+         text: `${stats.pendingQuotes} parca talebi yanit bekliyor. Hizli yanit musteri memnuniyetini artirir.`,
          borderColor: 'border-l-orange-500',
          bgColor: 'bg-orange-50 dark:bg-orange-950/20',
          textColor: 'text-orange-800 dark:text-orange-300',
@@ -212,14 +115,14 @@ export default async function DashboardPage() {
             <Separator />
 
             {/* Revenue + Sales + Stock */}
-            <div className="grid gap-4 grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                      <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>
                      <TrendingUp className="h-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                     <div className="text-2xl font-bold">{formatter.format(totalRevenue)}</div>
+                     <div className="text-2xl font-bold">{formatter.format(stats.totalRevenue)}</div>
                   </CardContent>
                </Card>
                <Card>
@@ -228,7 +131,7 @@ export default async function DashboardPage() {
                      <CreditCard className="h-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                     <div className="text-2xl font-bold">+{salesCount}</div>
+                     <div className="text-2xl font-bold">+{stats.salesCount}</div>
                   </CardContent>
                </Card>
                <Card>
@@ -237,7 +140,7 @@ export default async function DashboardPage() {
                      <Package className="h-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                     <div className="text-2xl font-bold">{stockCount}</div>
+                     <div className="text-2xl font-bold">{stats.stockCount}</div>
                   </CardContent>
                </Card>
             </div>
@@ -250,66 +153,59 @@ export default async function DashboardPage() {
                         <Activity className="h-5 w-5" />
                         Sistem Sagligi
                      </CardTitle>
-                     <div className={`flex items-center gap-1.5 text-sm font-semibold ${statusColor[health.dbStatus]}`}>
-                        {health.dbStatus === 'healthy' ? (
+                     <div className={`flex items-center gap-1.5 text-sm font-semibold ${statusColor[stats.dbStatus]}`}>
+                        {stats.dbStatus === 'healthy' ? (
                            <CheckCircle2 className="h-4 w-4" />
-                        ) : health.dbStatus === 'down' ? (
+                        ) : stats.dbStatus === 'down' ? (
                            <XCircle className="h-4 w-4" />
                         ) : (
                            <AlertTriangle className="h-4 w-4" />
                         )}
-                        {statusText[health.dbStatus]}
+                        {statusText[stats.dbStatus]}
                      </div>
                   </div>
                </CardHeader>
                <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                     {/* DB Latency */}
                      <div className="rounded-lg border p-3 space-y-1">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                            <Database className="h-3.5 w-3.5" />
                            Veritabani
                         </div>
-                        <div className={`text-lg font-bold ${health.dbLatency < 1000 ? 'text-emerald-500' : health.dbLatency < 3000 ? 'text-yellow-500' : 'text-red-500'}`}>
-                           {health.dbLatency > 0 ? `${health.dbLatency}ms` : 'Baglanti Yok'}
+                        <div className={`text-lg font-bold ${stats.dbLatency < 1000 ? 'text-emerald-500' : stats.dbLatency < 3000 ? 'text-yellow-500' : 'text-red-500'}`}>
+                           {stats.dbLatency > 0 ? `${stats.dbLatency}ms` : 'Baglanti Yok'}
                         </div>
                      </div>
-
-                     {/* Error Count */}
                      <div className="rounded-lg border p-3 space-y-1">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                            <AlertTriangle className="h-3.5 w-3.5" />
                            Hatalar
                         </div>
-                        <div className={`text-lg font-bold ${health.errorCount === 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                           {health.errorCount >= 0 ? health.errorCount : '?'}
+                        <div className={`text-lg font-bold ${stats.errorCount === 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                           {stats.errorCount >= 0 ? stats.errorCount : '?'}
                         </div>
-                        {health.errorCount > 0 && (
+                        {stats.errorCount > 0 && (
                            <Link href="/error-logs" className="text-xs text-red-500 hover:underline">
                               Incele
                            </Link>
                         )}
                      </div>
-
-                     {/* Total Users */}
                      <div className="rounded-lg border p-3 space-y-1">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                            <Users className="h-3.5 w-3.5" />
                            Kullanicilar
                         </div>
-                        <div className="text-lg font-bold">{health.totalUsers}</div>
+                        <div className="text-lg font-bold">{stats.totalUsers}</div>
                      </div>
-
-                     {/* Low Stock */}
                      <div className="rounded-lg border p-3 space-y-1">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                            <Package className="h-3.5 w-3.5" />
                            Dusuk Stok
                         </div>
-                        <div className={`text-lg font-bold ${health.lowStockProducts === 0 ? 'text-emerald-500' : 'text-orange-500'}`}>
-                           {health.lowStockProducts}
+                        <div className={`text-lg font-bold ${stats.lowStockProducts === 0 ? 'text-emerald-500' : 'text-orange-500'}`}>
+                           {stats.lowStockProducts}
                         </div>
-                        {health.lowStockProducts > 0 && (
+                        {stats.lowStockProducts > 0 && (
                            <Link href="/products" className="text-xs text-orange-500 hover:underline">
                               Urunleri gor
                            </Link>
@@ -317,30 +213,29 @@ export default async function DashboardPage() {
                      </div>
                   </div>
 
-                  {/* Pending Actions */}
-                  {(health.pendingOrders > 0 || health.pendingQuotes > 0 || health.pendingReturns > 0) && (
+                  {(stats.pendingOrders > 0 || stats.pendingQuotes > 0 || stats.pendingReturns > 0) && (
                      <div className="mt-4 flex flex-wrap gap-2">
-                        {health.pendingOrders > 0 && (
+                        {stats.pendingOrders > 0 && (
                            <Link href="/orders">
                               <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-400">
                                  <ShoppingCart className="h-3 w-3" />
-                                 {health.pendingOrders} bekleyen siparis
+                                 {stats.pendingOrders} bekleyen siparis
                               </div>
                            </Link>
                         )}
-                        {health.pendingQuotes > 0 && (
+                        {stats.pendingQuotes > 0 && (
                            <Link href="/quote-requests">
                               <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 px-3 py-1 text-xs font-medium text-orange-700 dark:text-orange-400">
                                  <ClipboardList className="h-3 w-3" />
-                                 {health.pendingQuotes} bekleyen talep
+                                 {stats.pendingQuotes} bekleyen talep
                               </div>
                            </Link>
                         )}
-                        {health.pendingReturns > 0 && (
+                        {stats.pendingReturns > 0 && (
                            <Link href="/returns">
                               <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 px-3 py-1 text-xs font-medium text-purple-700 dark:text-purple-400">
                                  <Package className="h-3 w-3" />
-                                 {health.pendingReturns} bekleyen iade
+                                 {stats.pendingReturns} bekleyen iade
                               </div>
                            </Link>
                         )}
@@ -376,7 +271,6 @@ export default async function DashboardPage() {
                      </div>
                   ))}
 
-                  {/* General tip - always shown */}
                   <div className="flex items-start gap-3 rounded-lg border-l-4 border-l-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 p-3">
                      <Lightbulb className="h-4 w-4 text-emerald-500 flex-shrink-0" />
                      <div className="flex-1 min-w-0">

@@ -60,8 +60,8 @@ export function DataTable<TData, TValue>({
                />
             </div>
          )}
-         <div className="rounded-md border">
-            <Table>
+         <div className="rounded-md border overflow-x-auto">
+            <Table className="min-w-[640px]">
                <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
                      <TableRow key={headerGroup.id}>
@@ -120,7 +120,7 @@ export function DataTable<TData, TValue>({
                Önceki
             </Button>
             <span className="text-sm text-muted-foreground">
-               Sayfa {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+               Sayfa {table.getState().pagination.pageIndex + 1} / {Math.max(table.getPageCount(), 1)}
             </span>
             <Button
                variant="outline"

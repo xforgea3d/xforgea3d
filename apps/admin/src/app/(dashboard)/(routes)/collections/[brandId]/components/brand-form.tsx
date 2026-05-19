@@ -66,7 +66,7 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
    const onSubmit = async (data: BrandFormValues) => {
       try {
          setLoading(true)
-         const url = initialData ? `/api/brands/${params.brandId}` : `/api/brands`
+         const url = initialData ? `/api/collections/${params.brandId}` : `/api/collections`
          const method = initialData ? 'PATCH' : 'POST'
          const res = await fetch(adminPath(url), {
             method,
@@ -75,7 +75,7 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
          })
          if (!res.ok) throw new Error(await res.text())
          router.refresh()
-         window.location.href = adminPath('/brands')
+         window.location.href = adminPath('/collections')
          toast.success(toastMessage)
       } catch (error: any) {
          toast.error('Bir hata oluştu: ' + (error?.message || ''))
@@ -88,14 +88,14 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
       try {
          setLoading(true)
 
-         const res = await fetch(adminPath(`/api/brands/${params.brandId}`), {
+         const res = await fetch(adminPath(`/api/collections/${params.brandId}`), {
             method: 'DELETE',
             cache: 'no-store',
          })
          if (!res.ok) throw new Error('Silme başarısız')
 
          router.refresh()
-         window.location.href = adminPath('/brands')
+         window.location.href = adminPath('/collections')
          toast.success('Koleksiyon silindi.')
       } catch {
          toast.error(

@@ -163,7 +163,7 @@ export const config = {
       '/verify-2fa',
       '/products/:path*',
       '/categories/:path*',
-      '/brands/:path*',
+      '/collections/:path*',
       '/banners/:path*',
       '/orders/:path*',
       '/payments/:path*',

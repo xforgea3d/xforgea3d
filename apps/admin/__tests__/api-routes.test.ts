@@ -574,7 +574,7 @@ describe('Brand API Routes', () => {
       it('should create a brand with title', async () => {
          prismaBrand.create.mockResolvedValue({ id: 'b1', title: 'Bosch' })
 
-         const { POST } = await import('@admin/app/api/brands/route')
+         const { POST } = await import('@admin/app/api/collections/route')
 
          const res = await POST(
             makeRequest('/api/brands', {
@@ -589,7 +589,7 @@ describe('Brand API Routes', () => {
       })
 
       it('should return 400 when title is missing', async () => {
-         const { POST } = await import('@admin/app/api/brands/route')
+         const { POST } = await import('@admin/app/api/collections/route')
 
          const res = await POST(
             makeRequest('/api/brands', {
@@ -609,7 +609,7 @@ describe('Brand API Routes', () => {
             { id: 'b2', title: 'NGK' },
          ])
 
-         const { GET } = await import('@admin/app/api/brands/route')
+         const { GET } = await import('@admin/app/api/collections/route')
 
          const res = await GET(makeRequest('/api/brands'))
          const body = await parseJson(res)
@@ -629,7 +629,7 @@ describe('Brand API Routes', () => {
             id: 'b1', title: 'Bosch', products: [],
          })
 
-         const { GET } = await import('@admin/app/api/brands/[brandId]/route')
+         const { GET } = await import('@admin/app/api/collections/[brandId]/route')
 
          const res = await GET(
             makeRequest('/api/brands/b1'),
@@ -647,7 +647,7 @@ describe('Brand API Routes', () => {
       it('should return 404 when brand not found', async () => {
          prismaBrand.findUnique.mockResolvedValue(null)
 
-         const { GET } = await import('@admin/app/api/brands/[brandId]/route')
+         const { GET } = await import('@admin/app/api/collections/[brandId]/route')
 
          const res = await GET(
             makeRequest('/api/brands/nonexistent'),
@@ -663,7 +663,7 @@ describe('Brand API Routes', () => {
          prismaBrand.findFirst.mockResolvedValue(null)
          prismaBrand.update.mockResolvedValue({ id: 'b1', title: 'Bosch Pro' })
 
-         const { PATCH } = await import('@admin/app/api/brands/[brandId]/route')
+         const { PATCH } = await import('@admin/app/api/collections/[brandId]/route')
 
          const res = await PATCH(
             makeRequest('/api/brands/b1', {
@@ -677,7 +677,7 @@ describe('Brand API Routes', () => {
       })
 
       it('should return 200 when no fields are provided (no-op update)', async () => {
-         const { PATCH } = await import('@admin/app/api/brands/[brandId]/route')
+         const { PATCH } = await import('@admin/app/api/collections/[brandId]/route')
 
          const res = await PATCH(
             makeRequest('/api/brands/b1', {
@@ -696,7 +696,7 @@ describe('Brand API Routes', () => {
          prismaProduct.updateMany.mockResolvedValue({ count: 0 })
          prismaBrand.delete.mockResolvedValue({ id: 'b1' })
 
-         const { DELETE } = await import('@admin/app/api/brands/[brandId]/route')
+         const { DELETE } = await import('@admin/app/api/collections/[brandId]/route')
 
          const res = await DELETE(
             makeRequest('/api/brands/b1', { method: 'DELETE' }),
@@ -707,7 +707,7 @@ describe('Brand API Routes', () => {
       })
 
       it('should return 400 when brandId is missing', async () => {
-         const { DELETE } = await import('@admin/app/api/brands/[brandId]/route')
+         const { DELETE } = await import('@admin/app/api/collections/[brandId]/route')
 
          const res = await DELETE(
             makeRequest('/api/brands/', { method: 'DELETE' }),

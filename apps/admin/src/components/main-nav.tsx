@@ -30,7 +30,7 @@ const navGroups = [
       items: [
          { href: '/products', label: 'Ürünler', icon: ShoppingBag },
          { href: '/categories', label: 'Kategoriler', icon: Layers },
-         { href: '/brands', label: 'Koleksiyonlar', icon: Tag },
+         { href: '/collections', label: 'Koleksiyonlar', icon: Tag },
          { href: '/banners', label: 'Bannerlar', icon: ImageIcon },
       ],
    },

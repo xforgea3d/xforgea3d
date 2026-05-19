@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input'
 import { DataTable } from '@/components/ui/data-table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { ColumnDef } from '@tanstack/react-table'
-import { CheckIcon, DownloadIcon, EditIcon, Loader2Icon, TruckIcon, XIcon } from 'lucide-react'
+import { AlertModal } from '@/components/modals/alert-modal'
+import { CheckIcon, DownloadIcon, EditIcon, TruckIcon, XIcon } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 
@@ -70,44 +71,39 @@ const STATUS_OPTIONS = [
    { value: 'Denied', label: 'Reddedildi' },
 ]
 
-function StatusCell({ order, onStatusChange }: { order: OrderColumn; onStatusChange: (id: string, status: string) => Promise<void> }) {
-   const [loading, setLoading] = useState(false)
-
-   const handleChange = async (newStatus: string) => {
+function StatusCell({
+   order,
+   onRequestStatusChange,
+}: {
+   order: OrderColumn
+   onRequestStatusChange: (id: string, status: string, label: string) => void
+}) {
+   const requestChange = (newStatus: string) => {
       if (newStatus === order.status) return
-      setLoading(true)
-      try {
-         await onStatusChange(order.id, newStatus)
-      } finally {
-         setLoading(false)
-      }
+      const label = STATUS_OPTIONS.find((o) => o.value === newStatus)?.label ?? newStatus
+      onRequestStatusChange(order.id, newStatus, label)
    }
 
    return (
       <div className="flex items-center gap-1.5">
-         {loading ? (
-            <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
-         ) : (
-            <select
-               value={order.status}
-               onChange={(e) => handleChange(e.target.value)}
-               className="text-xs border rounded-md px-1.5 py-1 bg-background cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring"
-            >
-               {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-               ))}
-               {/* Show current status if not in the list */}
-               {!STATUS_OPTIONS.find((o) => o.value === order.status) && (
-                  <option value={order.status}>{order.statusLabel}</option>
-               )}
-            </select>
-         )}
-         {order.status === 'OnayBekleniyor' && !loading && (
+         <select
+            value={order.status}
+            onChange={(e) => requestChange(e.target.value)}
+            className="text-xs border rounded-md px-1.5 py-1 bg-background cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring"
+         >
+            {STATUS_OPTIONS.map((opt) => (
+               <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+            {!STATUS_OPTIONS.find((o) => o.value === order.status) && (
+               <option value={order.status}>{order.statusLabel}</option>
+            )}
+         </select>
+         {order.status === 'OnayBekleniyor' && (
             <Button
                size="sm"
                variant="outline"
                className="h-6 px-2 text-[10px] font-semibold border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950"
-               onClick={() => handleChange('Uretimde')}
+               onClick={() => requestChange('Uretimde')}
             >
                Onayla
             </Button>
@@ -116,13 +112,15 @@ function StatusCell({ order, onStatusChange }: { order: OrderColumn; onStatusCha
    )
 }
 
-function getOrderColumns(onStatusChange: (id: string, status: string) => Promise<void>): ColumnDef<OrderColumn>[] {
+function getOrderColumns(onRequestStatusChange: (id: string, status: string, label: string) => void): ColumnDef<OrderColumn>[] {
    return [
       {
          accessorKey: 'orderCode',
          header: 'Sipariş Kodu',
          cell: ({ row }) => (
-            <span className="font-mono text-xs font-semibold">{row.original.orderCode}</span>
+            <Link href={`/orders/${row.original.id}`} className="font-mono text-xs font-semibold text-primary hover:underline">
+               {row.original.orderCode}
+            </Link>
          ),
       },
       {
@@ -142,7 +140,7 @@ function getOrderColumns(onStatusChange: (id: string, status: string) => Promise
       {
          accessorKey: 'statusLabel',
          header: 'Durum',
-         cell: ({ row }) => <StatusCell order={row.original} onStatusChange={onStatusChange} />,
+         cell: ({ row }) => <StatusCell order={row.original} onRequestStatusChange={onRequestStatusChange} />,
       },
       {
          accessorKey: 'createdAt',
@@ -197,7 +195,7 @@ function getOrderColumns(onStatusChange: (id: string, status: string) => Promise
 }
 
 // Keep backward compat — static columns without inline status change
-export const OrderColumns: ColumnDef<OrderColumn>[] = getOrderColumns(async () => {})
+export const OrderColumns: ColumnDef<OrderColumn>[] = getOrderColumns(() => {})
 
 export const OrdersClient: React.FC<OrdersClientProps> = ({ data }) => {
    const router = useRouter()
@@ -205,23 +203,34 @@ export const OrdersClient: React.FC<OrdersClientProps> = ({ data }) => {
    const [activeTab, setActiveTab] = useState<TabKey>('yeni')
    const [dateFrom, setDateFrom] = useState('')
    const [dateTo, setDateTo] = useState('')
+   const [statusConfirm, setStatusConfirm] = useState<{ id: string; status: string; label: string } | null>(null)
+   const [statusLoading, setStatusLoading] = useState(false)
 
-   const handleStatusChange = useCallback(async (orderId: string, newStatus: string) => {
+   const handleRequestStatusChange = useCallback((orderId: string, newStatus: string, label: string) => {
+      setStatusConfirm({ id: orderId, status: newStatus, label })
+   }, [])
+
+   const handleConfirmStatusChange = useCallback(async () => {
+      if (!statusConfirm) return
+      setStatusLoading(true)
       try {
-         const res = await fetch(adminPath(`/api/orders/${orderId}`), {
+         const res = await fetch(adminPath(`/api/orders/${statusConfirm.id}`), {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus }),
+            body: JSON.stringify({ status: statusConfirm.status }),
          })
          if (!res.ok) throw new Error('Durum güncellenemedi')
          toast.success('Sipariş durumu güncellendi')
          router.refresh()
       } catch (err: any) {
          toast.error(err?.message || 'Bir hata oluştu')
+      } finally {
+         setStatusLoading(false)
+         setStatusConfirm(null)
       }
-   }, [router])
+   }, [statusConfirm, router])
 
-   const columns = useMemo(() => getOrderColumns(handleStatusChange), [handleStatusChange])
+   const columns = useMemo(() => getOrderColumns(handleRequestStatusChange), [handleRequestStatusChange])
 
    const counts = useMemo(() => {
       return {
@@ -305,6 +314,13 @@ export const OrdersClient: React.FC<OrdersClientProps> = ({ data }) => {
 
    return (
       <div>
+         <AlertModal
+            isOpen={!!statusConfirm}
+            onClose={() => setStatusConfirm(null)}
+            onConfirm={handleConfirmStatusChange}
+            loading={statusLoading}
+            description={statusConfirm ? `Sipariş durumunu "${statusConfirm.label}" olarak değiştirmek istediğinize emin misiniz?` : ''}
+         />
          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)} className="w-full">
             <TabsList className="w-full justify-start flex-wrap h-auto gap-1 p-1">
                {tabs.map((tab) => (

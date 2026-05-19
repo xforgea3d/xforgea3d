@@ -15,7 +15,7 @@ export default async function BrandsPage() {
          select: {
             id: true,
             title: true,
-            _count: { select: { products: true } },
+            products: { where: { id: { not: 'quote-request-product' } }, select: { id: true } },
          },
       })
    } catch (error) {
@@ -25,7 +25,7 @@ export default async function BrandsPage() {
    const formattedBrands: BrandColumn[] = brands.map((brand) => ({
       id: brand.id,
       title: brand.title,
-      products: brand._count.products,
+      products: brand.products.length,
    }))
 
    return (
@@ -35,7 +35,7 @@ export default async function BrandsPage() {
                title={`Koleksiyonlar (${brands.length})`}
                description="Mağazanızdaki koleksiyonları yönetin."
             />
-            <Link href="/brands/new">
+            <Link href="/collections/new">
                <Button>
                   <Plus className="mr-2 h-4" /> Yeni Ekle
                </Button>

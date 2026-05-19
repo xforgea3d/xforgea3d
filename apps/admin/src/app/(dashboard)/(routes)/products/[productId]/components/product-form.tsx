@@ -418,7 +418,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                            <Select disabled={loading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl>
                                  <SelectTrigger>
-                                    <SelectValue placeholder="Marka seçin" />
+                                    <SelectValue placeholder="Koleksiyon seçin" />
                                  </SelectTrigger>
                               </FormControl>
                               <SelectContent>

@@ -14,9 +14,10 @@ import Link from 'next/link'
 
 export default async function BannersPage() {
    const banners = await prisma.banner.findMany({
-      orderBy: {
-         createdAt: 'desc',
-      },
+      orderBy: [
+         { displayOrder: 'asc' },
+         { createdAt: 'desc' },
+      ],
    })
 
    const formattedBanners: BannersColumn[] = banners.map((item) => ({

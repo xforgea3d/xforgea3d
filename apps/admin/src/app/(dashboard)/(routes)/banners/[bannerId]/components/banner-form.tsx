@@ -32,6 +32,11 @@ const formSchema = z.object({
       (val) => !val || val.startsWith('/') || val.startsWith('http://') || val.startsWith('https://'),
       { message: 'Geçersiz URL formatı. URL "/" veya "http(s)://" ile başlamalıdır' }
    ),
+   altText: z.string().optional().or(z.literal('')),
+   displayOrder: z.coerce.number().int().min(0).default(0),
+   isActive: z.boolean().default(true),
+   startDate: z.string().optional().or(z.literal('')),
+   endDate: z.string().optional().or(z.literal('')),
 })
 
 type BannerFormValues = z.infer<typeof formSchema>
@@ -58,10 +63,20 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
          label: initialData.label,
          image: initialData.image,
          link: initialData.link || '',
+         altText: initialData.altText || '',
+         displayOrder: initialData.displayOrder ?? 0,
+         isActive: initialData.isActive ?? true,
+         startDate: initialData.startDate ? new Date(initialData.startDate).toISOString().slice(0, 10) : '',
+         endDate: initialData.endDate ? new Date(initialData.endDate).toISOString().slice(0, 10) : '',
       } : {
          label: '',
          image: '',
          link: '',
+         altText: '',
+         displayOrder: 0,
+         isActive: true,
+         startDate: '',
+         endDate: '',
       },
    })
 
@@ -162,17 +177,17 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
                      </FormItem>
                   )}
                />
-               <div className="md:grid md:grid-cols-3 gap-8">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <FormField
                      control={form.control}
                      name="label"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Başlık</FormLabel>
+                           <FormLabel>Baslik</FormLabel>
                            <FormControl>
                               <Input
                                  disabled={loading}
-                                 placeholder="Banner başlığı"
+                                 placeholder="Banner basligi"
                                  {...field}
                               />
                            </FormControl>
@@ -185,18 +200,97 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
                      name="link"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Bağlantı URL</FormLabel>
+                           <FormLabel>Baglanti URL</FormLabel>
                            <FormControl>
                               <Input
                                  disabled={loading}
-                                 placeholder="https://xforgea3d.com/products veya /products"
+                                 placeholder="/products veya https://..."
                                  {...field}
                               />
                            </FormControl>
-                           <p className="text-xs text-muted-foreground">
-                              Banner tıklandığında yönlendirilecek sayfa. Boş bırakılırsa /products sayfasına yönlendirilir.
-                           </p>
                            <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="altText"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Alt Metin (SEO)</FormLabel>
+                           <FormControl>
+                              <Input
+                                 disabled={loading}
+                                 placeholder="Gorsel aciklamasi"
+                                 {...field}
+                              />
+                           </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="displayOrder"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Siralama</FormLabel>
+                           <FormControl>
+                              <Input
+                                 type="number"
+                                 disabled={loading}
+                                 placeholder="0"
+                                 {...field}
+                              />
+                           </FormControl>
+                           <p className="text-xs text-muted-foreground">Kucuk sayi once gosterilir.</p>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="startDate"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Baslangic Tarihi</FormLabel>
+                           <FormControl>
+                              <Input type="date" disabled={loading} {...field} />
+                           </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="endDate"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Bitis Tarihi</FormLabel>
+                           <FormControl>
+                              <Input type="date" disabled={loading} {...field} />
+                           </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+               </div>
+               <div className="flex items-center gap-2">
+                  <FormField
+                     control={form.control}
+                     name="isActive"
+                     render={({ field }) => (
+                        <FormItem className="flex items-center gap-2 space-y-0">
+                           <FormControl>
+                              <input
+                                 type="checkbox"
+                                 checked={field.value}
+                                 onChange={field.onChange}
+                                 disabled={loading}
+                                 className="h-4 w-4 rounded border-input"
+                              />
+                           </FormControl>
+                           <FormLabel className="font-normal">Aktif</FormLabel>
                         </FormItem>
                      )}
                   />

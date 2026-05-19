@@ -456,9 +456,14 @@ model Blog {
 model Banner {
   id String @id @default(cuid())
 
-  label String
-  image String
-  link  String?
+  label        String
+  image        String
+  link         String?
+  altText      String?
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  startDate    DateTime?
+  endDate      DateTime?
 
   categories Category[]
 

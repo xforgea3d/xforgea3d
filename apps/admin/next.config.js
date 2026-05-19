@@ -31,6 +31,20 @@ module.exports = {
    images: {
       unoptimized: true,
    },
+   async redirects() {
+      return [
+         {
+            source: '/brands/:path*',
+            destination: '/collections/:path*',
+            permanent: true,
+         },
+         {
+            source: '/brands',
+            destination: '/collections',
+            permanent: true,
+         },
+      ]
+   },
    async headers() {
       return [
          {

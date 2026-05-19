@@ -30,7 +30,7 @@ export const BrandsClient: React.FC<BrandsClientProps> = ({ data }) => {
       if (!deleteId) return
       try {
          setLoading(true)
-         const res = await fetch(adminPath(`/api/brands/${deleteId}`), { method: 'DELETE' })
+         const res = await fetch(adminPath(`/api/collections/${deleteId}`), { method: 'DELETE' })
          if (!res.ok) throw new Error('Silme başarısız')
          toast.success('Koleksiyon silindi.')
          router.refresh()
@@ -55,7 +55,7 @@ export const BrandsClient: React.FC<BrandsClientProps> = ({ data }) => {
          id: 'actions',
          cell: ({ row }) => (
             <div className="flex items-center gap-1">
-               <Link href={`/brands/${row.original.id}`}>
+               <Link href={`/collections/${row.original.id}`}>
                   <Button size="icon" variant="outline">
                      <EditIcon className="h-4" />
                   </Button>

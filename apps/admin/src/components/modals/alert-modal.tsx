@@ -10,6 +10,7 @@ interface AlertModalProps {
    onClose: () => void
    onConfirm: () => void
    loading: boolean
+   description?: string
 }
 
 export const AlertModal: React.FC<AlertModalProps> = ({
@@ -17,6 +18,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({
    onClose,
    onConfirm,
    loading,
+   description,
 }) => {
    const [isMounted, setIsMounted] = useState(false)
 
@@ -31,7 +33,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({
    return (
       <Modal
          title="Emin misiniz?"
-         description="Bu işlem geri alınamaz."
+         description={description || 'Bu işlem geri alınamaz.'}
          isOpen={isOpen}
          onClose={onClose}
       >
