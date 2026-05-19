@@ -151,8 +151,12 @@ export async function middleware(request: NextRequest) {
       try {
          const { supabaseResponse, user } = await updateSession(request)
          if (user) {
-            supabaseResponse.headers.set('X-USER-ID', user.id)
-            return supabaseResponse
+            request.headers.set('X-USER-ID', user.id)
+            const response = NextResponse.next({ request: { headers: request.headers } })
+            for (const cookie of supabaseResponse.cookies.getAll()) {
+               response.cookies.set(cookie)
+            }
+            return response
          }
       } catch {
          console.warn('[middleware] Optional session resolution failed for public submission')
@@ -200,8 +204,12 @@ export async function middleware(request: NextRequest) {
       }
    }
 
-   supabaseResponse.headers.set('X-USER-ID', user.id)
-   return supabaseResponse
+   request.headers.set('X-USER-ID', user.id)
+   const finalResponse = NextResponse.next({ request: { headers: request.headers } })
+   for (const cookie of supabaseResponse.cookies.getAll()) {
+      finalResponse.cookies.set(cookie)
+   }
+   return finalResponse
 }
 
 export const config = {
