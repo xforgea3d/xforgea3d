@@ -114,15 +114,25 @@ async function fetchHomeData() {
          take: 8,
          orderBy: { flashSaleEndDate: 'asc' },
       }),
+      // Recent real reviews (4-5 stars)
+      prisma.productReview.findMany({
+         where: { rating: { gte: 4 } },
+         select: {
+            id: true, text: true, rating: true,
+            user: { select: { name: true } },
+         },
+         orderBy: { createdAt: 'desc' },
+         take: 6,
+      }),
    ])
 
    return Promise.race([query, timeout])
 }
 
 export default async function Index() {
-   let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = [], dbCampaigns: any[] = [], flashSaleProducts: any[] = []
+   let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = [], dbCampaigns: any[] = [], flashSaleProducts: any[] = [], recentReviews: any[] = []
    try {
-      [featuredProducts, banners, carBrands, dbCampaigns, flashSaleProducts] = await fetchHomeData()
+      [featuredProducts, banners, carBrands, dbCampaigns, flashSaleProducts, recentReviews] = await fetchHomeData()
    } catch (e) {
       console.warn('[home] DB unavailable or timed out, rendering empty state:', (e as Error)?.message)
    }
@@ -295,70 +305,46 @@ export default async function Index() {
             </section>
          )}
 
-         {/* ── 3. MÜŞTERİ YORUMLARI ─────────────────────────────── */}
+         {/* ── 3. MÜŞTERİ YORUMLARI (gerçek DB verileri) ─────────── */}
+         {recentReviews.length > 0 && (
          <section className="py-12 bg-neutral-50/50 dark:bg-neutral-900/50">
             <div className="px-[1.4rem] md:px-[4rem] lg:px-[6rem] xl:px-[8rem] 2xl:px-[12rem]">
                <div className="mb-8 text-center">
                   <h2 className="text-3xl font-bold tracking-tight">Müşterilerimizin Gözünden</h2>
                   <p className="mt-2 text-sm text-muted-foreground">
-                     Ürünlerimizi kullanan binlerce mutlu müşterimizden bazıları.
+                     Ürünlerimizi kullanan müşterilerimizin değerlendirmeleri.
                   </p>
                </div>
                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                  {[
-                     {
-                        name: 'Mehmet K.',
-                        stars: 5,
-                        review: 'ürün beklediğimden çok daha kaliteli geldi. detaylar harika, boyama da çok düzgün. teşekkürler xforgea',
-                     },
-                     {
-                        name: 'Ayşe D.',
-                        stars: 5,
-                        review: 'kendi logomun 3d baskısını yaptırdım ofis masamda duruyor herkes soruyor nerden aldın diye :)',
-                     },
-                     {
-                        name: 'Emre T.',
-                        stars: 4,
-                        review: 'kargo biraz geç geldi 5 gün sürdü ama ürün gerçekten kaliteli. bir dahakine daha hızlı olursa 5 yıldız veririm',
-                     },
-                     {
-                        name: 'Zeynep A.',
-                        stars: 5,
-                        review: 'hediye olarak aldım çok beğenildi. paketleme de gayet özenli bubble wrap falan hepsi var',
-                     },
-                     {
-                        name: 'Can B.',
-                        stars: 5,
-                        review: 'araç için telefon tutucu aldım tam oturdu süper kalite. 3d yazıcıdan çıktığına inanmıyosun',
-                     },
-                     {
-                        name: 'Selin M.',
-                        stars: 4,
-                        review: 'figür aldım rengi fotoğraftakinden biraz farklıydı ama işçilik olarak kusursuz. tekrar alırım',
-                     },
-                  ].map(({ name, stars, review }) => (
-                     <div
-                        key={name}
-                        className="rounded-xl border bg-background p-5 flex flex-col gap-3 hover:shadow-lg transition-shadow"
-                     >
-                        <span className="text-3xl text-orange-500/30 font-serif leading-none">&ldquo;</span>
-                        <p className="text-sm text-muted-foreground flex-1 -mt-1">{review}</p>
-                        <div className="flex items-center gap-0.5">
-                           {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                 key={i}
-                                 className={`h-3.5 w-3.5 ${i < stars ? 'fill-orange-500 text-orange-500' : 'fill-muted text-muted'}`}
-                              />
-                           ))}
+                  {recentReviews.map((r: any) => {
+                     const displayName = r.user?.name
+                        ? `${r.user.name.split(' ')[0]} ${r.user.name.split(' ').pop()?.charAt(0) || ''}.`
+                        : 'Anonim'
+                     return (
+                        <div
+                           key={r.id}
+                           className="rounded-xl border bg-background p-5 flex flex-col gap-3 hover:shadow-lg transition-shadow"
+                        >
+                           <span className="text-3xl text-orange-500/30 font-serif leading-none">&ldquo;</span>
+                           <p className="text-sm text-muted-foreground flex-1 -mt-1">{r.text}</p>
+                           <div className="flex items-center gap-0.5">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                 <Star
+                                    key={i}
+                                    className={`h-3.5 w-3.5 ${i < r.rating ? 'fill-orange-500 text-orange-500' : 'fill-muted text-muted'}`}
+                                 />
+                              ))}
+                           </div>
+                           <div className="pt-2 border-t border-border/50">
+                              <span className="text-sm font-semibold">{displayName}</span>
+                           </div>
                         </div>
-                        <div className="pt-2 border-t border-border/50">
-                           <span className="text-sm font-semibold">{name}</span>
-                        </div>
-                     </div>
-                  ))}
+                     )
+                  })}
                </div>
             </div>
          </section>
+         )}
 
          {/* ── 4. YENİ KOLEKSİYON (Bannerlar) ────────────────────── */}
          {banners.length > 0 && (
