@@ -1,4 +1,5 @@
 import { updateSession } from '@/lib/supabase/middleware'
+import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '/admin07'
@@ -18,9 +19,14 @@ function stripBasePath(pathname: string) {
    return pathname
 }
 
-async function isAdminRole(supabase: any, userId: string): Promise<boolean> {
+async function isAdminRole(userId: string): Promise<boolean> {
    try {
-      const { data } = await supabase
+      // Use service role key to bypass RLS (Profile table has recursive RLS policy)
+      const admin = createClient(
+         process.env.NEXT_PUBLIC_SUPABASE_URL!,
+         process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      const { data } = await admin
          .from('Profile')
          .select('role')
          .eq('id', userId)
@@ -81,11 +87,11 @@ export async function middleware(request: NextRequest) {
    }
 
    // Refresh Supabase session (reads/writes auth cookies)
-   const { supabaseResponse, user, supabase } = await updateSession(request)
+   const { supabaseResponse, user } = await updateSession(request)
 
    // If user is on /login and already authenticated as admin, redirect to dashboard
    if (isLoginPage) {
-      if (user && await isAdminRole(supabase, user.id)) {
+      if (user && await isAdminRole(user.id)) {
          const response = NextResponse.redirect(adminUrl('/', request.url))
          supabaseResponse.cookies.getAll().forEach((cookie) => {
             response.cookies.set(cookie.name, cookie.value, cookie as any)
@@ -103,7 +109,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(adminUrl('/login', request.url))
    }
 
-   if (!await isAdminRole(supabase, user.id)) {
+   if (!await isAdminRole(user.id)) {
       if (isTargetingAPI()) {
          return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
       }
