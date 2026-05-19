@@ -1,58 +1,58 @@
 {
-    "$schema": "https://openapi.vercel.sh/vercel.json",
-    "framework": "nextjs",
-    "regions": ["fra1"],
-    "cleanUrls": true,
-    "headers": [
-        {
-            "source": "/logo.png",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "public, max-age=86400, stale-while-revalidate=604800"
-                }
-            ]
-        },
-        {
-            "source": "/_next/static/(.*)",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "public, max-age=31536000, immutable"
-                }
-            ]
-        },
-        {
-            "source": "/fonts/(.*)",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "public, max-age=31536000, immutable"
-                }
-            ]
-        }
-    ],
-    "redirects": [
-        {
-            "source": "/product",
-            "destination": "/products",
-            "permanent": true
-        }
-    ],
-    "rewrites": [
-        {
-            "source": "/admin07",
-            "destination": "https://xforgea-admin.vercel.app/admin07/login"
-        },
-        {
-            "source": "/admin07/:path*",
-            "destination": "https://xforgea-admin.vercel.app/admin07/:path*"
-        }
-    ],
-    "crons": [
-        {
-            "path": "/api/cron/abandoned-carts",
-            "schedule": "0 10 * * *"
-        }
-    ]
+   "$schema": "https://openapi.vercel.sh/vercel.json",
+   "framework": "nextjs",
+   "regions": ["fra1"],
+   "cleanUrls": true,
+   "headers": [
+      {
+         "source": "/logo.png",
+         "headers": [
+            {
+               "key": "Cache-Control",
+               "value": "public, max-age=86400, stale-while-revalidate=604800"
+            }
+         ]
+      },
+      {
+         "source": "/_next/static/(.*)",
+         "headers": [
+            {
+               "key": "Cache-Control",
+               "value": "public, max-age=31536000, immutable"
+            }
+         ]
+      },
+      {
+         "source": "/fonts/(.*)",
+         "headers": [
+            {
+               "key": "Cache-Control",
+               "value": "public, max-age=31536000, immutable"
+            }
+         ]
+      }
+   ],
+   "redirects": [
+      {
+         "source": "/product",
+         "destination": "/products",
+         "permanent": true
+      }
+   ],
+   "rewrites": [
+      {
+         "source": "/admin07",
+         "destination": "https://xforgea-admin.vercel.app/admin07"
+      },
+      {
+         "source": "/admin07/:path*",
+         "destination": "https://xforgea-admin.vercel.app/admin07/:path*"
+      }
+   ],
+   "crons": [
+      {
+         "path": "/api/cron/abandoned-carts",
+         "schedule": "0 10 * * *"
+      }
+   ]
 }

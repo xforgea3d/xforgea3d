@@ -13,8 +13,8 @@ import { formatter } from '@/lib/utils'
 import prisma from '@/lib/prisma'
 import {
    Activity, AlertTriangle, CheckCircle2, ClipboardList, CreditCard,
-   Database, FileText, Package, PlusCircle, Server, ShoppingCart, TrendingUp,
-   Users, XCircle, Lightbulb, Camera, Archive, Target, Tag, Image, Clock,
+   Database, FileText, Package, PlusCircle, ShoppingCart, TrendingUp,
+   Users, XCircle, Lightbulb, Camera, Archive, Target, Tag, Image as ImageIcon, Clock,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
       },
       {
          show: tips.noBanners === 0,
-         icon: <Image className="h-4 w-4 text-blue-500 flex-shrink-0" />,
+         icon: <ImageIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />,
          text: 'Henuz banner eklenmemis. Ana sayfada dikkat cekici bannerlar satisi %25 artirir.',
          borderColor: 'border-l-blue-500',
          bgColor: 'bg-blue-50 dark:bg-blue-950/20',

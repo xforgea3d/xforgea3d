@@ -17,7 +17,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { ColumnDef } from '@tanstack/react-table'
 import { BellIcon, EditIcon, LinkIcon, Loader2Icon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
@@ -147,7 +146,5 @@ interface UsersTableProps {
 }
 
 export const UsersTable: React.FC<UsersTableProps> = ({ data }) => {
-   const router = useRouter()
-
    return <DataTable searchKey="name" columns={columns} data={data} />
 }

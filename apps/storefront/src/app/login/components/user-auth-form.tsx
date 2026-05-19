@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from '@/lib/utils'
 import { validateEmail } from '@/lib/email-validation'
 import { Loader } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import * as React from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -23,7 +23,7 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
    )
 }
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
+type UserAuthFormProps = React.HTMLAttributes<HTMLDivElement>
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
    const [isLoading, setIsLoading] = React.useState<boolean>(false)
@@ -57,7 +57,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             alert('Google ile giris su anda aktif degil. Lutfen e-posta/sifre ile giris yapin.')
          }
       } catch (error) {
-         console.error({ error })
+         console.error('Google OAuth unexpected error:', error)
       } finally {
          setIsGoogleLoading(false)
       }
@@ -114,7 +114,6 @@ function setLoggedInCookie() {
 }
 
 function SignInForm({ isLoading, setIsLoading, supabase }) {
-   const router = useRouter()
    const searchParams = useSearchParams()
    const redirectParams = searchParams.get('redirect')
 
@@ -154,7 +153,7 @@ function SignInForm({ isLoading, setIsLoading, supabase }) {
             const target = redirectParams && redirectParams.startsWith('/') && !redirectParams.startsWith('//') ? redirectParams : '/'
             window.location.assign(target)
          }
-      } catch (error) {
+      } catch {
          setErrorMsg('Beklenmeyen bir hata olustu.')
       } finally {
          setIsLoading(false)
@@ -286,7 +285,6 @@ function SignInForm({ isLoading, setIsLoading, supabase }) {
 }
 
 function SignUpForm({ isLoading, setIsLoading, supabase }) {
-   const router = useRouter()
    const searchParams = useSearchParams()
    const redirectParams = searchParams.get('redirect')
 
@@ -331,7 +329,7 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
             } else if (error.message?.includes('Database error saving new user')) {
                // Supabase auth schema issue — user may already exist in auth.users
                // Try signing in directly; if the user was partially created this recovers the flow
-               const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+               const { data: signInData } = await supabase.auth.signInWithPassword({ email, password })
                if (signInData?.session) {
                   setLoggedInCookie()
                   setSuccessMsg('welcome')
@@ -379,7 +377,7 @@ function SignUpForm({ isLoading, setIsLoading, supabase }) {
                setSuccessMsg('Kayıt başarılı! Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın.')
             }
          }
-      } catch (error) {
+      } catch {
          setErrorMsg('Beklenmeyen bir hata oluştu.')
       } finally {
          setIsLoading(false)

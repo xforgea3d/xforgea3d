@@ -41,8 +41,11 @@ export async function DELETE(
       await revalidateAllStorefront()
 
       return NextResponse.json(product)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[PRODUCT_DELETE]', error)
+      if (error?.code === 'P2003') {
+         return new NextResponse('Bu urun silinemez: bagli siparisler mevcut.', { status: 409 })
+      }
       return new NextResponse('Internal error', { status: 500 })
    }
 }
@@ -70,6 +73,18 @@ export async function PATCH(
       if (stock !== undefined) {
          const n = Number(stock)
          if (isNaN(n) || n < 0 || !Number.isInteger(n)) return new NextResponse('Invalid stock', { status: 400 })
+      }
+
+      // Validate discount < price (prevent negative effective price)
+      if (price !== undefined || discount !== undefined) {
+         const current = (price === undefined || discount === undefined)
+            ? await prisma.product.findUnique({ where: { id: params.productId }, select: { price: true, discount: true } })
+            : null
+         const effPrice = price !== undefined ? Number(price) : (current?.price ?? 0)
+         const effDiscount = discount !== undefined ? Number(discount) : (current?.discount ?? 0)
+         if (effDiscount > 0 && effDiscount >= effPrice) {
+            return new NextResponse('Indirim tutari fiyattan buyuk veya esit olamaz', { status: 400 })
+         }
       }
 
       // Validate flash sale price: must be > 0 and less than the product's current price

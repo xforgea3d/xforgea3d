@@ -96,7 +96,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ initialData }) => {
          router.refresh()
          toast.success(toastMessage)
          router.push(adminPath(`/payments`))
-      } catch (error: any) {
+      } catch {
          toast.error('Bir hata oluştu.')
       } finally {
          setLoading(false)

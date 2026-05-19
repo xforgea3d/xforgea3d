@@ -9,7 +9,6 @@ import { Copy, EditIcon, Loader2, Trash } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 export type DiscountCodeColumn = {
    id: string
@@ -42,7 +41,6 @@ const CopyableCode = ({ code }: { code: string }) => {
 }
 
 const DeleteAction = ({ id }: { id: string }) => {
-   const router = useRouter()
    const [open, setOpen] = useState(false)
    const [loading, setLoading] = useState(false)
 

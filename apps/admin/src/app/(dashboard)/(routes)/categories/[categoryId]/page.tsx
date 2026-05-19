@@ -30,7 +30,7 @@ const CategoryPage = async ({
             </div>
          </div>
       )
-   } catch (error) {
+   } catch {
       notFound()
    }
 }

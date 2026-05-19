@@ -27,7 +27,7 @@ import {
    Layers3Icon,
    SparklesIcon,
 } from 'lucide-react'
-import type { Metadata, ResolvingMetadata } from 'next'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { DataSection } from './components/data'
@@ -36,12 +36,10 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://xforgea3d.com'
 
 type Props = {
    params: { productId: string }
-   searchParams: { [key: string]: string | string[] | undefined }
 }
 
 export async function generateMetadata(
-   { params, searchParams }: Props,
-   parent: ResolvingMetadata
+   { params }: Props
 ): Promise<Metadata> {
    let product: any = null
    try {

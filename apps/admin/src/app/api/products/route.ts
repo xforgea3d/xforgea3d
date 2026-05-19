@@ -10,6 +10,18 @@ export async function POST(req: Request) {
       if (!body.title) return new NextResponse('Title is required', { status: 400 })
       if (!body.brandId) return new NextResponse('Brand is required', { status: 400 })
 
+      const price = Number(body.price ?? 0)
+      const discount = Number(body.discount ?? 0)
+      const stock = Number(body.stock ?? 1)
+      if (isNaN(price) || price < 0) return new NextResponse('Invalid price', { status: 400 })
+      if (isNaN(discount) || discount < 0) return new NextResponse('Invalid discount', { status: 400 })
+      if (isNaN(stock) || stock < 0 || !Number.isInteger(stock)) return new NextResponse('Invalid stock', { status: 400 })
+
+      // Validate discount < price
+      if (discount >= price && discount > 0) {
+         return new NextResponse('Indirim tutari fiyattan buyuk veya esit olamaz', { status: 400 })
+      }
+
       // Validate flash sale price: must be > 0 and less than the product price
       if (body.flashSalePrice !== undefined && body.flashSalePrice !== null) {
          const fsPrice = Number(body.flashSalePrice)
@@ -23,9 +35,9 @@ export async function POST(req: Request) {
          data: {
             title: body.title,
             description: body.description,
-            price: Number(body.price ?? 0),
-            discount: Number(body.discount ?? 0),
-            stock: Number(body.stock ?? 1),
+            price,
+            discount,
+            stock,
             images: body.images ?? [],
             keywords: body.keywords ?? [],
             isFeatured: body.isFeatured ?? false,
@@ -63,14 +75,21 @@ export async function GET(req: Request) {
       const { searchParams } = new URL(req.url)
       const categoryId = searchParams.get('categoryId') || undefined
       const isFeatured = searchParams.get('isFeatured')
+      const includeSystem = searchParams.get('includeSystem') === 'true'
+
+      const take = Math.min(Number(searchParams.get('limit')) || 200, 500)
+      const skip = Math.max(Number(searchParams.get('offset')) || 0, 0)
 
       const products = await prisma.product.findMany({
          where: {
+            ...(!includeSystem && { id: { not: 'quote-request-product' } }),
             ...(categoryId && { categories: { some: { id: categoryId } } }),
             ...(isFeatured !== null && { isFeatured: isFeatured === 'true' }),
          },
          include: { brand: true, categories: true, carModels: true },
          orderBy: { createdAt: 'desc' },
+         take,
+         skip,
       })
 
       return NextResponse.json(products)

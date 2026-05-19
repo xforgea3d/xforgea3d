@@ -5,6 +5,10 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
    try {
+      const { searchParams } = new URL(req.url)
+      const take = Math.min(Number(searchParams.get('limit')) || 100, 200)
+      const skip = Math.max(Number(searchParams.get('offset')) || 0, 0)
+
       const products = await prisma.product.findMany({
          where: { isAvailable: true },
          select: {
@@ -25,6 +29,8 @@ export async function GET(req: Request) {
             createdAt: true,
          },
          orderBy: { createdAt: 'desc' },
+         take,
+         skip,
       })
 
       return NextResponse.json(products)

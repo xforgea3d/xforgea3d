@@ -26,7 +26,7 @@ const Page = async ({ params }: { params: { bannerId: string } }) => {
             </div>
          </div>
       )
-   } catch (error) {
+   } catch {
       notFound()
    }
 }

@@ -14,9 +14,6 @@ const STOREFRONT_URL =
     (process.env.NODE_ENV === 'development' ? 'http://localhost:7777' : '')
 
 const REVALIDATION_SECRET = process.env.REVALIDATION_SECRET
-if (!REVALIDATION_SECRET && process.env.NODE_ENV === 'production') {
-    console.warn('[REVALIDATION] REVALIDATION_SECRET env var is not set!')
-}
 
 /**
  * Revalidate a single path with retry logic.

@@ -19,7 +19,9 @@ const FILTER_STORAGE_KEY = 'xforgea3d_product_filters'
 function saveFiltersToSession(params: string) {
    try {
       sessionStorage.setItem(FILTER_STORAGE_KEY, params)
-   } catch {}
+   } catch {
+      console.warn('[products] Unable to persist filters')
+   }
 }
 
 export function getFiltersFromSession(): string | null {
@@ -152,7 +154,7 @@ export function BrandCombobox({ brands, initialBrand }) {
 }
 
 export function PriceRangeFilter({ initialMin, initialMax }: { initialMin?: string; initialMax?: string }) {
-   const { navigate, searchParams } = useFilterNav()
+   const { navigate } = useFilterNav()
    const [minPrice, setMinPrice] = React.useState(initialMin || '')
    const [maxPrice, setMaxPrice] = React.useState(initialMax || '')
 

@@ -3,6 +3,14 @@
 import { useEffect } from 'react'
 import { reportError } from '@/lib/error-reporter'
 
+function getFetchUrl(input: RequestInfo | URL) {
+   return typeof input === 'string' ? input : input instanceof Request ? input.url : String(input)
+}
+
+function isAbortError(error: unknown) {
+   return error instanceof DOMException && error.name === 'AbortError'
+}
+
 export function GlobalErrorHandler() {
    useEffect(() => {
       // Catch unhandled errors
@@ -43,7 +51,7 @@ export function GlobalErrorHandler() {
 
             // Log 5xx errors automatically
             if (response.status >= 500) {
-               const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : String(args[0])
+               const url = getFetchUrl(args[0])
                // Don't log errors about the error-logs endpoint itself (prevent loops)
                if (!url.includes('/api/error-logs')) {
                   reportError({
@@ -57,15 +65,8 @@ export function GlobalErrorHandler() {
 
             return response
          } catch (fetchError: any) {
-            // Network errors
-            const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : String(args[0])
-            if (!url.includes('/api/error-logs')) {
-               reportError({
-                  message: `Network Error: ${fetchError.message} ${url}`,
-                  severity: 'high',
-                  source: 'frontend',
-                  metadata: { apiUrl: url, type: 'network_error' },
-               })
+            if (!isAbortError(fetchError)) {
+               console.warn('[fetch]', fetchError?.message || fetchError)
             }
             throw fetchError
          }

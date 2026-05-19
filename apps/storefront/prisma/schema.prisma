@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -443,7 +444,7 @@ model Blog {
   categories String[]
   keywords   String[]
 
-  author   Author @relation(fields: [authorId], references: [id])
+  author   Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId String
 
   createdAt DateTime @default(now())
@@ -496,6 +497,7 @@ model CarModel {
 
   @@unique([slug, brandId])
   @@index([brandId])
+  @@index([brandId, slug])
 }
 
 // ── Navbar Items (admin-managed) ──────────────────────────────
@@ -693,6 +695,7 @@ model Campaign {
   updatedAt DateTime @updatedAt
 
   @@index([startDate, endDate, isActive])
+  @@index([endDate])
 }
 
 // ── OTP (One-Time Password) ───────────────────────────────────

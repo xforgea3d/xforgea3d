@@ -14,6 +14,17 @@ export async function PATCH(
         const body = await req.json()
         const { status, payable, fee, isSuccessful } = body
 
+        const VALID_PAYMENT_STATUSES = new Set(['Processing', 'Paid', 'Failed', 'Denied'])
+        if (status && !VALID_PAYMENT_STATUSES.has(status)) {
+            return new NextResponse('Invalid payment status', { status: 400 })
+        }
+        if (payable !== undefined && (typeof payable !== 'number' || payable < 0)) {
+            return new NextResponse('Invalid payable amount', { status: 400 })
+        }
+        if (fee !== undefined && (typeof fee !== 'number' || fee < 0)) {
+            return new NextResponse('Invalid fee amount', { status: 400 })
+        }
+
         const payment = await prisma.payment.update({
             where: { id: params.paymentId },
             data: {
@@ -30,7 +41,9 @@ export async function PATCH(
         try {
             const { revalidateAllStorefront } = await import('@/lib/revalidate-storefront')
             await revalidateAllStorefront()
-        } catch (e) { }
+        } catch {
+            console.warn('[PAYMENT_PATCH] Storefront revalidation failed')
+        }
 
         return NextResponse.json(payment)
     } catch (error) {

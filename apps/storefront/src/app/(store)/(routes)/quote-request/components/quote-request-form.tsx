@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PhoneInput } from '@/components/native/PhoneInput'
 import { EmailInput } from '@/components/native/EmailInput'
@@ -17,7 +16,6 @@ interface BrandOption {
 }
 
 export function QuoteRequestForm({ brands }: { brands: BrandOption[] }) {
-   const router = useRouter()
    const { authenticated } = useAuthenticated()
    const { user } = useUserContext()
    const [loading, setLoading] = useState(false)

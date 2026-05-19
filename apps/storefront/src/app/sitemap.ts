@@ -17,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
    // ── Dynamic queries in parallel (graceful fallback if DB unreachable) ──
    let pages: any[] = [], posts: any[] = [], products: any[] = [], categories: any[] = []
    try {
-      ;[pages, posts, products, categories] = await Promise.all([
+      [pages, posts, products, categories] = await Promise.all([
          prisma.contentPage.findMany({
             where: { is_published: true },
             select: { slug: true, updatedAt: true },
@@ -36,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             select: { title: true, updatedAt: true },
          }),
       ])
-   } catch (e) {
+   } catch {
       console.warn('[sitemap] DB unavailable, returning static routes only')
    }
 

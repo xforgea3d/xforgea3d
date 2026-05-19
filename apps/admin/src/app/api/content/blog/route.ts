@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { revalidateAllStorefront } from '@/lib/revalidate-storefront'
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const posts = await prisma.blogPost.findMany({ take: 200, orderBy: { updatedAt: 'desc' } })
         return NextResponse.json(posts)

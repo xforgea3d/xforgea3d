@@ -9,7 +9,7 @@ import { Receipt } from './receipt'
 import { Skeleton } from './skeleton'
 
 export const CartGrid = () => {
-   const { loading, cart, refreshCart, dispatchCart } = useCartContext()
+   const { cart } = useCartContext()
 
    if (isVariableValid(cart?.items) && cart?.items?.length === 0) {
       return (
@@ -33,7 +33,7 @@ export const CartGrid = () => {
                ? cart?.items?.map((cartItem, index) => (
                     <Item cartItem={cartItem} key={cartItem.product?.id || index} />
                  ))
-               : [...Array(5)].map((cartItem, index) => (
+               : [...Array(5)].map((_, index) => (
                     <Skeleton key={index} />
                  ))}
          </div>

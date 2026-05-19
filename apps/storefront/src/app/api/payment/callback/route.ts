@@ -5,13 +5,23 @@ import crypto from 'crypto'
 
 export async function POST(req: NextRequest) {
    try {
-      const body = await req.json().catch(() => null)
-      const formData = body ? null : await req.formData().catch(() => null)
+      // Read body as text once — avoids stream double-consumption bug.
+      // Turkish bank POS systems send form-encoded; some send JSON.
+      const rawBody = await req.text()
+      let body: Record<string, string> = {}
+
+      try {
+         body = JSON.parse(rawBody)
+      } catch {
+         // Not JSON — parse as URL-encoded form data
+         const params = new URLSearchParams(rawBody)
+         for (const [key, value] of params) {
+            body[key] = value
+         }
+      }
 
       const getField = (key: string): string | null => {
-         if (body && body[key]) return String(body[key])
-         if (formData && formData.get(key)) return String(formData.get(key))
-         return null
+         return body[key] != null ? String(body[key]) : null
       }
 
       const refId = getField('merchant_oid') ?? getField('order_id') ?? getField('refId')
@@ -154,8 +164,13 @@ export async function POST(req: NextRequest) {
 
          return NextResponse.json({ status: 'OK', message: 'Payment confirmed' })
       } else {
-         // Payment failed — restore stock for order items
-         await prisma.$transaction(async (tx) => {
+         // Payment failed — restore stock for order items (with idempotency)
+         const failResult = await prisma.$transaction(async (tx) => {
+            const current = await tx.payment.findUniqueOrThrow({ where: { id: payment.id } })
+            if (current.status === 'Failed' || current.status === 'Denied') {
+               return { alreadyProcessed: true }
+            }
+
             await tx.payment.update({
                where: { id: payment.id },
                data: {
@@ -178,7 +193,13 @@ export async function POST(req: NextRequest) {
                where: { id: payment.orderId },
                data: { status: 'Cancelled' },
             })
+
+            return { alreadyProcessed: false }
          })
+
+         if (failResult.alreadyProcessed) {
+            return NextResponse.json({ status: 'OK', message: 'Already processed' })
+         }
 
          return NextResponse.json({ status: 'OK', message: 'Payment failure recorded, stock restored' })
       }

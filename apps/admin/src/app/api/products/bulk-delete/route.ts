@@ -64,6 +64,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ deleted: safeIds.length })
    } catch (error: any) {
       console.error('[PRODUCTS_BULK_DELETE]', error)
-      return new NextResponse(error?.message || 'Internal error', { status: 500 })
+      return new NextResponse('Internal error', { status: 500 })
    }
 }

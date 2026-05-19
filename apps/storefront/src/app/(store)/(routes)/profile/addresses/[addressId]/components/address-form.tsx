@@ -28,12 +28,12 @@ import * as z from 'zod'
 const formSchema = z.object({
    city: z.string().min(1, 'Şehir seçiniz'),
    district: z.string().min(1, 'İlçe seçiniz'),
-   address: z.string().min(1, 'Adres giriniz'),
+   address: z.string().min(1, 'Adres giriniz').max(500, 'Adres en fazla 500 karakter olabilir'),
    phone: z.string().min(1, 'Telefon giriniz').refine(
       (val) => !validateTurkishPhone(val),
       (val) => ({ message: validateTurkishPhone(val) || 'Geçersiz telefon numarası' })
    ),
-   postalCode: z.string().min(1, 'Posta kodu giriniz'),
+   postalCode: z.string().regex(/^\d{5}$/, 'Posta kodu 5 haneli olmalıdır'),
 })
 
 type AddressFormValues = z.infer<typeof formSchema>
@@ -131,7 +131,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/profile/addresses`)
          toast.success('Adres silindi.')
-      } catch (error: any) {
+      } catch {
          toast.error('Adres silinirken bir hata oluştu.')
       } finally {
          setLoading(false)

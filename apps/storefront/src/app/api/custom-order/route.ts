@@ -21,7 +21,13 @@ export async function POST(req: Request) {
       const userId = req.headers.get('X-USER-ID')
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
-      const formData = await req.formData()
+      let formData: FormData
+      try {
+         formData = await req.formData()
+      } catch {
+         return NextResponse.json({ error: 'Gecersiz form verisi' }, { status: 400 })
+      }
+
       const svgFile = formData.get('svg') as File | null
       const rawData = formData.get('data') as string
 
@@ -62,20 +68,6 @@ export async function POST(req: Request) {
             svgUrl = urlData.publicUrl
          }
       }
-
-      // Build notification content for admin
-      const orderDetails = [
-         `Özel Sipariş Talebi`,
-         `Ad: ${data.firstName || ''} ${data.lastName || ''}`,
-         `E-posta: ${data.email || '-'}`,
-         `Telefon: ${data.phone || '-'}`,
-         `Şehir: ${data.city || '-'}`,
-         `Adres: ${data.address || '-'}`,
-         `Renk: ${data.color || '-'}`,
-         `Not: ${data.notes || '-'}`,
-         svgUrl ? `Dosya: ${svgUrl}` : 'Dosya yüklenmedi',
-         `Tarih: ${new Date().toLocaleString('tr-TR')}`,
-      ].join('\n')
 
       // Create a QuoteRequest record so the order is trackable
       const colorName = data.colorName || data.color || '-'

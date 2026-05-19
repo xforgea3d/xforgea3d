@@ -26,13 +26,16 @@ export async function POST(req: Request) {
       await revalidateAllStorefront()
 
       return NextResponse.json(brand)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[BRANDS_POST]', error)
+      if (error?.code === 'P2002') {
+         return new NextResponse('Bu koleksiyon adi zaten kullaniliyor', { status: 409 })
+      }
       return new NextResponse('Internal error', { status: 500 })
    }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
    try {
       const brands = await prisma.brand.findMany({ take: 200, orderBy: { title: 'asc' } })
 

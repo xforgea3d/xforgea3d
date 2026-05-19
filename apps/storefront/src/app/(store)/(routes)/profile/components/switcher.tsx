@@ -5,8 +5,6 @@ import {
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ChevronsUpDownIcon } from 'lucide-react'
@@ -14,7 +12,6 @@ import Link from 'next/link'
 import React, { useEffect } from 'react'
 
 export function UserCombobox({ initialValue }) {
-   const [open, setOpen] = React.useState(false)
    const [value, setValue] = React.useState('')
 
    const categories = [

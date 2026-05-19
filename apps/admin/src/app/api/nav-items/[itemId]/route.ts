@@ -26,8 +26,9 @@ export async function PATCH(
       await revalidateAllStorefront()
 
       return NextResponse.json(item)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[NAV_ITEM_PATCH]', error)
+      if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
       return new NextResponse('Internal error', { status: 500 })
    }
 }
@@ -44,8 +45,9 @@ export async function DELETE(
       await revalidateAllStorefront()
 
       return NextResponse.json({ ok: true })
-   } catch (error) {
+   } catch (error: any) {
       console.error('[NAV_ITEM_DELETE]', error)
+      if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
       return new NextResponse('Internal error', { status: 500 })
    }
 }

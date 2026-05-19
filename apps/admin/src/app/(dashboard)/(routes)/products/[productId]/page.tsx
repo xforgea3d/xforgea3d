@@ -46,7 +46,7 @@ export default async function ProductPage({
             </div>
          </div>
       )
-   } catch (error) {
+   } catch {
       notFound()
    }
 }

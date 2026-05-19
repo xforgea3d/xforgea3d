@@ -78,6 +78,13 @@ export async function PATCH(
          )
       }
 
+      if (discountPercent !== undefined) {
+         const dp = Number(discountPercent)
+         if (isNaN(dp) || dp < 0 || dp > 100) {
+            return new NextResponse('discountPercent must be 0-100', { status: 400 })
+         }
+      }
+
       // Build the update data conditionally
       const updateData: any = {}
       if (name !== undefined) updateData.name = name

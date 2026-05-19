@@ -15,6 +15,12 @@ export async function POST(
          return new NextResponse('Name and slug are required', { status: 400 })
       }
 
+      // Verify brand exists
+      const brand = await prisma.carBrand.findUnique({ where: { id: params.brandId } })
+      if (!brand) {
+         return new NextResponse('Brand not found', { status: 404 })
+      }
+
       const model = await prisma.carModel.create({
          data: {
             name,
@@ -29,8 +35,11 @@ export async function POST(
       await revalidateAllStorefront()
 
       return NextResponse.json(model)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[CAR_MODEL_POST]', error)
+      if (error?.code === 'P2002') {
+         return new NextResponse('Bu slug bu marka altinda zaten mevcut', { status: 409 })
+      }
       return new NextResponse('Internal error', { status: 500 })
    }
 }

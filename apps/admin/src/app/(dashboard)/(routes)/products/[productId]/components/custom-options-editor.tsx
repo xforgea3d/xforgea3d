@@ -51,7 +51,9 @@ export const CustomOptionsEditor = ({ value, onChange, disabled }: CustomOptions
                     allowFileUpload: parsed.allowFileUpload || false,
                     basePriceAddition: parsed.basePriceAddition || 0,
                 })
-            } catch { }
+            } catch {
+                console.warn('[custom-options] Invalid custom options JSON')
+            }
         }
     }, [value])
 

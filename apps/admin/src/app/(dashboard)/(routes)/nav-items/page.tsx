@@ -14,7 +14,6 @@ import {
    SelectValue,
 } from '@/components/ui/select'
 import { Loader2, Plus, Trash, GripVertical, Eye, EyeOff, Pencil, Check, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 
@@ -36,7 +35,6 @@ const SECTION_LABELS: Record<string, string> = {
 }
 
 export default function NavItemsPage() {
-   const router = useRouter()
    const [items, setItems] = useState<NavItem[]>([])
    const [loading, setLoading] = useState(true)
    const [saving, setSaving] = useState(false)

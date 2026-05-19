@@ -24,19 +24,42 @@ export function ContactForm() {
             return
         }
 
+        const form = e.target as HTMLFormElement
+        const formData = new FormData(form)
+        const name = formData.get('name') as string
+        const subject = formData.get('subject') as string
+        const message = formData.get('message') as string
+
+        if (!name || !subject || !message) {
+            toast({ title: 'Hata', description: 'Lütfen tüm alanları doldurunuz.', variant: 'destructive' })
+            return
+        }
+
         setIsSubmitting(true)
 
-        // Simulate a short delay
-        await new Promise((resolve) => setTimeout(resolve, 800))
+        try {
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, subject, message }),
+            })
 
-        toast({
-            title: 'Mesajınız iletildi!',
-            description:
-                'En kısa sürede size geri dönüş yapacağız. Teşekkürler!',
-        })
+            if (!res.ok) {
+                const text = await res.text()
+                throw new Error(text || 'Mesaj gönderilemedi')
+            }
 
-        setIsSubmitting(false)
-        ;(e.target as HTMLFormElement).reset()
+            toast({
+                title: 'Mesajınız iletildi!',
+                description: 'En kısa sürede size geri dönüş yapacağız. Teşekkürler!',
+            })
+            form.reset()
+            setEmail('')
+        } catch (error: any) {
+            toast({ title: 'Hata', description: error.message || 'Bir hata oluştu.', variant: 'destructive' })
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     return (
@@ -46,8 +69,10 @@ export function ContactForm() {
                     <Label htmlFor="name">Ad Soyad</Label>
                     <Input
                         id="name"
+                        name="name"
                         placeholder="Adınız Soyadınız"
                         required
+                        maxLength={100}
                         className="rounded-xl"
                     />
                 </div>
@@ -67,8 +92,10 @@ export function ContactForm() {
                 <Label htmlFor="subject">Konu</Label>
                 <Input
                     id="subject"
+                    name="subject"
                     placeholder="Mesajınızın konusu"
                     required
+                    maxLength={200}
                     className="rounded-xl"
                 />
             </div>
@@ -76,9 +103,11 @@ export function ContactForm() {
                 <Label htmlFor="message">Mesaj</Label>
                 <Textarea
                     id="message"
+                    name="message"
                     placeholder="Mesajınızı buraya yazın..."
                     rows={5}
                     required
+                    maxLength={5000}
                     className="rounded-xl resize-none"
                 />
             </div>

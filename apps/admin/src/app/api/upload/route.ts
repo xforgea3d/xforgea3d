@@ -27,6 +27,20 @@ export async function POST(request: NextRequest) {
          return NextResponse.json({ error: 'Desteklenmeyen dosya tipi. Sadece resim yuklenebilir.' }, { status: 400 })
       }
 
+      // Validate extension matches MIME type to prevent polyglot attacks
+      const mimeToExt: Record<string, Set<string>> = {
+         'image/jpeg': new Set(['jpg', 'jpeg']),
+         'image/png': new Set(['png']),
+         'image/webp': new Set(['webp']),
+         'image/gif': new Set(['gif']),
+         'image/avif': new Set(['avif']),
+      }
+      const ext = file.name.split('.').pop()?.toLowerCase() || ''
+      const allowedExts = mimeToExt[file.type]
+      if (!allowedExts || !allowedExts.has(ext)) {
+         return NextResponse.json({ error: 'Dosya tipi ve uzantisi eslesmiyor' }, { status: 400 })
+      }
+
       const supabase = createServerClient(
          process.env.NEXT_PUBLIC_SUPABASE_URL!,
          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -40,17 +54,14 @@ export async function POST(request: NextRequest) {
          }
       )
 
-      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png'
-      // Only allow safe raster image extensions (no SVG)
-      const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'].includes(fileExt) ? fileExt : 'png'
-      const fileName = `${uuidv4()}.${safeExt}`
+      const fileName = `${uuidv4()}.${ext}`
       const filePath = `uploads/${fileName}`
 
       const buffer = Buffer.from(await file.arrayBuffer())
 
       // For PNG images, flatten transparency onto white background
       let processedBuffer: Buffer = buffer
-      let contentType = file.type
+      const contentType = file.type
       if (file.type === 'image/png') {
          try {
             processedBuffer = await sharp(buffer)

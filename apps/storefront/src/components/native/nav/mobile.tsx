@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
-import Config from '@/config/site'
 import { cn } from '@/lib/utils'
 import { MenuIcon, CarIcon, ChevronRight } from 'lucide-react'
 import Link, { LinkProps } from 'next/link'

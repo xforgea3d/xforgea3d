@@ -54,8 +54,6 @@ const ProductPage = async ({ params }: { params: { orderId: string } }) => {
       )
    }
 
-   const customItems = order.orderItems?.filter((item) => (item as any).isCustom) ?? []
-
    return (
       <div className="flex-col">
          <div className="flex-1 pt-6 pb-12 space-y-6">

@@ -69,6 +69,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             const data = await res.json()
             setProducts(data.products || [])
          } catch {
+            console.warn('[command] Product search failed')
          } finally {
             setLoading(false)
          }

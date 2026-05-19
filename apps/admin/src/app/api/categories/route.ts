@@ -33,13 +33,16 @@ export async function POST(req: Request) {
       await revalidateAllStorefront()
 
       return NextResponse.json(category)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[CATEGORIES_POST]', error)
+      if (error?.code === 'P2002') {
+         return new NextResponse('Bu kategori adi zaten kullaniliyor', { status: 409 })
+      }
       return new NextResponse('Internal error', { status: 500 })
    }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
    try {
       // Find all categories
       const categories = await prisma.category.findMany({ take: 200, orderBy: { title: 'asc' } })

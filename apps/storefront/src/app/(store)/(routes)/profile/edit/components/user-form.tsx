@@ -15,7 +15,7 @@ import { useCsrf } from '@/hooks/useCsrf'
 import type { ProfileWithIncludes } from '@/types/prisma'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
@@ -34,7 +34,6 @@ interface UserFormProps {
 }
 
 export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
-   const params = useParams()
    const router = useRouter()
    const csrfToken = useCsrf()
 
@@ -65,7 +64,10 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
       try {
          setLoading(true)
 
-         const { email, ...updateData } = data
+         const updateData = {
+            name: data.name,
+            phone: data.phone,
+         }
 
          const res = await fetch(`/api/profile`, {
             method: 'PATCH',

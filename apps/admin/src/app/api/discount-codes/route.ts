@@ -48,14 +48,29 @@ export async function POST(req: Request) {
          })
       }
 
+      const p = Number(percent)
+      if (!Number.isInteger(p) || p < 1 || p > 100) {
+         return new NextResponse('percent must be integer 1-100', { status: 400 })
+      }
+
+      const mda = maxDiscountAmount !== undefined ? Number(maxDiscountAmount) : 1
+      if (mda < 0) {
+         return new NextResponse('maxDiscountAmount cannot be negative', { status: 400 })
+      }
+
+      const s = stock ? Number(stock) : 1
+      if (s < 0) {
+         return new NextResponse('stock cannot be negative', { status: 400 })
+      }
+
       const finalCode = code?.trim() || generateCode()
 
       const discountCode = await prisma.discountCode.create({
          data: {
             code: finalCode,
-            percent: Number(percent),
-            maxDiscountAmount: maxDiscountAmount !== undefined ? Number(maxDiscountAmount) : 1,
-            stock: stock ? Number(stock) : 1,
+            percent: p,
+            maxDiscountAmount: mda,
+            stock: s,
             description: description || null,
             startDate: new Date(startDate),
             endDate: new Date(endDate),

@@ -41,9 +41,9 @@ const formSchema = z.object({
    description: z.string().optional(),
    keywords: z.string().optional(),
    images: z.string().array(),
-   price: z.coerce.number().min(1),
-   discount: z.coerce.number().min(0),
-   stock: z.coerce.number().min(0),
+   price: z.coerce.number().min(1).max(1000000, 'Fiyat en fazla 1.000.000 olabilir'),
+   discount: z.coerce.number().min(0).max(999999, 'İndirim tutarı çok yüksek'),
+   stock: z.coerce.number().int('Stok tam sayı olmalıdır').min(0).max(999999),
    brandId: z.string().min(1),
    categoryId: z.string().min(1),
    productType: z.string().default('READY'),
@@ -53,7 +53,13 @@ const formSchema = z.object({
    flashSaleActive: z.boolean().default(false).optional(),
    flashSalePrice: z.coerce.number().min(0).optional(),
    flashSaleEndDate: z.string().optional(),
-})
+}).refine(
+   (data) => !data.discount || data.discount < data.price,
+   { message: 'İndirim tutarı fiyattan küçük olmalıdır', path: ['discount'] }
+).refine(
+   (data) => !data.flashSaleActive || !data.flashSalePrice || data.flashSalePrice < data.price,
+   { message: 'Fırsat fiyatı normal fiyattan küçük olmalıdır', path: ['flashSalePrice'] }
+)
 
 type ProductFormValues = z.infer<typeof formSchema>
 
@@ -179,7 +185,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          router.refresh()
          window.location.href = adminPath('/products')
          toast.success('Ürün silindi.')
-      } catch (error: any) {
+      } catch {
          toast.error('Bir hata oluştu.')
       } finally {
          setLoading(false)

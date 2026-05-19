@@ -16,7 +16,7 @@ import { Heading } from '@/components/ui/heading'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Campaign, DiscountCode, Product } from '@prisma/client'
+import { Campaign, DiscountCode } from '@prisma/client'
 import {
    Loader2,
    Trash,
@@ -214,7 +214,7 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
          router.refresh()
          router.push(adminPath('/campaigns'))
          toast.success('Kampanya silindi.')
-      } catch (error: any) {
+      } catch {
          toast.error('Kampanya silinemedi.')
       } finally {
          setLoading(false)

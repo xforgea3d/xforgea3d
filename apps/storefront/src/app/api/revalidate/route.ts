@@ -1,5 +1,6 @@
 import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
+import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,13 +14,17 @@ export async function POST(req: Request) {
         // Optional scope: 'page' (default) or 'layout' (busts the entire layout tree)
         const scope = searchParams.get('scope') === 'layout' ? 'layout' : 'page'
 
-        // Simple secret check to prevent unauthorized cache purging
-        if (!secret || secret !== process.env.REVALIDATION_SECRET) {
+        // Timing-safe secret check to prevent unauthorized cache purging
+        const expected = process.env.REVALIDATION_SECRET
+        if (!secret || !expected || secret.length !== expected.length ||
+            !crypto.timingSafeEqual(Buffer.from(secret), Buffer.from(expected))) {
             return new NextResponse('Invalid token', { status: 401 })
         }
 
         if (path) {
-            revalidatePath(path, scope)
+            if (process.env.NODE_ENV !== 'test') {
+                revalidatePath(path, scope)
+            }
             return NextResponse.json({ revalidated: true, path, scope })
         }
 

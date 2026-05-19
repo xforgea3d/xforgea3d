@@ -27,19 +27,18 @@ export function Receipt() {
    const costs = useMemo(() => {
       let totalAmount = 0,
          discountAmount = 0
-      const now = Date.now()
 
       if (isVariableValid(cart?.items)) {
-         for (const item of cart?.items) {
+         for (const item of cart?.items ?? []) {
             const p = item?.product
             const hasFlashSale = isFlashSaleActive(p)
 
             if (hasFlashSale) {
-               totalAmount += item?.count * p.flashSalePrice
+               totalAmount += item.count * (p?.flashSalePrice ?? 0)
                // No per-product discount during flash sale
             } else {
-               totalAmount += item?.count * (p?.price ?? 0)
-               discountAmount += item?.count * (p?.discount ?? 0)
+               totalAmount += item.count * (p?.price ?? 0)
+               discountAmount += item.count * (p?.discount ?? 0)
             }
          }
       }

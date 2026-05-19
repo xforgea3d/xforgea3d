@@ -18,6 +18,10 @@ export async function GET(
             },
         })
 
+        if (!banner) {
+            return new NextResponse('Banner not found', { status: 404 })
+        }
+
         return NextResponse.json(banner)
     } catch (error) {
         console.error('[BANNER_GET]', error)

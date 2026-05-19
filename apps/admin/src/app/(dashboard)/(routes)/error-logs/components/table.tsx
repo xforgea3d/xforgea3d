@@ -180,6 +180,28 @@ export const ErrorLogsTable: React.FC<ErrorLogsTableProps> = ({ data }) => {
       }
    }
 
+   const deleteAll = async () => {
+      if (data.length === 0) return
+      if (!confirm('Tüm hata logları kalıcı olarak silinecek. Devam etmek istiyorsanız onaylayın.')) return
+      try {
+         setLoading(true)
+         const res = await fetch(adminPath('/api/error-logs/bulk'), {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ all: true }),
+         })
+         if (!res.ok) throw new Error()
+         const result = await res.json()
+         toast.success(`${result.deleted ?? 0} hata logu silindi`)
+         setSelected(new Set())
+         router.refresh()
+      } catch {
+         toast.error('Tüm loglar silinemedi')
+      } finally {
+         setLoading(false)
+      }
+   }
+
    const resolveAll = () => bulkResolve(unresolvedIds)
    const resolveSelected = () => bulkResolve(Array.from(selected))
    const deleteSelected = () => bulkDelete(Array.from(selected))
@@ -231,6 +253,18 @@ export const ErrorLogsTable: React.FC<ErrorLogsTableProps> = ({ data }) => {
                >
                   Seçimi Temizle
                </button>
+            )}
+            {data.length > 0 && (
+               <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={deleteAll}
+                  disabled={loading}
+                  className="gap-1.5"
+               >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Tüm Logları Sil
+               </Button>
             )}
          </div>
 

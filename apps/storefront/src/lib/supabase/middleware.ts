@@ -81,7 +81,7 @@ export async function updateSession(request: NextRequest) {
                 user = { id: 'pending-refresh' } as any
             }
         }
-    } catch (e) {
+    } catch {
         // Network-level failure — same fallback logic
         const hasLoggedInCookie = request.cookies.get('logged-in')?.value === 'true'
         if (hasLoggedInCookie) {

@@ -34,6 +34,17 @@ export async function DELETE(
          return new NextResponse('Category id is required', { status: 400 })
       }
 
+      // Pre-check: warn if products are attached
+      const productCount = await prisma.product.count({
+         where: { categories: { some: { id: params.categoryId } } },
+      })
+      if (productCount > 0) {
+         return new NextResponse(
+            `Bu kategori ${productCount} urune bagli. Once urunleri baska kategoriye tasiyin.`,
+            { status: 409 }
+         )
+      }
+
       const category = await prisma.category.delete({
          where: {
             id: params.categoryId,
@@ -46,8 +57,11 @@ export async function DELETE(
       await revalidateAllStorefront()
 
       return NextResponse.json(category)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[CATEGORY_DELETE]', error)
+      if (error?.code === 'P2003') {
+         return new NextResponse('Bu kategori silinemez: bagli kayitlar mevcut.', { status: 409 })
+      }
       return new NextResponse('Internal error', { status: 500 })
    }
 }

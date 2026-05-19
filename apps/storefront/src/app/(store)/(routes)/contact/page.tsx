@@ -28,7 +28,9 @@ export default async function ContactPage() {
                 address_text: dbSettings.address_text || DEFAULTS.address_text,
             }
         }
-    } catch {}
+    } catch {
+        console.warn('[contact] DB unavailable, using default contact settings')
+    }
 
     const phoneRaw = settings.contact_phone.replace(/\D/g, '')
     const addressLines = settings.address_text.split('\n')

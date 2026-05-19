@@ -62,7 +62,8 @@ export async function POST(req: NextRequest) {
       const apiKey = process.env.PAYMENT_API_KEY
       const secretKey = process.env.PAYMENT_SECRET_KEY
       const merchantId = process.env.PAYMENT_MERCHANT_ID
-      const hasPaymentKeys = apiKey && secretKey && merchantId
+      const providerUrl = process.env.PAYMENT_API_URL
+      const hasPaymentKeys = apiKey && secretKey && merchantId && providerUrl
 
       // Generate a unique reference ID for this payment
       const refId = `XF-${order.number}-${Date.now()}-${crypto.randomBytes(16).toString('hex')}`
@@ -134,7 +135,6 @@ export async function POST(req: NextRequest) {
             const token = crypto.createHmac('sha256', secretKey).update(hashStr).digest('base64')
 
             // POST to payment provider API (replace URL with actual endpoint)
-            const providerUrl = process.env.PAYMENT_API_URL ?? 'https://api.payment-provider.com/v1/payment/init'
             const providerRes = await fetch(providerUrl, {
                method: 'POST',
                headers: {

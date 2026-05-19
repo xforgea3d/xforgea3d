@@ -80,7 +80,7 @@ export const OrderForm: React.FC<ProductFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/profile/orders`)
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)

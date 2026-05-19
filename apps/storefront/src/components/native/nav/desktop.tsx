@@ -9,7 +9,6 @@ import {
    NavigationMenuTrigger,
    navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu'
-import config from '@/config/site'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { forwardRef, useState, useEffect } from 'react'
@@ -151,15 +150,6 @@ export function NavMenu() {
    const mainNavItems = navItems.filter(i => i.section === 'main')
 
    // Special nav items (auto-detected by href patterns)
-   const hasCategories = mainNavItems.some(i => i.href === '#kategoriler')
-   const hasVehicleParts = mainNavItems.some(i => i.href === '#arac-parcalari')
-   const hasCollections = mainNavItems.some(i => i.href === '#koleksiyonlar')
-
-   // Regular link items (not dropdowns)
-   const linkItems = mainNavItems.filter(i =>
-      !i.href.startsWith('#')
-   )
-
    // Decide if we use DB nav or fallback
    const useDbNav = navLoaded && mainNavItems.length > 0
 

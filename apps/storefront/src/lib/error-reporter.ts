@@ -1,13 +1,53 @@
 const ERROR_LOG_URL = '/api/error-logs'
-const DEBOUNCE_MS = 1000
 const MAX_ERRORS_PER_MINUTE = 10
 
 let errorCount = 0
 let resetTimer: ReturnType<typeof setTimeout> | null = null
 const reportedErrors = new Set<string>()
 
+const ignoredMessagePatterns = [
+   /ResizeObserver loop/i,
+   /^Script error\.?$/i,
+   /Non-Error promise rejection captured with value: undefined/i,
+   /Loading chunk \d+ failed/i,
+   /ChunkLoadError/i,
+   /The user aborted a request/i,
+   /AbortError/i,
+   /Object Not Found Matching Id/i,
+   /MethodName:update/i,
+]
+
+const ignoredUrlPatterns = [
+   /^chrome-extension:\/\//i,
+   /^moz-extension:\/\//i,
+   /^safari-web-extension:\/\//i,
+   /^webkit-masked-url:\/\//i,
+   /\/_next\/static\//i,
+   /\/_next\/webpack-hmr/i,
+]
+
 function getErrorFingerprint(message: string, stack?: string): string {
    return `${message}::${(stack || '').split('\n')[0]}`
+}
+
+function isIgnoredError(opts: {
+   message: string
+   stack?: string
+   metadata?: Record<string, any>
+}): boolean {
+   const message = opts.message || ''
+   const stack = opts.stack || ''
+   const url = String(opts.metadata?.url || opts.metadata?.apiUrl || opts.metadata?.filename || '')
+
+   if (!message.trim()) return true
+   if (ignoredMessagePatterns.some((pattern) => pattern.test(message))) return true
+   if (ignoredMessagePatterns.some((pattern) => pattern.test(String(opts.metadata?.reason || '')))) return true
+   if (ignoredUrlPatterns.some((pattern) => pattern.test(url) || pattern.test(stack))) return true
+   if (typeof navigator !== 'undefined' && navigator.onLine === false && /network|fetch|load failed/i.test(message)) {
+      return true
+   }
+
+   return false
 }
 
 export async function reportError(opts: {
@@ -19,6 +59,8 @@ export async function reportError(opts: {
    metadata?: Record<string, any>
 }): Promise<void> {
    try {
+      if (isIgnoredError(opts)) return
+
       // Rate limit
       if (errorCount >= MAX_ERRORS_PER_MINUTE) return
       errorCount++

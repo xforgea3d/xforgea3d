@@ -1,7 +1,6 @@
 import ConsCard from '@/components/native/mdx/ConsCard'
 import ProsCard from '@/components/native/mdx/ProsCard'
 import Step from '@/components/native/mdx/Step'
-import Link from 'next/link'
 
 function MDXImage({ alt, src }) {
    return (
@@ -25,8 +24,8 @@ function Callout(props) {
    )
 }
 
-function Header({ title }) {
-   return <>HEY</>
+function Header() {
+   return null
 }
 
 const MDXComponents = {

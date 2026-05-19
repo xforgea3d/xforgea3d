@@ -3,6 +3,7 @@ import { verifyCsrfToken } from '@/lib/csrf'
 import { logError, extractRequestContext } from '@/lib/error-logger'
 import Mail from '@/emails/order_notification_owner'
 import prisma from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { sendMail } from '@persepolis/mail'
 import { render } from '@react-email/render'
 import { revalidatePath } from 'next/cache'
@@ -76,7 +77,8 @@ export async function POST(req: Request) {
       const hasPaymentProvider =
          Boolean(process.env.PAYMENT_API_KEY) &&
          Boolean(process.env.PAYMENT_SECRET_KEY) &&
-         Boolean(process.env.PAYMENT_MERCHANT_ID)
+         Boolean(process.env.PAYMENT_MERCHANT_ID) &&
+         Boolean(process.env.PAYMENT_API_URL)
 
       if (process.env.NODE_ENV === 'production' && !hasPaymentProvider) {
          return new NextResponse(
@@ -129,19 +131,8 @@ export async function POST(req: Request) {
             throw new Error('EMPTY_CART')
          }
 
-         // Build safe placeholders — validate count matches productIds length
-         const placeholders = productIds.map((_, i) => `$${i + 1}`).join(',')
-         const expectedPlaceholderCount = productIds.length
-         const actualPlaceholderCount = (placeholders.match(/\$/g) || []).length
-
-         if (actualPlaceholderCount !== expectedPlaceholderCount) {
-            throw new Error('QUERY_PLACEHOLDER_MISMATCH')
-         }
-
-         await tx.$queryRawUnsafe(
-            `SELECT id FROM "Product" WHERE id IN (${placeholders}) FOR UPDATE`,
-            ...productIds
-         )
+         // Lock product rows with safe parameterized query
+         await tx.$queryRaw`SELECT id FROM "Product" WHERE id IN (${Prisma.join(productIds)}) FOR UPDATE`
 
          // Re-fetch products after acquiring lock to get latest stock values
          const lockedProducts = await tx.product.findMany({
@@ -256,7 +247,6 @@ export async function POST(req: Request) {
 
       // Extract order from transaction result
       const actualOrder = order.order
-      const lowStockProducts = order.lowStockProducts
 
       // Generate unique order code
       const orderCode = generateOrderCode(actualOrder.number)

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
 import { getCountInCart, getLocalCart } from '@/lib/cart'
-import { CartContextProvider, useCartContext } from '@/state/Cart'
+import { useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, ShoppingBasketIcon, X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -16,7 +16,7 @@ export default function CartButton({ product }: { product: any }) {
 export function ButtonComponent({ product }) {
    const { authenticated } = useAuthenticated()
    const csrfToken = useCsrf()
-   const { loading, cart, refreshCart, dispatchCart } = useCartContext()
+   const { cart, dispatchCart } = useCartContext()
 
    const [fetchingCart, setFetchingCart] = useState(false)
 

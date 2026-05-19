@@ -37,8 +37,11 @@ export async function POST(req: Request) {
       await revalidateAllStorefront()
 
       return NextResponse.json(brand)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[CAR_BRANDS_POST]', error)
+      if (error?.code === 'P2002') {
+         return new NextResponse('Bu marka adi veya slug zaten kullaniliyor', { status: 409 })
+      }
       return new NextResponse('Internal error', { status: 500 })
    }
 }

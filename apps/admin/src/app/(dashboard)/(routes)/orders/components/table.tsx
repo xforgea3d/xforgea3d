@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { DataTable } from '@/components/ui/data-table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { ColumnDef } from '@tanstack/react-table'
-import { CheckIcon, DownloadIcon, EditIcon, Loader2Icon, PackageIcon, TruckIcon, XIcon } from 'lucide-react'
+import { CheckIcon, DownloadIcon, EditIcon, Loader2Icon, TruckIcon, XIcon } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 
@@ -54,25 +54,6 @@ const TAB_FILTERS: Record<TabKey, (order: OrderColumn) => boolean> = {
    iptal: (o) =>
       ['Cancelled', 'Denied', 'ReturnProcessing', 'ReturnCompleted', 'RefundProcessing', 'RefundCompleted'].includes(o.status),
    tumu: () => true,
-}
-
-const STATUS_COLORS: Record<string, string> = {
-   OnayBekleniyor: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-   Hazirlaniyor: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-   Uretimde: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-   Processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-   KargoyaVerildi: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-   Shipped: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-   TeslimEdildi: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-   Delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-   IptalEdildi: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-   Cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-   Denied: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-   IadeEdildi: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
-   ReturnProcessing: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-   ReturnCompleted: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
-   RefundProcessing: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-   RefundCompleted: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
 }
 
 const STATUS_OPTIONS = [

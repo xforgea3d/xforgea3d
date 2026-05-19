@@ -5,38 +5,54 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
 import * as React from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { adminPath } from '@/lib/base-path'
 
 export function UserAuthForm({ className }: { className?: string }) {
+   const [email, setEmail] = React.useState('')
    const [password, setPassword] = React.useState('')
    const [showPassword, setShowPassword] = React.useState(false)
    const [isLoading, setIsLoading] = React.useState(false)
    const [errorMsg, setErrorMsg] = React.useState<string | null>(null)
    const [success, setSuccess] = React.useState(false)
    const [focusedField, setFocusedField] = React.useState<string | null>(null)
+   const [attempts, setAttempts] = React.useState(0)
+   const [lockedUntil, setLockedUntil] = React.useState<number | null>(null)
    const supabase = createClient()
 
-   const ADMIN_EMAIL = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').trim()
-   const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ''
+   const isLocked = lockedUntil !== null && Date.now() < lockedUntil
 
    async function onSubmit(e: React.FormEvent) {
       e.preventDefault()
+      if (isLocked) {
+         setErrorMsg('Çok fazla deneme. 15 dakika sonra tekrar deneyin.')
+         return
+      }
       setIsLoading(true)
       setErrorMsg(null)
 
       try {
-         const { data, error } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password })
+         const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
 
          if (error) {
-            setErrorMsg('Şifre hatalı.')
+            const newAttempts = attempts + 1
+            setAttempts(newAttempts)
+            if (newAttempts >= 5) {
+               setLockedUntil(Date.now() + 15 * 60 * 1000)
+               setErrorMsg('Çok fazla hatalı deneme. 15 dakika kilitlendi.')
+            } else {
+               setErrorMsg('E-posta veya şifre hatalı.')
+            }
          } else if (data.session) {
             setSuccess(true)
             // Force server-side cookie refresh, then redirect
             try {
-               await fetch(`${BASE_PATH}/api/auth/session`, { method: 'POST', credentials: 'same-origin' })
-            } catch {}
+               await fetch(adminPath('/api/auth/session'), { method: 'POST', credentials: 'same-origin' })
+            } catch {
+               console.warn('[admin-login] Session refresh failed before redirect')
+            }
             // Small delay for success animation, then hard navigate
             await new Promise((r) => setTimeout(r, 600))
-            window.location.replace(`${BASE_PATH}/products`)
+            window.location.replace(adminPath('/products'))
          }
       } catch {
          setErrorMsg('Bir hata oluştu.')
@@ -48,6 +64,50 @@ export function UserAuthForm({ className }: { className?: string }) {
    return (
       <div className={cn('space-y-6', className)}>
          <form onSubmit={onSubmit} className="space-y-5">
+            {/* Email */}
+            <div className="space-y-2">
+               <motion.label
+                  className="text-[11px] font-medium uppercase tracking-[0.15em] block"
+                  animate={{
+                     color: focusedField === 'email' ? 'rgba(249,115,22,0.7)' : 'rgba(255,255,255,0.3)',
+                  }}
+                  transition={{ duration: 0.3 }}
+               >
+                  E-posta
+               </motion.label>
+               <motion.div className="relative" whileTap={{ scale: 0.995 }}>
+                  <input
+                     type="email"
+                     placeholder="admin@xforgea3d.com"
+                     autoComplete="username"
+                     disabled={isLoading || success || isLocked}
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     onFocus={() => setFocusedField('email')}
+                     onBlur={() => setFocusedField(null)}
+                     required
+                     className={cn(
+                        'w-full h-11 px-4 rounded-xl text-sm text-white placeholder:text-white/15',
+                        'bg-white/[0.04] border border-white/[0.06]',
+                        'outline-none transition-all duration-300',
+                        'focus:border-orange-500/30 focus:bg-white/[0.06] focus:ring-1 focus:ring-orange-500/10',
+                        'disabled:opacity-60 disabled:cursor-not-allowed',
+                     )}
+                  />
+                  <AnimatePresence>
+                     {focusedField === 'email' && (
+                        <motion.div
+                           className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"
+                           initial={{ scaleX: 0, opacity: 0 }}
+                           animate={{ scaleX: 1, opacity: 1 }}
+                           exit={{ scaleX: 0, opacity: 0 }}
+                           transition={{ duration: 0.3 }}
+                        />
+                     )}
+                  </AnimatePresence>
+               </motion.div>
+            </div>
+
             {/* Password */}
             <div className="space-y-2">
                <motion.label
@@ -64,7 +124,7 @@ export function UserAuthForm({ className }: { className?: string }) {
                      type={showPassword ? 'text' : 'password'}
                      placeholder="••••••••"
                      autoComplete="current-password"
-                     disabled={isLoading || success}
+                     disabled={isLoading || success || isLocked}
                      value={password}
                      onChange={(e) => setPassword(e.target.value)}
                      onFocus={() => setFocusedField('password')}
@@ -119,7 +179,7 @@ export function UserAuthForm({ className }: { className?: string }) {
             {/* Submit */}
             <motion.button
                type="submit"
-               disabled={isLoading || !password || success}
+               disabled={isLoading || !email || !password || success || isLocked}
                className={cn(
                   'relative w-full h-11 rounded-xl text-sm font-medium',
                   'outline-none transition-all duration-300',

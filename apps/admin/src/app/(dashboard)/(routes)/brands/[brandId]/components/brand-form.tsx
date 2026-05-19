@@ -97,7 +97,7 @@ export const BrandForm: React.FC<BrandFormProps> = ({ initialData }) => {
          router.refresh()
          window.location.href = adminPath('/brands')
          toast.success('Koleksiyon silindi.')
-      } catch (error: any) {
+      } catch {
          toast.error(
             'Önce bu koleksiyonu kullanan tüm ürünleri kaldırın.'
          )

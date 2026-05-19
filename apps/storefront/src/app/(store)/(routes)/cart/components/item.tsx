@@ -6,29 +6,26 @@ import { Button } from '@/components/ui/button'
 import {
    Card,
    CardContent,
-   CardDescription,
-   CardFooter,
    CardHeader,
-   CardTitle,
 } from '@/components/ui/card'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
-import { getCountInCart, getLocalCart, writeLocalCart } from '@/lib/cart'
+import { getCountInCart, getLocalCart } from '@/lib/cart'
 import { isFlashSaleActive } from '@/lib/flash-sale'
 import { useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, X } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 export const Item = ({ cartItem }) => {
    const { authenticated } = useAuthenticated()
    const csrfToken = useCsrf()
-   const { loading, cart, refreshCart, dispatchCart } = useCartContext()
+   const { cart, dispatchCart } = useCartContext()
    const [fetchingCart, setFetchingCart] = useState(false)
 
    if (!cartItem || !cartItem.product) return null
 
-   const { product, productId, count } = cartItem
+   const { product, productId } = cartItem
 
    function findLocalCartIndexById(cart, productId) {
       const items = cart?.items || []

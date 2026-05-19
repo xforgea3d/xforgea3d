@@ -2,11 +2,9 @@
 
 import { adminPath } from '@/lib/base-path'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
    Form,
    FormControl,
-   FormDescription,
    FormField,
    FormItem,
    FormLabel,
@@ -83,7 +81,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(adminPath(`/users`))
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch {
          toast.error('Bir hata oluştu.')
       } finally {
          setLoading(false)

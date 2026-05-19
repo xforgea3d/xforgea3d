@@ -96,6 +96,23 @@ export async function POST(req: Request) {
          return new NextResponse('productId zorunlu, count 0-99 arasi tam sayi olmali', { status: 400 })
       }
 
+      // Soft stock check (hard check at order creation with row locking)
+      if (count > 0) {
+         const product = await prisma.product.findUnique({
+            where: { id: productId },
+            select: { stock: true, isAvailable: true },
+         })
+         if (!product || !product.isAvailable) {
+            return new NextResponse('Bu urun mevcut degil', { status: 400 })
+         }
+         if (count > product.stock) {
+            return NextResponse.json(
+               { error: `Stokta yalnizca ${product.stock} adet mevcut` },
+               { status: 400 }
+            )
+         }
+      }
+
       if (count < 1) {
          await prisma.cartItem.delete({
             where: { UniqueCartItem: { cartId: userId, productId } },

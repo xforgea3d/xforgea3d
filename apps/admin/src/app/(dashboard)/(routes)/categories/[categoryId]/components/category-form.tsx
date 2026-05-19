@@ -14,13 +14,6 @@ import {
 import { Heading } from '@/components/ui/heading'
 import ImageUpload from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
-import {
-   Select,
-   SelectContent,
-   SelectItem,
-   SelectTrigger,
-   SelectValue,
-} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Category } from '@prisma/client'
@@ -101,7 +94,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
          router.refresh()
          window.location.href = adminPath('/categories')
          toast.success('Kategori silindi.')
-      } catch (error: any) {
+      } catch {
          toast.error(
             'Önce bu kategoriyi kullanan tüm ürünleri kaldırın.'
          )

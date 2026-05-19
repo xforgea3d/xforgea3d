@@ -27,22 +27,25 @@ if (typeof globalThis !== 'undefined') {
    }
 }
 
-// Public API routes that don't need auth
-const PUBLIC_API_ROUTES = [
-   '/api/auth',
-   '/api/products',
-   '/api/revalidate',
-   '/api/search',
-   '/api/car-brands',
-   '/api/nav-items',
-   '/api/error-logs',
-   '/api/categories',
-   '/api/collections',
-   '/api/maintenance-status',
-   '/api/health',
-   '/api/subscription',
-   '/api/site-settings',
-]
+function isPublicApiRequest(pathname: string, method: string): boolean {
+   if (pathname.startsWith('/api/auth')) return true
+   if (pathname === '/api/revalidate' && method === 'POST') return true
+   if (pathname === '/api/error-logs' && method === 'POST') return true
+   if (pathname === '/api/search' && method === 'GET') return true
+   if (pathname === '/api/car-brands' && method === 'GET') return true
+   if (pathname === '/api/nav-items' && method === 'GET') return true
+   if (pathname === '/api/categories' && method === 'GET') return true
+   if (pathname === '/api/collections' && method === 'GET') return true
+   if (pathname === '/api/maintenance-status' && method === 'GET') return true
+   if (pathname === '/api/health' && method === 'GET') return true
+   if (pathname === '/api/site-settings' && method === 'GET') return true
+   if (pathname === '/api/campaigns/active' && ['GET', 'POST'].includes(method)) return true
+   if (pathname === '/api/custom-order/colors' && method === 'GET') return true
+   if (pathname === '/api/products' && method === 'GET') return true
+   if (/^\/api\/products\/[^/]+$/.test(pathname) && method === 'GET') return true
+   if (/^\/api\/products\/[^/]+\/reviews$/.test(pathname) && method === 'GET') return true
+   return false
+}
 
 // Mutating HTTP methods that require CSRF protection
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
@@ -67,6 +70,52 @@ const RATE_LIMITED_POSTS: Record<string, { limit: number; windowMs: number }> = 
    '/api/auth/forgot-password': { limit: 3, windowMs: 60_000 },
 }
 
+function normalizeOrigin(value?: string | null) {
+   if (!value) return null
+   try {
+      return new URL(value).origin
+   } catch {
+      return null
+   }
+}
+
+function getAllowedRequestOrigins(request: NextRequest) {
+   return new Set(
+      [
+         normalizeOrigin(request.nextUrl.origin),
+         normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL),
+         normalizeOrigin(process.env.NEXT_PUBLIC_URL),
+         normalizeOrigin(process.env.SITE_URL),
+         process.env.VERCEL_URL ? normalizeOrigin(`https://${process.env.VERCEL_URL}`) : null,
+         'https://xforgea3d.com',
+         'https://www.xforgea3d.com',
+      ].filter((origin): origin is string => Boolean(origin))
+   )
+}
+
+function isAllowedMutatingOrigin(request: NextRequest) {
+   const origin = normalizeOrigin(request.headers.get('origin'))
+   const referer = normalizeOrigin(request.headers.get('referer'))
+   const candidate = origin || referer
+
+   if (!candidate) return false
+
+   if (process.env.NODE_ENV !== 'production' && candidate.startsWith('http://localhost')) {
+      return true
+   }
+
+   return getAllowedRequestOrigins(request).has(candidate)
+}
+
+function isOriginExemptRequest(pathname: string) {
+   return (
+      pathname.startsWith('/api/auth') ||
+      pathname === '/api/revalidate' ||
+      pathname === '/api/payment/callback' ||
+      pathname === '/api/error-logs'
+   )
+}
+
 export async function middleware(request: NextRequest) {
    const { pathname } = request.nextUrl
    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
@@ -82,10 +131,16 @@ export async function middleware(request: NextRequest) {
       }
    }
 
-   // Always allow public API routes (GET only for most)
-   for (const route of PUBLIC_API_ROUTES) {
-      if (pathname.startsWith(route)) return NextResponse.next()
+   if (
+      pathname.startsWith('/api/') &&
+      MUTATING_METHODS.has(request.method) &&
+      !isOriginExemptRequest(pathname) &&
+      !isAllowedMutatingOrigin(request)
+   ) {
+      return NextResponse.json({ error: 'INVALID_ORIGIN' }, { status: 403 })
    }
+
+   if (isPublicApiRequest(pathname, request.method)) return NextResponse.next()
 
    // Allow public POST to quote-requests and custom-order (no auth required)
    // But still try to resolve user session so userId can be attached if logged in
@@ -99,12 +154,18 @@ export async function middleware(request: NextRequest) {
             supabaseResponse.headers.set('X-USER-ID', user.id)
             return supabaseResponse
          }
-      } catch {}
+      } catch {
+         console.warn('[middleware] Optional session resolution failed for public submission')
+      }
       return NextResponse.next()
    }
 
    // Session check (only for protected paths)
    const { supabaseResponse, user } = await updateSession(request)
+
+   if (user?.id === 'pending-refresh' && pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'SESSION_REFRESH_REQUIRED' }, { status: 401 })
+   }
 
    if (!user) {
       if (pathname.startsWith('/api/')) {

@@ -33,7 +33,7 @@ export async function DELETE(
       // Disconnect all products from this brand first
       await prisma.product.updateMany({
          where: { brandId: params.brandId },
-         data: { brandId: null as any },
+         data: { brandId: { set: null } },
       })
 
       const brand = await prisma.brand.delete({
@@ -91,6 +91,6 @@ export async function PATCH(
       if (error?.code === 'P2002') {
          return new NextResponse('Bu koleksiyon adı zaten kullanılıyor', { status: 400 })
       }
-      return new NextResponse(error?.message || 'Internal error', { status: 500 })
+      return new NextResponse('Internal error', { status: 500 })
    }
 }

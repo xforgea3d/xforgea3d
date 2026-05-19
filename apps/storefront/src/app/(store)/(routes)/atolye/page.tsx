@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import {
     UploadCloudIcon,
     CheckCircleIcon,
-    XCircleIcon,
     PaletteIcon,
     UserIcon,
     MapPinIcon,

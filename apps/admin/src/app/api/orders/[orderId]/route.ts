@@ -18,6 +18,24 @@ export async function PATCH(
         const body = await req.json()
         const { status, shipping, payable, discount, isPaid, isCompleted, trackingNumber, shippingCompany } = body
 
+        const VALID_STATUSES = new Set([
+            'OnayBekleniyor', 'Uretimde', 'Processing', 'Shipped', 'Delivered',
+            'ReturnProcessing', 'ReturnCompleted', 'Cancelled',
+            'RefundProcessing', 'RefundCompleted', 'Denied',
+        ])
+        if (status && !VALID_STATUSES.has(status)) {
+            return new NextResponse('Invalid status', { status: 400 })
+        }
+        if (shipping !== undefined && (typeof shipping !== 'number' || shipping < 0)) {
+            return new NextResponse('Invalid shipping amount', { status: 400 })
+        }
+        if (payable !== undefined && (typeof payable !== 'number' || payable < 0)) {
+            return new NextResponse('Invalid payable amount', { status: 400 })
+        }
+        if (discount !== undefined && (typeof discount !== 'number' || discount < 0)) {
+            return new NextResponse('Invalid discount amount', { status: 400 })
+        }
+
         const order = await prisma.order.update({
             where: { id: params.orderId },
             data: {
@@ -117,8 +135,9 @@ export async function PATCH(
         await revalidateAllStorefront()
 
         return NextResponse.json(order)
-    } catch (error) {
+    } catch (error: any) {
         console.error('[ORDER_PATCH]', error)
+        if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
         return new NextResponse('Internal error', { status: 500 })
     }
 }

@@ -61,6 +61,13 @@ export async function POST(req: Request) {
          )
       }
 
+      if (discountPercent !== undefined) {
+         const dp = Number(discountPercent)
+         if (isNaN(dp) || dp < 0 || dp > 100) {
+            return new NextResponse('discountPercent must be 0-100', { status: 400 })
+         }
+      }
+
       const campaign = await prisma.campaign.create({
          data: {
             name,

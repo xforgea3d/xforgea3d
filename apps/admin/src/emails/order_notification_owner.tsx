@@ -1,16 +1,13 @@
 import {
    Body,
    Button,
-   Column,
    Container,
    Head,
    Heading,
    Hr,
    Html,
-   Img,
    Link,
    Preview,
-   Row,
    Section,
    Tailwind,
    Text,
@@ -23,7 +20,7 @@ interface VercelInviteUserEmailProps {
    id?: string
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://admin.xforgea3d.com'
+const baseUrl = process.env.ADMIN_PUBLIC_URL || 'https://xforgea3d.com/admin07'
 
 export const VercelInviteUserEmail = ({
    orderNum = '0',

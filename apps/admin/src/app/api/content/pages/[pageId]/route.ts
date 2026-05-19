@@ -29,8 +29,9 @@ export async function PATCH(req: Request, { params }: { params: { pageId: string
         const page = await prisma.contentPage.update({ where: { id: params.pageId }, data })
         await revalidateAllStorefront()
         return NextResponse.json(page)
-    } catch (error) {
+    } catch (error: any) {
         console.error('[PAGE_PATCH]', error)
+        if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
         return new NextResponse('Internal error', { status: 500 })
     }
 }
@@ -41,8 +42,9 @@ export async function DELETE(_: Request, { params }: { params: { pageId: string 
         await prisma.contentPage.delete({ where: { id: params.pageId } })
         if (page?.slug) await revalidateAllStorefront()
         return NextResponse.json({ ok: true })
-    } catch (error) {
+    } catch (error: any) {
         console.error('[PAGE_DELETE]', error)
+        if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
         return new NextResponse('Internal error', { status: 500 })
     }
 }

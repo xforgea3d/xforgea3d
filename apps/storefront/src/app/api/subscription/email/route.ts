@@ -7,11 +7,8 @@ export async function POST(req: Request) {
       const userId = req.headers.get('X-USER-ID')
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
-      const body = await req.json().catch(() => ({}))
-      const { csrfToken } = body
-
-      // CSRF is optional for public newsletter signup, but verified if provided
-      if (csrfToken && !verifyCsrfToken(csrfToken, userId)) {
+      const csrfToken = req.headers.get('x-csrf-token')
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
          return new NextResponse('Gecersiz istek. Sayfayi yenileyip tekrar deneyin.', { status: 403 })
       }
 
@@ -37,9 +34,7 @@ export async function DELETE(req: Request) {
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
       const csrfToken = req.headers.get('x-csrf-token')
-
-      // CSRF is optional for public access, but verified if provided
-      if (csrfToken && !verifyCsrfToken(csrfToken, userId)) {
+      if (!csrfToken || !verifyCsrfToken(csrfToken, userId)) {
          return new NextResponse('Gecersiz istek. Sayfayi yenileyip tekrar deneyin.', { status: 403 })
       }
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { DataTable } from '@/components/ui/data-table'
-import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
 import { ColumnDef } from '@tanstack/react-table'
@@ -40,8 +39,5 @@ interface BannerClientProps {
 }
 
 export const BannersClient: React.FC<BannerClientProps> = ({ data }) => {
-   const params = useParams()
-   const router = useRouter()
-
    return <DataTable searchKey="label" columns={columns} data={data} />
 }

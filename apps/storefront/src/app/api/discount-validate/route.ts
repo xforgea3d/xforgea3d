@@ -33,7 +33,7 @@ export async function POST(req: Request) {
          return NextResponse.json({ valid: false, error: 'Bu indirim kodu henüz aktif değil' })
       }
 
-      // Calculate discount amount based on user's cart
+      // Calculate discount amount based on user's cart (aligned with order calculateCosts)
       const cart = await prisma.cart.findUnique({
          where: { userId },
          include: { items: { include: { product: true } } },
@@ -46,8 +46,17 @@ export async function POST(req: Request) {
       let total = 0
       let productDiscount = 0
       for (const item of cart.items) {
-         total += item.count * item.product.price
-         productDiscount += item.count * item.product.discount
+         const p = item.product
+         const hasFlashSale = p.flashSalePrice != null &&
+            p.flashSaleEndDate != null &&
+            p.flashSalePrice > 0 &&
+            new Date(p.flashSaleEndDate) > now
+         if (hasFlashSale) {
+            total += item.count * p.flashSalePrice!
+         } else {
+            total += item.count * p.price
+            productDiscount += item.count * p.discount
+         }
       }
 
       const afterProductDiscount = total - productDiscount

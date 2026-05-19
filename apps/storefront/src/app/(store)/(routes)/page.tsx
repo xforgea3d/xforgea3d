@@ -41,10 +41,6 @@ const RecentlyViewed = nextDynamic(
    { ssr: false }
 )
 
-const ScrollReveal = nextDynamic(
-   () => import('@/components/native/ScrollReveal').then(m => ({ default: m.ScrollReveal })),
-   { ssr: false }
-)
 const AnimatedCounter = nextDynamic(
    () => import('@/components/native/AnimatedCounter').then(m => ({ default: m.AnimatedCounter })),
    { ssr: false }
@@ -125,7 +121,7 @@ async function fetchHomeData() {
 export default async function Index() {
    let featuredProducts: any[] = [], banners: any[] = [], carBrands: any[] = [], dbCampaigns: any[] = [], flashSaleProducts: any[] = []
    try {
-      ;[featuredProducts, banners, carBrands, dbCampaigns, flashSaleProducts] = await fetchHomeData()
+      [featuredProducts, banners, carBrands, dbCampaigns, flashSaleProducts] = await fetchHomeData()
    } catch (e) {
       console.warn('[home] DB unavailable or timed out, rendering empty state:', (e as Error)?.message)
    }
@@ -418,7 +414,7 @@ export default async function Index() {
                      desc: 'Türkiye\'nin her iline hızlı ve güvenli teslimat.',
                      stat: { end: 81, suffix: '', label: 'İl Teslimat' },
                   },
-               ].map(({ icon, title, desc, stat }, i) => (
+               ].map(({ icon, title, desc, stat }) => (
                   <div
                      key={title}
                      className="flex flex-col items-start rounded-xl border p-6 gap-3 hover:bg-muted/40 hover:border-orange-500/20 transition-all group"

@@ -9,7 +9,6 @@ import {
    calculateCustomPrice,
    parseCustomOptions,
    type ColorOption,
-   type CustomSnapshot,
    type SizeOption,
 } from '@/lib/customization'
 import type { ProductWithIncludes } from '@/types/prisma'
@@ -144,14 +143,6 @@ export const DataSection = ({ product }: { product: ProductWithIncludes }) => {
       } finally {
          setUploading(false)
       }
-   }
-
-   // Build snapshot for cart (passed via data attribute, cart button reads it)
-   const snapshot: CustomSnapshot = {
-      text: customText || undefined,
-      color: selectedColor,
-      size: selectedSize,
-      fileUrl,
    }
 
    function toggleSection(key: string) {

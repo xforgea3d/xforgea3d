@@ -51,8 +51,8 @@ export const docsConfig: DocsConfig = {
          href: '/profile/quote-requests',
       },
       {
-         title: 'Ödemelerim',
-         href: '/profile/payments',
+         title: 'İade Taleplerim',
+         href: '/profile/returns',
       },
       {
          title: 'İletişim',

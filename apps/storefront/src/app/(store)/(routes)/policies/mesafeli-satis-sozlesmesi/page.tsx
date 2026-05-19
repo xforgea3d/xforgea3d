@@ -23,7 +23,9 @@ export default async function MesafeliSatisSozlesmesi() {
                 address_text: dbSettings.address_text || DEFAULTS.address_text,
             }
         }
-    } catch {}
+    } catch {
+        console.warn('[policy] DB unavailable, using default seller settings')
+    }
 
     return (
         <div className="mx-auto max-w-4xl py-12 prose prose-neutral dark:prose-invert">

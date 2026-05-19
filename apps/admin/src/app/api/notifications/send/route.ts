@@ -19,6 +19,15 @@ export async function POST(req: Request) {
          return new NextResponse('Bad Request: userId or userIds is required', { status: 400 })
       }
 
+      // Validate all userIds exist
+      const existingUsers = await prisma.profile.findMany({
+         where: { id: { in: userIds } },
+         select: { id: true },
+      })
+      if (existingUsers.length !== userIds.length) {
+         return new NextResponse('One or more user IDs not found', { status: 404 })
+      }
+
       await prisma.notification.createMany({
          data: userIds.map(userId => ({
             userId,

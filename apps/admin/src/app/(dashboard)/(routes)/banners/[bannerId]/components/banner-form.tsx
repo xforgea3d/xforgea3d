@@ -99,7 +99,7 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
          router.refresh()
          window.location.href = adminPath('/banners')
          toast.success('Banner silindi.')
-      } catch (error: any) {
+      } catch {
          toast.error(
             'Önce bu banneri kullanan tüm kategorileri kaldırın.'
          )

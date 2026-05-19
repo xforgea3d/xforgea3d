@@ -1,11 +1,7 @@
 export const revalidate = 0
 import prisma from '@/lib/prisma'
-import { format } from 'date-fns'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { Heading } from '@/components/ui/heading'
 import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
 import { SectionReorderList } from './components/section-reorder-list'
 
 export default async function HomepageSectionsPage() {

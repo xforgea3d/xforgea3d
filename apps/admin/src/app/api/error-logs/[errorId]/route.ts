@@ -12,8 +12,9 @@ export async function PATCH(
          data: { resolved: body.resolved ?? true },
       })
       return NextResponse.json(error)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[ERROR_LOG_PATCH]', error)
+      if (error?.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 })
       return NextResponse.json({ error: 'Internal error' }, { status: 500 })
    }
 }
@@ -25,8 +26,9 @@ export async function DELETE(
    try {
       await prisma.error.delete({ where: { id: params.errorId } })
       return NextResponse.json({ ok: true })
-   } catch (error) {
+   } catch (error: any) {
       console.error('[ERROR_LOG_DELETE]', error)
+      if (error?.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 })
       return NextResponse.json({ error: 'Internal error' }, { status: 500 })
    }
 }

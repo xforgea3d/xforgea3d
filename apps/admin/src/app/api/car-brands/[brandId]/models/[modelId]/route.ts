@@ -11,6 +11,14 @@ export async function PATCH(
       const body = await req.json()
       const { name, slug, imageUrl, yearRange } = body
 
+      // Verify model belongs to this brand
+      const existing = await prisma.carModel.findFirst({
+         where: { id: params.modelId, brandId: params.brandId },
+      })
+      if (!existing) {
+         return new NextResponse('Model not found for this brand', { status: 404 })
+      }
+
       const model = await prisma.carModel.update({
          where: { id: params.modelId },
          data: {
@@ -25,8 +33,11 @@ export async function PATCH(
       await revalidateAllStorefront()
 
       return NextResponse.json(model)
-   } catch (error) {
+   } catch (error: any) {
       console.error('[CAR_MODEL_PATCH]', error)
+      if (error?.code === 'P2002') {
+         return new NextResponse('Bu slug bu marka altinda zaten mevcut', { status: 409 })
+      }
       return new NextResponse('Internal error', { status: 500 })
    }
 }
@@ -36,6 +47,18 @@ export async function DELETE(
    { params }: { params: { brandId: string; modelId: string } }
 ) {
    try {
+      // Pre-check: block if products or quote requests reference this model
+      const [productCount, quoteCount] = await Promise.all([
+         prisma.product.count({ where: { carModels: { some: { id: params.modelId } } } }),
+         prisma.quoteRequest.count({ where: { carModelId: params.modelId } }),
+      ])
+      if (productCount > 0 || quoteCount > 0) {
+         return new NextResponse(
+            `Bu model silinemez: ${productCount} urun ve ${quoteCount} teklif talebi bagli.`,
+            { status: 409 }
+         )
+      }
+
       await prisma.carModel.delete({
          where: { id: params.modelId },
       })
@@ -43,8 +66,11 @@ export async function DELETE(
       await revalidateAllStorefront()
 
       return NextResponse.json({ ok: true })
-   } catch (error) {
+   } catch (error: any) {
       console.error('[CAR_MODEL_DELETE]', error)
+      if (error?.code === 'P2003') {
+         return new NextResponse('Bu model silinemez: bagli kayitlar mevcut.', { status: 409 })
+      }
       return new NextResponse('Internal error', { status: 500 })
    }
 }

@@ -39,6 +39,15 @@ export async function PATCH(
       const body = await req.json()
       const { status, quotedPrice, adminNote } = body
 
+      const VALID_QUOTE_STATUSES = new Set(['Pending', 'Priced', 'Rejected', 'Accepted', 'Cancelled'])
+      if (status && !VALID_QUOTE_STATUSES.has(status)) {
+         return new NextResponse('Invalid status', { status: 400 })
+      }
+      if (quotedPrice !== undefined && quotedPrice !== null) {
+         const qp = Number(quotedPrice)
+         if (isNaN(qp) || qp < 0) return new NextResponse('Invalid quoted price', { status: 400 })
+      }
+
       const quoteRequest = await prisma.quoteRequest.update({
          where: { id: params.id },
          data: {

@@ -135,7 +135,7 @@ export const DiscountForm: React.FC<DiscountFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(adminPath('/discount-codes'))
          toast.success('Kupon silindi.')
-      } catch (error: any) {
+      } catch {
          toast.error('Kupon silinemedi. Bu kuponu kullanan siparisler olabilir.')
       } finally {
          setLoading(false)

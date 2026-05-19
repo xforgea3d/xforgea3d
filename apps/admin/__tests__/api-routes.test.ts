@@ -56,10 +56,12 @@ const prismaCategory = {
 const prismaProduct = {
    create: vi.fn(),
    findMany: vi.fn(),
+   findUnique: vi.fn(),
    findUniqueOrThrow: vi.fn(),
    update: vi.fn(),
    updateMany: vi.fn(),
    delete: vi.fn(),
+   count: vi.fn(),
 }
 
 const prismaBrand = {
@@ -79,12 +81,22 @@ const prismaCarBrand = {
    delete: vi.fn(),
 }
 
+const prismaCarModel = {
+   findMany: vi.fn(),
+}
+
+const prismaQuoteRequest = {
+   count: vi.fn(),
+}
+
 vi.mock('@admin/lib/prisma', () => ({
    default: {
       category: prismaCategory,
       product: prismaProduct,
       brand: prismaBrand,
       carBrand: prismaCarBrand,
+      carModel: prismaCarModel,
+      quoteRequest: prismaQuoteRequest,
    },
 }))
 
@@ -95,6 +107,8 @@ vi.mock('@/lib/prisma', () => ({
       product: prismaProduct,
       brand: prismaBrand,
       carBrand: prismaCarBrand,
+      carModel: prismaCarModel,
+      quoteRequest: prismaQuoteRequest,
    },
 }))
 
@@ -275,6 +289,7 @@ describe('Category API Routes', () => {
 
    describe('DELETE /api/categories/[categoryId]', () => {
       it('should delete a category', async () => {
+         prismaProduct.count.mockResolvedValue(0)
          prismaCategory.delete.mockResolvedValue({ id: 'cat-1', title: 'Deleted' })
 
          const { DELETE } = await import('@admin/app/api/categories/[categoryId]/route')
@@ -493,6 +508,7 @@ describe('Product API Routes', () => {
       })
 
       it('should update product successfully with valid data', async () => {
+         prismaProduct.findUnique.mockResolvedValue({ price: 100, discount: 0 })
          prismaProduct.update.mockResolvedValue({
             id: 'p1', title: 'Updated', price: 200,
             brand: {}, categories: [], carModels: [],
@@ -896,6 +912,7 @@ describe('CarBrand API Routes', () => {
 
    describe('DELETE /api/car-brands/[brandId]', () => {
       it('should delete a car brand and return ok', async () => {
+         prismaCarModel.findMany.mockResolvedValue([])
          prismaCarBrand.delete.mockResolvedValue({ id: 'cb1' })
 
          const { DELETE } = await import('@admin/app/api/car-brands/[brandId]/route')
@@ -911,6 +928,7 @@ describe('CarBrand API Routes', () => {
       })
 
       it('should return 500 on prisma error', async () => {
+         prismaCarModel.findMany.mockResolvedValue([])
          prismaCarBrand.delete.mockRejectedValue(new Error('FK constraint'))
 
          const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})

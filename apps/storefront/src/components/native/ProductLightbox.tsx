@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ZoomInIcon, ZoomOutIcon, RotateCcwIcon, XIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 
 interface ProductLightboxProps {
     images: string[]
@@ -34,6 +34,22 @@ export default function ProductLightbox({
         setScale(1)
     }, [currentIndex, open])
 
+    const zoomIn = () => setScale((s) => Math.min(s + 0.5, 4))
+    const zoomOut = () => setScale((s) => Math.max(s - 0.5, 0.5))
+    const resetZoom = () => setScale(1)
+
+    const goNext = useCallback(() => {
+        const next = Math.min(currentIndex + 1, images.length - 1)
+        setCurrentIndex(next)
+        onIndexChange(next)
+    }, [currentIndex, images.length, onIndexChange])
+
+    const goPrev = useCallback(() => {
+        const prev = Math.max(currentIndex - 1, 0)
+        setCurrentIndex(prev)
+        onIndexChange(prev)
+    }, [currentIndex, onIndexChange])
+
     // Keyboard navigation
     useEffect(() => {
         if (!open) return
@@ -46,22 +62,7 @@ export default function ProductLightbox({
         }
         window.addEventListener('keydown', handler)
         return () => window.removeEventListener('keydown', handler)
-    }, [open, currentIndex])
-
-    const zoomIn = () => setScale((s) => Math.min(s + 0.5, 4))
-    const zoomOut = () => setScale((s) => Math.max(s - 0.5, 0.5))
-    const resetZoom = () => setScale(1)
-
-    const goNext = () => {
-        const next = Math.min(currentIndex + 1, images.length - 1)
-        setCurrentIndex(next)
-        onIndexChange(next)
-    }
-    const goPrev = () => {
-        const prev = Math.max(currentIndex - 1, 0)
-        setCurrentIndex(prev)
-        onIndexChange(prev)
-    }
+    }, [goNext, goPrev, onClose, open])
 
     // Scroll to zoom
     const handleWheel = (e: React.WheelEvent) => {

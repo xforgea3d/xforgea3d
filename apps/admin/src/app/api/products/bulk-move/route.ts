@@ -36,6 +36,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ moved: safeIds.length, brandId })
    } catch (error: any) {
       console.error('[PRODUCTS_BULK_MOVE]', error)
-      return new NextResponse(error?.message || 'Internal error', { status: 500 })
+      return new NextResponse('Internal error', { status: 500 })
    }
 }

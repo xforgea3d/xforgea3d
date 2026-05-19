@@ -1,7 +1,7 @@
 export const revalidate = 60
 
 import { Metadata } from 'next'
-import { ProductGrid, ProductSkeletonGrid } from '@/components/native/Product'
+import { ProductGrid } from '@/components/native/Product'
 
 export const metadata: Metadata = {
    title: 'Ürünler',
@@ -11,7 +11,6 @@ import { Heading } from '@/components/native/heading'
 import { Separator } from '@/components/native/separator'
 import { Button } from '@/components/ui/button'
 import prisma from '@/lib/prisma'
-import { isVariableValid } from '@/lib/utils'
 import { Package } from 'lucide-react'
 import Link from 'next/link'
 
@@ -57,7 +56,7 @@ export default async function Products({ searchParams }) {
 
    let brands: any[] = [], categories: any[] = [], products: any[] = [], totalCount = 0
    try {
-      ;[brands, categories, products, totalCount] = await Promise.all([
+      [brands, categories, products, totalCount] = await Promise.all([
          prisma.brand.findMany({ orderBy: { title: 'asc' } }),
          prisma.category.findMany({ where: { isVisible: true }, orderBy: { title: 'asc' } }),
          prisma.product.findMany({
@@ -75,7 +74,7 @@ export default async function Products({ searchParams }) {
          }),
          prisma.product.count({ where: whereClause }),
       ])
-   } catch (e) {
+   } catch {
       console.warn('[products] DB unavailable, rendering empty state')
    }
 

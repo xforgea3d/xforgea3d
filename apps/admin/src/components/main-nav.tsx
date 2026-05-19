@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-   LayoutDashboard,
    ShoppingBag,
    Layers,
    Image as ImageIcon,

@@ -34,8 +34,9 @@ export async function PATCH(req: Request, { params }: { params: { postId: string
         const post = await prisma.blogPost.update({ where: { id: params.postId }, data })
         await revalidateAllStorefront()
         return NextResponse.json(post)
-    } catch (error) {
+    } catch (error: any) {
         console.error('[BLOG_POST_PATCH]', error)
+        if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
         return new NextResponse('Internal error', { status: 500 })
     }
 }
@@ -45,8 +46,9 @@ export async function DELETE(_: Request, { params }: { params: { postId: string 
         await prisma.blogPost.delete({ where: { id: params.postId } })
         await revalidateAllStorefront()
         return NextResponse.json({ ok: true })
-    } catch (error) {
+    } catch (error: any) {
         console.error('[BLOG_POST_DELETE]', error)
+        if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
         return new NextResponse('Internal error', { status: 500 })
     }
 }

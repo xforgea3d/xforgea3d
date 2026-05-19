@@ -6,7 +6,6 @@ import { DataTable } from '@/components/ui/data-table'
 import { ColumnDef } from '@tanstack/react-table'
 import { EditIcon, EyeIcon, EyeOffIcon, Loader2Icon, Trash2Icon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { AlertModal } from '@/components/modals/alert-modal'
@@ -23,7 +22,6 @@ interface CategoriesClientProps {
 }
 
 export const CategoriesClient: React.FC<CategoriesClientProps> = ({ data }) => {
-   const router = useRouter()
    const [deleteId, setDeleteId] = useState<string | null>(null)
    const [loading, setLoading] = useState(false)
    const [togglingId, setTogglingId] = useState<string | null>(null)

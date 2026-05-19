@@ -37,7 +37,7 @@ function getEstimatedDeliveryRange(): string {
    const today = new Date()
    let minDays = 0
    let maxDays = 0
-   let d = new Date(today)
+   const d = new Date(today)
    // Calculate 3 business days for min
    while (minDays < 3) {
       d.setDate(d.getDate() + 1)
@@ -131,17 +131,8 @@ export default function CheckoutPage() {
          .finally(() => setLoadingAddresses(false))
    }, [])
 
-   // Task 3: Auto-validate discount code from URL after it's been set
-   useEffect(() => {
-      if (discountValidatedRef.current) return
-      const urlDiscount = searchParams.get('discount')
-      if (urlDiscount && discountCode === urlDiscount.toUpperCase() && !discountInfo && !validatingDiscount && !discountError) {
-         discountValidatedRef.current = true
-         handleValidateDiscount()
-      }
-   }, [discountCode, searchParams])
-
    const costs = useMemo(() => {
+      void priceRefreshTick
       let total = 0, productDiscount = 0
       if (cart?.items) {
          for (const item of cart.items) {
@@ -204,7 +195,17 @@ export default function CheckoutPage() {
       } finally {
          setValidatingDiscount(false)
       }
-   }, [discountCode])
+   }, [discountCode, csrfToken])
+
+   // Task 3: Auto-validate discount code from URL after it's been set
+   useEffect(() => {
+      if (discountValidatedRef.current) return
+      const urlDiscount = searchParams.get('discount')
+      if (urlDiscount && discountCode === urlDiscount.toUpperCase() && !discountInfo && !validatingDiscount && !discountError) {
+         discountValidatedRef.current = true
+         handleValidateDiscount()
+      }
+   }, [discountCode, discountError, discountInfo, handleValidateDiscount, searchParams, validatingDiscount])
 
    const handleClearDiscount = useCallback(() => {
       setDiscountCode('')
@@ -237,7 +238,7 @@ export default function CheckoutPage() {
       } catch {
          toast.error('Adres eklenirken hata oluştu')
       }
-   }, [newAddress])
+   }, [newAddress, csrfToken])
 
    const handleOrder = useCallback(async () => {
       if (!selectedAddress) {
@@ -294,7 +295,7 @@ export default function CheckoutPage() {
       } finally {
          setLoading(false)
       }
-   }, [selectedAddress, discountCode, discountInfo, cart, refreshCart, router])
+   }, [selectedAddress, discountCode, discountInfo, cart, costs.payable, csrfToken, refreshCart, router])
 
    return (
       <div className="flex flex-col border-neutral-200 dark:border-neutral-700 pb-24">

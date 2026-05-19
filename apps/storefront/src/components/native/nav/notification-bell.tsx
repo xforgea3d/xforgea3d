@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { BellIcon, CheckCheckIcon, CopyIcon } from 'lucide-react'
+import { BellIcon, CheckCheckIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { useCsrf } from '@/hooks/useCsrf'
@@ -53,7 +53,7 @@ export function NotificationBell() {
    const [notifications, setNotifications] = useState<Notification[]>([])
    const [unreadCount, setUnreadCount] = useState(0)
    const [open, setOpen] = useState(false)
-   const [expandedId, setExpandedId] = useState<string | null>(null)
+   const [expandedId] = useState<string | null>(null)
    const dropdownRef = useRef<HTMLDivElement>(null)
    const router = useRouter()
    const csrfToken = useCsrf()

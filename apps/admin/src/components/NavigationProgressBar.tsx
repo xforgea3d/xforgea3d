@@ -38,7 +38,7 @@ export function NavigationProgressBar() {
             <div
                 className={
                     'h-full bg-gradient-to-r from-blue-500 via-violet-500 to-purple-500 transition-all ' +
-                    (done ? 'w-full opacity-0 duration-300' : 'w-[80%] opacity-100 duration-[2000ms] ease-out')
+                    (done ? 'w-full opacity-0 duration-300' : 'w-[80%] opacity-100 [transition-duration:2000ms] ease-out')
                 }
             />
         </div>

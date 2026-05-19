@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronRightIcon } from 'lucide-react'
 const formatTR = (d: Date) => new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)
-import { Heading } from '@/components/native/heading'
 
 export const metadata = {
    title: 'Blog | xForgea3D',
@@ -19,7 +18,7 @@ export default async function BlogPage() {
          where: { status: 'published' },
          orderBy: { published_at: 'desc' },
       })
-   } catch (e) {
+   } catch {
       console.warn('[blog] DB unavailable during build')
    }
 

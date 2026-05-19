@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTable } from '@/components/ui/data-table'
 import { ColumnDef } from '@tanstack/react-table'
-import { CheckIcon, XIcon, RotateCcw } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 import { EditIcon as Icon } from 'lucide-react'
 import Link from 'next/link'
 

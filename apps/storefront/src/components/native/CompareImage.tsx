@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useRef, useState } from 'react'
 
 interface IProps {
@@ -43,24 +42,24 @@ const defaultProps = {
 
 const CompareImage: React.FC<IProps> = (props) => {
     const {
-        aspectRatio,
-        handle,
-        handleSize,
-        hover,
+        aspectRatio = defaultProps.aspectRatio,
+        handle = defaultProps.handle,
+        handleSize = defaultProps.handleSize,
+        hover = defaultProps.hover,
         leftImage,
-        leftImageAlt,
-        leftImageCss,
-        leftImageLabel,
-        onSliderPositionChange,
+        leftImageAlt = defaultProps.leftImageAlt,
+        leftImageCss = defaultProps.leftImageCss,
+        leftImageLabel = defaultProps.leftImageLabel,
+        onSliderPositionChange = defaultProps.onSliderPositionChange,
         rightImage,
-        rightImageAlt,
-        rightImageCss,
-        rightImageLabel,
-        skeleton,
-        sliderLineColor,
-        sliderLineWidth,
-        sliderPositionPercentage,
-        vertical,
+        rightImageAlt = defaultProps.rightImageAlt,
+        rightImageCss = defaultProps.rightImageCss,
+        rightImageLabel = defaultProps.rightImageLabel,
+        skeleton = defaultProps.skeleton,
+        sliderLineColor = defaultProps.sliderLineColor,
+        sliderLineWidth = defaultProps.sliderLineWidth,
+        sliderPositionPercentage = defaultProps.sliderPositionPercentage,
+        vertical = defaultProps.vertical,
     } = props
 
     const horizontal = !vertical
@@ -75,14 +74,16 @@ const CompareImage: React.FC<IProps> = (props) => {
     const [rightImgLoaded, setRightImgLoaded] = useState<boolean>(false)
     const [isSliding, setIsSliding] = useState<boolean>(false)
 
-    const containerRef = useRef(null)
-    const rightImageRef = useRef(null)
-    const leftImageRef = useRef(null)
+    const containerRef = useRef<HTMLDivElement | null>(null)
+    const rightImageRef = useRef<HTMLImageElement | null>(null)
+    const leftImageRef = useRef<HTMLImageElement | null>(null)
 
     // make the component responsive
     useEffect(() => {
         const containerElement = containerRef.current
-        const resizeObserver = new ResizeObserver(([entry, ..._]) => {
+        if (!containerElement) return
+        const resizeObserver = new ResizeObserver(([entry]) => {
+            if (!entry) return
             const currentContainerWidth =
                 entry.target.getBoundingClientRect().width
             setContainerWidth(currentContainerWidth)
@@ -95,8 +96,8 @@ const CompareImage: React.FC<IProps> = (props) => {
     useEffect(() => {
         // consider the case where loading image is completed immediately
         // due to the cache etc.
-        const alreadyDone = leftImageRef.current.complete
-        alreadyDone && setLeftImgLoaded(true)
+        const alreadyDone = leftImageRef.current?.complete
+        if (alreadyDone) setLeftImgLoaded(true)
 
         return () => {
             // when the left image source is changed
@@ -107,8 +108,8 @@ const CompareImage: React.FC<IProps> = (props) => {
     useEffect(() => {
         // consider the case where loading image is completed immediately
         // due to the cache etc.
-        const alreadyDone = rightImageRef.current.complete
-        alreadyDone && setRightImgLoaded(true)
+        const alreadyDone = rightImageRef.current?.complete
+        if (alreadyDone) setRightImgLoaded(true)
 
         return () => {
             // when the right image source is changed
@@ -119,14 +120,14 @@ const CompareImage: React.FC<IProps> = (props) => {
     const allImagesLoaded = rightImgLoaded && leftImgLoaded
 
     useEffect(() => {
-        const handleSliding = (event) => {
+        const handleSliding = (event: MouseEvent | TouchEvent) => {
             const e = event || window.event
 
             // Calc cursor position from the:
             // - left edge of the viewport (for horizontal)
             // - top edge of the viewport (for vertical)
-            const cursorXfromViewport = e.touches ? e.touches[0].pageX : e.pageX
-            const cursorYfromViewport = e.touches ? e.touches[0].pageY : e.pageY
+            const cursorXfromViewport = 'touches' in e ? e.touches[0].pageX : e.pageX
+            const cursorYfromViewport = 'touches' in e ? e.touches[0].pageY : e.pageY
 
             // Calc Cursor Position from the:
             // - left edge of the window (for horizontal)
@@ -138,6 +139,7 @@ const CompareImage: React.FC<IProps> = (props) => {
             // Calc Cursor Position from the:
             // - left edge of the image(for horizontal)
             // - top edge of the image(for vertical)
+            if (!rightImageRef.current) return
             const imagePosition = rightImageRef.current.getBoundingClientRect()
             let pos = horizontal
                 ? cursorXfromWindow - imagePosition.left
@@ -152,19 +154,23 @@ const CompareImage: React.FC<IProps> = (props) => {
             if (pos < minPos) pos = minPos
             if (pos > maxPos) pos = maxPos
 
-            horizontal
-                ? setSliderPosition(pos / containerWidth)
-                : setSliderPosition(pos / containerHeight)
+            if (horizontal) {
+                setSliderPosition(pos / containerWidth)
+            } else {
+                setSliderPosition(pos / containerHeight)
+            }
 
             // If there's a callback function, invoke it everytime the slider changes
             if (onSliderPositionChange) {
-                horizontal
-                    ? onSliderPositionChange(pos / containerWidth)
-                    : onSliderPositionChange(pos / containerHeight)
+                if (horizontal) {
+                    onSliderPositionChange(pos / containerWidth)
+                } else {
+                    onSliderPositionChange(pos / containerHeight)
+                }
             }
         }
 
-        const startSliding = (e) => {
+        const startSliding = (e: MouseEvent | TouchEvent) => {
             setIsSliding(true)
 
             // Prevent default behavior other than mobile scrolling
@@ -187,7 +193,7 @@ const CompareImage: React.FC<IProps> = (props) => {
 
         const containerElement = containerRef.current
 
-        if (allImagesLoaded) {
+        if (allImagesLoaded && containerElement && leftImageRef.current && rightImageRef.current) {
             // it's necessary to reset event handlers each time the canvasWidth changes
 
             // for mobile
@@ -229,6 +235,7 @@ const CompareImage: React.FC<IProps> = (props) => {
 
         return () => {
             // cleanup all event resteners
+            if (!containerElement) return
             containerElement.removeEventListener('touchstart', startSliding) // 01
             window.removeEventListener('touchend', finishSliding) // 02
             containerElement.removeEventListener('mousemove', handleSliding) // 03
@@ -285,9 +292,7 @@ const CompareImage: React.FC<IProps> = (props) => {
         },
         slider: {
             alignItems: 'center',
-            cursor:
-                (!hover && horizontal && 'ew-resize') ||
-                (!hover && !horizontal && 'ns-resize'),
+            cursor: !hover ? (horizontal ? 'ew-resize' : 'ns-resize') : undefined,
             display: 'flex',
             flexDirection: horizontal ? 'column' : 'row',
             height: horizontal ? '100%' : `${handleSize}px`,
@@ -364,10 +369,10 @@ const CompareImage: React.FC<IProps> = (props) => {
             opacity: isSliding ? 0 : 1,
             padding: '10px 20px',
             position: 'absolute',
-            left: horizontal ? null : '50%',
-            right: horizontal ? '5%' : null,
-            top: horizontal ? '50%' : null,
-            bottom: horizontal ? null : '3%',
+            left: horizontal ? undefined : '50%',
+            right: horizontal ? '5%' : undefined,
+            top: horizontal ? '50%' : undefined,
+            bottom: horizontal ? undefined : '3%',
             transform: horizontal ? 'translate(0,-50%)' : 'translate(-50%, 0)',
             transition: 'opacity 0.1s ease-out',
         },
@@ -451,8 +456,5 @@ const CompareImage: React.FC<IProps> = (props) => {
         </>
     )
 }
-
-// @ts-ignore
-CompareImage.defaultProps = defaultProps
 
 export default CompareImage

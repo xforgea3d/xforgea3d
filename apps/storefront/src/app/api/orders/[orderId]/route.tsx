@@ -16,9 +16,8 @@ export async function GET(
          return new NextResponse('orderId is required', { status: 400 })
       }
 
-      const order = await prisma.order.findUniqueOrThrow({
+      const order = await prisma.order.findUnique({
          where: {
-            userId,
             id: params.orderId,
          },
          include: {
@@ -38,6 +37,10 @@ export async function GET(
             refund: true,
          },
       })
+
+      if (!order || order.userId !== userId) {
+         return new NextResponse('Siparis bulunamadi', { status: 404 })
+      }
 
       // Ensure trackingNumber and shippingCompany are in the response
       const response = {

@@ -33,7 +33,7 @@ export async function PATCH(req: Request) {
     }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const settings = await prisma.siteSettings.upsert({
             where: { id: 1 },

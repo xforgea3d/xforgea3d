@@ -2,9 +2,7 @@ import { sendEmailViaResend } from '@/lib/resend'
 import OtpEmail from '@/emails/otp'
 import { render } from '@react-email/render'
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma'
 
 /**
  * POST /api/auth/send-otp
@@ -97,7 +95,5 @@ export async function POST(req: NextRequest) {
             { error: 'Beklenmeyen bir hata olustu.' },
             { status: 500 }
         )
-    } finally {
-        await prisma.$disconnect()
     }
 }

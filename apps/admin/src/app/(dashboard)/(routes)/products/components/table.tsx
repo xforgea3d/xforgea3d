@@ -7,7 +7,6 @@ import { adminPath } from '@/lib/base-path'
 import { ColumnDef } from '@tanstack/react-table'
 import { CheckIcon, EditIcon, ImageIcon, SearchIcon, Trash2Icon, XIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { AlertModal } from '@/components/modals/alert-modal'
@@ -18,14 +17,12 @@ interface ProductsTableProps {
 }
 
 export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) => {
-   const router = useRouter()
    const [deleteId, setDeleteId] = useState<string | null>(null)
    const [loading, setLoading] = useState(false)
 
    // Bulk selection state
    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
-   const [bulkMoveOpen, setBulkMoveOpen] = useState(false)
 
    // Filter states
    const [search, setSearch] = useState('')
@@ -87,11 +84,6 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
    }
 
    // Count selected items that are visible in current filter
-   const visibleSelectedCount = useMemo(
-      () => [...selectedIds].filter((id) => filteredIds.has(id)).length,
-      [selectedIds, filteredIds]
-   )
-
    const allVisibleSelected = filteredData.length > 0 && filteredData.every((p) => selectedIds.has(p.id))
 
    const onDelete = async () => {
@@ -151,7 +143,6 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ data, brands }) =>
          toast.error('Taşıma başarısız:' + (error?.message || ''))
       } finally {
          setLoading(false)
-         setBulkMoveOpen(false)
       }
    }
 

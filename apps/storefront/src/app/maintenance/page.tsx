@@ -7,7 +7,9 @@ export default async function MaintenancePage() {
     let settings: any = null
     try {
         settings = await prisma.siteSettings.findUnique({ where: { id: 1 } })
-    } catch {}
+    } catch {
+        console.warn('[maintenance] DB unavailable, redirecting to homepage')
+    }
 
     // If maintenance is not enabled, redirect back to homepage
     if (!settings?.maintenance_enabled) {

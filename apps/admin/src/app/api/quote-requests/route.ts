@@ -1,6 +1,8 @@
 import prisma from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 const VALID_QUOTE_STATUSES = ['Pending', 'Priced', 'Accepted', 'Rejected', 'Completed'] as const
 
 export async function GET(req: Request) {

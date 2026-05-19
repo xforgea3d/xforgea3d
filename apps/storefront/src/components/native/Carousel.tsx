@@ -76,22 +76,13 @@ export default function Carousel({ images, disableZoom = false }: { images: stri
    )
    const containerRef = useRef<HTMLDivElement>(null)
    const [selectedIndex, setSelectedIndex] = useState(0)
-   const [canPrev, setCanPrev] = useState(false)
-   const [canNext, setCanNext] = useState(false)
    const [lightboxOpen, setLightboxOpen] = useState(false)
    const [lightboxMounted, setLightboxMounted] = useState(false)
-
-   const updateButtons = useCallback(() => {
-      if (!emblaApi) return
-      setCanPrev(emblaApi.canScrollPrev())
-      setCanNext(emblaApi.canScrollNext())
-   }, [emblaApi])
 
    const onSelect = useCallback(() => {
       if (!emblaApi) return
       setSelectedIndex(emblaApi.selectedScrollSnap())
-      updateButtons()
-   }, [emblaApi, updateButtons])
+   }, [emblaApi])
 
    useEffect(() => {
       if (!emblaApi) return

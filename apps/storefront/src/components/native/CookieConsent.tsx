@@ -42,7 +42,9 @@ export default function CookieConsent() {
                const prefs: CookiePreferences = JSON.parse(stored)
                setAnalytics(prefs.analytics)
                setMarketing(prefs.marketing)
-            } catch {}
+            } catch {
+               console.warn('[cookies] Stored cookie preferences are invalid')
+            }
          }
          setVisible(true)
          setAnimateOut(false)

@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthenticated } from '@/hooks/useAuthentication'
 import { useCsrf } from '@/hooks/useCsrf'
-import { getCountInCart, getLocalCart, writeLocalCart } from '@/lib/cart'
+import { getLocalCart } from '@/lib/cart'
 import { useCartContext } from '@/state/Cart'
 import {
     MinusIcon,
@@ -21,13 +21,13 @@ import {
     X,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 export function CartNav() {
     const { cart, dispatchCart } = useCartContext()
     const { authenticated } = useAuthenticated()
     const csrfToken = useCsrf()
-    const items = cart?.items || []
+    const items = useMemo(() => cart?.items || [], [cart?.items])
     const itemCount = items.reduce((total, item) => total + (item.count || 0), 0)
     const [busyItems, setBusyItems] = useState<Set<string>>(new Set())
     const [removingItems, setRemovingItems] = useState<Set<string>>(new Set())
@@ -54,15 +54,19 @@ export function CartNav() {
 
     // ---- Cart manipulation helpers ----
 
-    const markBusy = (productId: string, busy: boolean) => {
+    const markBusy = useCallback((productId: string, busy: boolean) => {
         setBusyItems((prev) => {
             const next = new Set(prev)
-            busy ? next.add(productId) : next.delete(productId)
+            if (busy) {
+                next.add(productId)
+            } else {
+                next.delete(productId)
+            }
             return next
         })
-    }
+    }, [])
 
-    const animateRemoval = (productId: string) => {
+    const animateRemoval = useCallback((productId: string) => {
         return new Promise<void>((resolve) => {
             setRemovingItems((prev) => new Set(prev).add(productId))
             setTimeout(() => {
@@ -74,7 +78,7 @@ export function CartNav() {
                 resolve()
             }, 250)
         })
-    }
+    }, [])
 
     const updateCartItem = useCallback(
         async (productId: string, newCount: number) => {
@@ -115,7 +119,7 @@ export function CartNav() {
                 markBusy(productId, false)
             }
         },
-        [authenticated, csrfToken, dispatchCart]
+        [authenticated, busyItems, csrfToken, dispatchCart, markBusy]
     )
 
     const handleRemoveItem = useCallback(
@@ -125,7 +129,7 @@ export function CartNav() {
             await animateRemoval(productId)
             await updateCartItem(productId, 0)
         },
-        [updateCartItem]
+        [animateRemoval, updateCartItem]
     )
 
     const handleDecrement = useCallback(
@@ -139,7 +143,7 @@ export function CartNav() {
                 await updateCartItem(productId, currentCount - 1)
             }
         },
-        [updateCartItem]
+        [animateRemoval, updateCartItem]
     )
 
     const handleIncrement = useCallback(
@@ -266,8 +270,6 @@ export function CartNav() {
                             const effectivePrice = item.product?.discount
                                 ? item.product.price - item.product.discount
                                 : item.product?.price || 0
-                            const lineTotal = effectivePrice * (item.count || 0)
-
                             return (
                                 <div
                                     key={`${productId}-${index}`}

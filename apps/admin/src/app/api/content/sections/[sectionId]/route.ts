@@ -16,8 +16,9 @@ export async function PATCH(req: Request, { params }: { params: { sectionId: str
         })
         await revalidateAllStorefront()
         return NextResponse.json(section)
-    } catch (error) {
+    } catch (error: any) {
         console.error('[SECTION_PATCH]', error)
+        if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
         return new NextResponse('Internal error', { status: 500 })
     }
 }
@@ -27,8 +28,9 @@ export async function DELETE(_: Request, { params }: { params: { sectionId: stri
         await prisma.homepageSection.delete({ where: { id: params.sectionId } })
         await revalidateAllStorefront()
         return NextResponse.json({ ok: true })
-    } catch (error) {
+    } catch (error: any) {
         console.error('[SECTION_DELETE]', error)
+        if (error?.code === 'P2025') return new NextResponse('Not found', { status: 404 })
         return new NextResponse('Internal error', { status: 500 })
     }
 }

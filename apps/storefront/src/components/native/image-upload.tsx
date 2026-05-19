@@ -38,7 +38,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
          const fileName = `${uuidv4()}.${fileExt}`
          const filePath = `uploads/${fileName}`
 
-         const { error: uploadError, data } = await supabase.storage
+         const { error: uploadError } = await supabase.storage
             .from('ecommerce')
             .upload(filePath, file)
 

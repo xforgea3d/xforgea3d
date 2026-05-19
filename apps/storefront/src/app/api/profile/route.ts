@@ -130,7 +130,7 @@ export async function PATCH(req: Request) {
       if (name !== undefined && (typeof name !== 'string' || name.length > 100)) {
          return new NextResponse('Gecersiz isim', { status: 400 })
       }
-      if (phone !== undefined && (typeof phone !== 'string' || phone.length > 20)) {
+      if (phone !== undefined && (typeof phone !== 'string' || phone.length > 20 || (phone.length > 0 && !/^[\d+\-\s()]{7,20}$/.test(phone)))) {
          return new NextResponse('Gecersiz telefon', { status: 400 })
       }
       if (avatar !== undefined && (typeof avatar !== 'string' || avatar.length > 500)) {

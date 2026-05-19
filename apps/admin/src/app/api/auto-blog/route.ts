@@ -7,6 +7,8 @@ const GEMINI_MODEL = 'gemini-2.0-flash'
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`
 const POLLINATIONS_TEXT_URL = 'https://gen.pollinations.ai/text'
 
+export const dynamic = 'force-dynamic'
+
 // ── Topic pools ──────────────────────────────────────────────
 const TOPIC_POOLS: Record<string, string[]> = {
    '3d': [
@@ -109,8 +111,11 @@ async function callPollinations(prompt: string): Promise<string> {
 
 KALITE KONTROL:
 - Cevap tek bir parse edilebilir JSON nesnesi olmalı.
-- body_html boş, kısa veya yüzeysel olamaz; en az 800 kelimeye yakın, özgün, satışa dönük ama güven veren bilgi içermeli.
-- Türkiye'deki 3D baskı müşterisinin karar sürecine yardımcı olacak ölçü, malzeme, kullanım, bakım ve teslimat detayları ekle.
+- title, excerpt, body_html, tags, seo_title, seo_description alanlarının tamamı dolu olmalı.
+- body_html boş, kısa veya yüzeysel olamaz; 900-1200 kelime arası, özgün, satışa dönük ama güven veren bilgi içermeli.
+- body_html sadece güvenli içerik HTML'i olmalı: h2, h3, p, ul, li, strong, em dışında script/style/iframe kullanma.
+- Türkiye'deki 3D baskı müşterisinin karar sürecine yardımcı olacak ölçü, malzeme, kullanım, bakım, sipariş öncesi kontrol ve teslimat detayları ekle.
+- xForgea3D tonunu profesyonel tut; gereksiz abartı, sahte vaat veya yapay pazarlama cümlesi kullanma.
 - Uydurma garanti, sertifika, marka iş birliği veya teknik özellik yazma.
 - Markdown, açıklama, code fence veya JSON dışı metin yazma.`
 
@@ -237,12 +242,17 @@ KURALLAR:
       // Step 4: Trigger revalidation on storefront (best-effort)
       try {
          const storefrontUrl = process.env.STOREFRONT_URL ?? 'https://xforgea3d.com'
-         await fetch(`${storefrontUrl}/api/revalidate?path=/blog`, {
-            method: 'POST',
-            headers: {
-               'Authorization': `Bearer ${envSecret ?? ''}`,
-            },
-         }).catch((err) => console.error('[AUTO-BLOG] Revalidation failed:', err.message))
+         const revalidationSecret = process.env.REVALIDATION_SECRET
+         if (!revalidationSecret) {
+            console.warn('[AUTO-BLOG] REVALIDATION_SECRET missing; storefront cache was not revalidated')
+         } else {
+            await fetch(`${storefrontUrl}/api/revalidate?path=/blog`, {
+               method: 'POST',
+               headers: {
+                  Authorization: `Bearer ${revalidationSecret}`,
+               },
+            }).catch((err) => console.error('[AUTO-BLOG] Revalidation failed:', err.message))
+         }
       } catch (e) {
          console.error('[AUTO-BLOG] Revalidation error:', (e as Error).message)
       }
@@ -258,7 +268,7 @@ KURALLAR:
    } catch (error) {
       console.error('[AUTO_BLOG]', error)
       return NextResponse.json(
-         { error: 'Blog generation failed', details: String(error) },
+         { error: 'Blog generation failed' },
          { status: 500 }
       )
    }

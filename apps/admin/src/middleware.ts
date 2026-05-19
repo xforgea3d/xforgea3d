@@ -2,38 +2,90 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '/admin07'
+const ADMIN_2FA_REQUIRED = process.env.ADMIN_2FA_REQUIRED === 'true'
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
 function adminUrl(path: string, requestUrl: string) {
    const normalizedPath = path.startsWith('/') ? path : `/${path}`
    return new URL(`${BASE_PATH}${normalizedPath}`, requestUrl)
 }
 
-function getAllowedAdminEmails() {
-   return [
-      process.env.ADMIN_EMAIL,
-      process.env.NEXT_PUBLIC_ADMIN_EMAIL,
-   ]
-      .map((email) => email?.trim().toLowerCase())
-      .filter((email): email is string => Boolean(email))
+function stripBasePath(pathname: string) {
+   if (BASE_PATH && pathname === BASE_PATH) return '/'
+   if (BASE_PATH && pathname.startsWith(`${BASE_PATH}/`)) {
+      return pathname.slice(BASE_PATH.length) || '/'
+   }
+   return pathname
+}
+
+async function isAdminRole(supabase: any, userId: string): Promise<boolean> {
+   try {
+      const { data } = await supabase
+         .from('Profile')
+         .select('role')
+         .eq('id', userId)
+         .single()
+      return data?.role === 'admin'
+   } catch {
+      return false
+   }
+}
+
+function normalizeOrigin(value?: string | null) {
+   if (!value) return null
+   try {
+      return new URL(value).origin
+   } catch {
+      return null
+   }
+}
+
+function getAllowedRequestOrigins(request: NextRequest) {
+   return new Set(
+      [
+         normalizeOrigin(request.nextUrl.origin),
+         normalizeOrigin(process.env.STOREFRONT_URL),
+         normalizeOrigin(process.env.NEXT_PUBLIC_URL),
+         normalizeOrigin(process.env.ADMIN_PUBLIC_URL),
+         process.env.VERCEL_URL ? normalizeOrigin(`https://${process.env.VERCEL_URL}`) : null,
+         'https://xforgea3d.com',
+         'https://www.xforgea3d.com',
+         'https://xforgea-admin.vercel.app',
+      ].filter((origin): origin is string => Boolean(origin))
+   )
+}
+
+function isAllowedMutatingOrigin(request: NextRequest) {
+   const origin = normalizeOrigin(request.headers.get('origin'))
+   const referer = normalizeOrigin(request.headers.get('referer'))
+   const candidate = origin || referer
+
+   if (!candidate) return false
+
+   if (process.env.NODE_ENV !== 'production' && candidate.startsWith('http://localhost')) {
+      return true
+   }
+
+   return getAllowedRequestOrigins(request).has(candidate)
 }
 
 export async function middleware(request: NextRequest) {
-   if (request.nextUrl.pathname.startsWith('/api/auth')) return NextResponse.next()
+   const pathname = stripBasePath(request.nextUrl.pathname)
 
-   const allowedAdminEmails = getAllowedAdminEmails()
+   if (pathname.startsWith('/api/auth')) return NextResponse.next()
 
-   const isLoginPage = request.nextUrl.pathname === '/login'
+   const isLoginPage = pathname === '/login'
 
    function isTargetingAPI() {
-      return request.nextUrl.pathname.startsWith('/api')
+      return pathname.startsWith('/api')
    }
 
    // Refresh Supabase session (reads/writes auth cookies)
-   const { supabaseResponse, user } = await updateSession(request)
+   const { supabaseResponse, user, supabase } = await updateSession(request)
 
    // If user is on /login and already authenticated as admin, redirect to dashboard
    if (isLoginPage) {
-      if (user && allowedAdminEmails.includes(user.email?.trim().toLowerCase() || '')) {
+      if (user && await isAdminRole(supabase, user.id)) {
          const response = NextResponse.redirect(adminUrl('/', request.url))
          supabaseResponse.cookies.getAll().forEach((cookie) => {
             response.cookies.set(cookie.name, cookie.value, cookie as any)
@@ -44,10 +96,6 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse
    }
 
-   if (!allowedAdminEmails.length) {
-      return NextResponse.json({ error: 'ADMIN_EMAIL not configured' }, { status: 500 })
-   }
-
    if (!user) {
       if (isTargetingAPI()) {
          return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })
@@ -55,7 +103,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(adminUrl('/login', request.url))
    }
 
-   if (!allowedAdminEmails.includes(user.email?.trim().toLowerCase() || '')) {
+   if (!await isAdminRole(supabase, user.id)) {
       if (isTargetingAPI()) {
          return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
       }
@@ -63,27 +111,27 @@ export async function middleware(request: NextRequest) {
    }
 
    // Check 2FA requirement for sensitive operations
-   const sensitivePathPatterns = [
-      '/api/products/',
-      '/api/orders/',
-      '/api/payments/',
-      '/api/users/',
-      '/api/categories/',
-   ]
-   const isSensitiveOperation =
-      sensitivePathPatterns.some(pattern => request.nextUrl.pathname.startsWith(pattern)) &&
-      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)
+   const isMutatingApi = isTargetingAPI() && MUTATING_METHODS.has(request.method)
+   const twoFaExemptApi =
+      pathname.startsWith('/api/auth') ||
+      pathname === '/api/admin/verify-2fa' ||
+      pathname === '/api/health'
+   const isSensitiveOperation = isMutatingApi && !twoFaExemptApi
 
-   if (isSensitiveOperation) {
-      const twoFaVerified = request.headers.get('x-2fa-verified') === 'true'
+   if (isMutatingApi && !isAllowedMutatingOrigin(request)) {
+      return NextResponse.json({ error: 'INVALID_ORIGIN' }, { status: 403 })
+   }
+
+   if (ADMIN_2FA_REQUIRED && isSensitiveOperation) {
+      const twoFaVerified = request.cookies.get('admin-2fa-verified')?.value === 'true'
       if (!twoFaVerified) {
          if (isTargetingAPI()) {
             return NextResponse.json(
-               { error: 'TWO_FA_REQUIRED', redirect: '/api/admin/require-2fa' },
+               { error: 'TWO_FA_REQUIRED', redirect: adminUrl('/verify-2fa', request.url).pathname },
                { status: 403 }
             )
          }
-         return NextResponse.redirect(adminUrl('/verify-2fa?next=' + encodeURIComponent(request.nextUrl.pathname), request.url))
+         return NextResponse.redirect(adminUrl('/verify-2fa?next=' + encodeURIComponent(pathname), request.url))
       }
    }
 
@@ -106,6 +154,7 @@ export const config = {
    matcher: [
       '/',
       '/login',
+      '/verify-2fa',
       '/products/:path*',
       '/categories/:path*',
       '/brands/:path*',
@@ -118,6 +167,11 @@ export const config = {
       '/car-brands/:path*',
       '/nav-items/:path*',
       '/quote-requests/:path*',
+      '/campaigns/:path*',
+      '/discount-codes/:path*',
+      '/error-logs/:path*',
+      '/notifications/:path*',
+      '/returns/:path*',
       '/api/:path*',
    ],
 }

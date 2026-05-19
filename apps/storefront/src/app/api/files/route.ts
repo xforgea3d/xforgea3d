@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
-        const { data, error } = await getSupabaseClient().storage
+        const { error } = await getSupabaseClient().storage
             .from('ecommerce')
             .upload(filePath, buffer, {
                 contentType: file.type,

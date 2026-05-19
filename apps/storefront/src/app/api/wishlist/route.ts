@@ -8,7 +8,7 @@ export async function GET(req: Request) {
       const userId = req.headers.get('X-USER-ID')
       if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
-      const profile = await prisma.profile.findUniqueOrThrow({
+      const profile = await prisma.profile.findUnique({
          where: { id: userId },
          include: {
             wishlist: {
@@ -16,6 +16,10 @@ export async function GET(req: Request) {
             },
          },
       })
+
+      if (!profile) {
+         return NextResponse.json([])
+      }
 
       return NextResponse.json(profile.wishlist)
    } catch (error: any) {

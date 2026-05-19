@@ -22,7 +22,13 @@ function getSupabaseClient() {
  */
 export async function POST(req: Request) {
    try {
-      const formData = await req.formData()
+      let formData: FormData
+      try {
+         formData = await req.formData()
+      } catch {
+         return NextResponse.json({ error: 'Gecersiz form verisi' }, { status: 400 })
+      }
+
       const rawData = formData.get('data') as string
       const imageFile = formData.get('image') as File | null
 

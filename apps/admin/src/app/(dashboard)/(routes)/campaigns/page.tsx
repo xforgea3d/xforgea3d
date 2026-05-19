@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { CampaignCardActions } from './components/campaign-card-actions'
 
-const STOREFRONT_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.STOREFRONT_URL || 'https://xforgea3d.vercel.app'
+const STOREFRONT_URL = process.env.STOREFRONT_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://xforgea3d.com'
 
 // ── Suggested campaign templates (TR holidays for reference) ──
 const SUGGESTED_CAMPAIGNS = [
