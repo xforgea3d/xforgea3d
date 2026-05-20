@@ -1,7 +1,7 @@
 import { ModalProvider } from '@/providers/modal-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'
-import GoogleAnalytics from '@/components/native/GoogleAnalytics'
+import GoogleAnalyticsConsent from '@/components/native/GoogleAnalytics'
 import ClarityAnalytics from '@/components/native/ClarityAnalytics'
 import { OrganizationJsonLd, WebSiteJsonLd, LocalBusinessJsonLd } from './json-ld'
 import { Inter } from 'next/font/google'
@@ -117,8 +117,16 @@ export default async function RootLayout({
 }) {
    return (
       <html lang="tr" suppressHydrationWarning>
+         <head>
+            <script async src="https://www.googletagmanager.com/gtag/js?id=G-XNVXNY7DBL" />
+            <script
+               dangerouslySetInnerHTML={{
+                  __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{analytics_storage:'denied'});gtag('js',new Date());gtag('config','G-XNVXNY7DBL',{page_path:window.location.pathname});`,
+               }}
+            />
+         </head>
          <body className={inter.className} suppressHydrationWarning>
-            <GoogleAnalytics />
+            <GoogleAnalyticsConsent />
             <ClarityAnalytics />
             <GlobalErrorHandler />
             <OrganizationJsonLd />

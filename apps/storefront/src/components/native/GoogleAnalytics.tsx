@@ -1,40 +1,31 @@
 'use client'
 
-import Script from 'next/script'
 import { useEffect } from 'react'
 
-const GA_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
+declare global {
+   interface Window {
+      gtag?: (...args: unknown[]) => void
+   }
+}
 
-export default function GoogleAnalytics() {
+export default function GoogleAnalyticsConsent() {
    useEffect(() => {
-      if (!GA_ID) return
+      const grant = () =>
+         window.gtag?.('consent', 'update', { analytics_storage: 'granted' })
 
       const checkConsent = () => {
          try {
-            const consent = localStorage.getItem('cookie-consent')
-            if (!consent) return
-            const parsed = JSON.parse(consent)
-            const accepted =
-               parsed === 'accepted' ||
-               parsed === true ||
-               parsed?.analytics === true
-            if (accepted) {
-               window.gtag?.('consent', 'update', {
-                  analytics_storage: 'granted',
-               })
-            }
+            const raw = localStorage.getItem('cookie-consent')
+            if (!raw) return
+            const parsed = JSON.parse(raw)
+            if (parsed === 'accepted' || parsed === true || parsed?.analytics === true) grant()
          } catch {
-            const consent = localStorage.getItem('cookie-consent')
-            if (consent === 'accepted' || consent === 'true') {
-               window.gtag?.('consent', 'update', {
-                  analytics_storage: 'granted',
-               })
-            }
+            const raw = localStorage.getItem('cookie-consent')
+            if (raw === 'accepted' || raw === 'true') grant()
          }
       }
 
       checkConsent()
-
       window.addEventListener('cookie-consent-updated', checkConsent)
       window.addEventListener('storage', checkConsent)
       return () => {
@@ -43,27 +34,5 @@ export default function GoogleAnalytics() {
       }
    }, [])
 
-   if (!GA_ID) return null
-
-   return (
-      <>
-         <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            strategy="afterInteractive"
-         />
-         <Script id="gtag-init" strategy="afterInteractive">
-            {`
-               window.dataLayer = window.dataLayer || [];
-               function gtag(){dataLayer.push(arguments);}
-               gtag('consent', 'default', {
-                  analytics_storage: 'denied',
-               });
-               gtag('js', new Date());
-               gtag('config', '${GA_ID}', {
-                  page_path: window.location.pathname,
-               });
-            `}
-         </Script>
-      </>
-   )
+   return null
 }
